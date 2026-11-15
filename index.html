@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShipYard 생산관리</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f1f5f8;color:#142a38;font:15px/1.55 system-ui,sans-serif}
+header{background:#102d40;color:#fff;padding:24px max(24px,calc((100vw - 1200px)/2))}
+h1,h2,h3{margin:0 0 12px}main{max-width:1248px;margin:auto;padding:22px 24px}
+nav,.actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}button,input,select{font:inherit;border:1px solid #9eafba;border-radius:5px;padding:8px;background:white;color:inherit}
+button{cursor:pointer}button[aria-pressed="true"],button[type="submit"]{background:#14646a;border-color:#14646a;color:#fff}
+section{padding:20px;background:white;border:1px solid #d5e0e7;border-radius:9px;margin:14px 0}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end}label{display:grid;gap:4px}input,select{width:100%;min-width:0}
+.scroll{overflow:auto}table{border-collapse:collapse;width:100%;text-align:left}th,td{padding:9px 10px;border-bottom:1px solid #dde6eb;white-space:nowrap}th{background:#edf4f6}td:last-child{white-space:normal}td:empty::after{content:'—';color:#627682}
+#status{min-height:1.6em;font-weight:600}#status[data-error="true"]{color:#982e27}
+
+header{background:#101e36;padding-top:13px;padding-bottom:13px}header h1{font-size:20px;margin:0}
+main{max-width:1440px}nav{border-bottom:1px solid #c6d4e1;gap:4px}
+nav button{border:0;background:none;border-bottom:3px solid transparent;border-radius:0;padding:12px}
+nav button[aria-pressed="true"]{background:transparent;color:#075ab5;border-color:#076dcf}
+button[type="submit"],.actions button[aria-pressed="true"]{background:#0764c5;border-color:#0764c5}
+#context{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#context select{width:auto;max-width:100%}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.cards button{text-align:left;padding:16px;border-color:#c6d4e1}
+.cards button strong{display:block;font-size:29px;color:#075ab5}
+.cards button[data-alert="true"] strong{color:#a33126}
+details{padding:8px 0}summary{cursor:pointer;color:#075ab5}
+
+nav{align-items:center;background:#fff;padding:0 12px;border:1px solid #d5e0e7;border-radius:8px}
+.workflow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.workflow button{color:#075ab5;background:#f0f6fc;border-color:#bed3e7}
+td .trace-link{border:0;padding:0;color:#075ab5;text-decoration:underline;background:transparent;font-weight:600}
+#trace-dialog{width:min(1100px,95vw);max-height:85vh;border:1px solid #aabed0;border-radius:10px;padding:24px}
+#trace-dialog::backdrop{background:#102d4099}
+#trace-dialog>button{float:right}
+#next-actions:empty{display:none}
+.record-action{margin-right:8px}h3 small{font-weight:400;color:#536978}
+
+:root{--ink:#152b44;--blue:#085bb5;--muted:#53677b}
+header{padding:14px 26px}main{max-width:1600px;display:grid;gap:20px;grid-template-columns:195px minmax(0,1fr)}
+#workspace{min-width:0}nav{display:block;padding:10px;align-self:start;margin:0;position:sticky;top:16px}
+nav h2{font-size:12px;color:var(--muted);margin:10px 10px 4px}nav button{display:block;width:100%;text-align:left;border:0;border-radius:5px;padding:8px 10px}
+nav button[aria-pressed="true"]{background:#e6f0fb;color:var(--blue);font-weight:700}
+#context{margin:0 0 14px;padding:10px 16px}#work{margin:0 0 14px;padding:16px}
+#work .actions{margin:8px 0 0}#status:empty,#entry-status:empty{display:none}
+#entry-dialog{width:min(680px,95vw);max-height:90vh;border:1px solid #aabed0;border-radius:12px;padding:24px;color:var(--ink)}
+#entry-dialog::backdrop{background:#102d4099}#entry-close{float:right}
+#entry-dialog form{margin-top:16px}#entry-dialog form button{align-self:end}
+#entry-status[data-error="true"]{color:#982e27}.primary{background:#075bb5;color:white;border-color:#075bb5}
+.list-header{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.list-header h3{margin:0}.list-tools{display:flex;flex-wrap:wrap;gap:8px}.list-tools input,.list-tools select{width:auto;max-width:100%}
+.pill{display:inline-block;padding:2px 8px;border-radius:14px;background:#edf3fa;color:#284e73;font-size:13px}
+.pill[data-tone="warn"]{background:#fff1d4;color:#784800}.pill[data-tone="done"]{background:#e5f5e9;color:#275f39}
+.process-map{display:grid;grid-template-columns:1fr 1fr;gap:12px}.process-map article{padding:12px;border:1px solid #d5e0e7;border-radius:8px}
+.process-map .join{grid-column:1/-1;background:#eef5fc}.process-map h3{margin-bottom:4px}
+.process-map p{margin:0 0 8px;color:var(--muted)}.process-map .workflow{margin:6px 0 0}
+.queue{display:grid;gap:6px;padding:0;list-style:none}.queue li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #dde6eb}
+.queue li span{display:block;color:var(--muted);font-size:14px}.queue li button{flex-shrink:0}
+@media(max-width:800px){main{display:block;padding:14px}nav{position:static;display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+nav h2{display:none}nav button{display:inline-block;width:auto}.process-map{display:block}.process-map article{margin-bottom:8px}}
+
+body{background:#f5f7fa;color:#203349;font-family:Inter,"Apple SD Gothic Neo",system-ui,sans-serif}
+header{background:#fff;color:#163752;border-bottom:1px solid #dce5ed;padding:18px 28px}
+header h1{font-size:21px;letter-spacing:-.6px}header h1::before{content:"◈";color:#087e8b;margin-right:10px}
+main{gap:26px;padding-top:24px;grid-template-columns:205px minmax(0,1fr)}
+nav{background:transparent;border:0;padding:0 8px 0 0}
+nav h2{letter-spacing:.04em;margin:22px 12px 8px;color:#708295}
+nav button{padding:11px 14px;margin-bottom:3px;color:#4e6176;border-radius:9px;font-size:14px}
+nav button[aria-pressed="true"]{background:#e1eef0;color:#00616f;box-shadow:inset 3px 0 #087e8b}
+section{border:1px solid #e0e7ee;border-radius:14px;box-shadow:0 3px 15px #20334903;padding:22px}
+#context{background:transparent;border:0;box-shadow:none;padding:0 0 10px}
+#context label{font-size:13px;color:#5b6e81}
+input,select{border-color:#cdd8e2;border-radius:7px;min-height:40px}
+button{border-radius:7px;transition:background .15s,box-shadow .15s}
+button:hover{background:#eef4f8}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #78bec9;outline-offset:2px}
+button:disabled{cursor:not-allowed;opacity:.45}
+.primary,button[type="submit"]{background:#087e8b;border-color:#087e8b;color:#fff}
+.primary:hover,button[type="submit"]:hover{background:#056772}
+#work{border:0;box-shadow:none;background:transparent;padding:6px 0 0}
+#work h2{font-size:26px;letter-spacing:-.8px}
+#actions{border-bottom:1px solid #d9e2eb;padding-bottom:12px}
+#actions button{border:0;background:transparent;color:#52677b;padding:9px 14px}
+#actions button[aria-pressed="true"]{background:#e0edf0;color:#00616f}
+.list-header{padding-bottom:16px;border-bottom:1px solid #e6ecf1;margin-bottom:0}
+.list-tools label{font-size:12px;color:#52677b}
+th{background:#f7f9fb;font-weight:600;color:#5d6e80;font-size:12px;padding:13px 12px}
+td{font-size:13px;padding:14px 12px}tbody tr:hover{background:#f8fbfc}
+td .trace-link{color:#087e8b;text-decoration:none}
+.queue li{padding:15px 0}.queue li:last-child{border:0}
+.queue strong{font-size:15px}.queue li button{color:#08717d;border-color:#b7d5d9;padding:8px 14px}
+.process-map{gap:18px;margin-top:22px}.process-map article{padding:22px;border:1px solid #dbe6ee;background:#f8fafc;border-radius:12px}
+.process-map .join{background:#eef7f5;border-color:#cce3dd}
+.process-map h3{font-size:18px}.process-map p{font-size:14px;line-height:1.75;max-width:650px}
+.process-map .workflow button{background:#fff;color:#24637b;border-color:#d4e0e7}
+.stage-picture{font-size:30px;width:60px;height:60px;display:grid;place-items:center;background:white;border:1px solid #e1e8ee;border-radius:16px;margin-bottom:14px}
+.visual-path{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+.visual-path span{font-size:12px;padding:6px 10px;background:#fff;border:1px solid #dae5eb;border-radius:6px}
+.visual-path i{font-style:normal;color:#839bab}
+.home-intro{margin:8px 0 22px}.home-intro h2{font-size:28px;letter-spacing:-1px;margin:0 0 5px}
+.home-intro p{margin:0;color:#64788c}
+.home-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.home-metrics button{text-align:left;border:1px solid #dce6ec;background:#fff;padding:18px 22px;border-radius:12px}
+.home-metrics strong{display:block;font-size:29px;color:#087987;margin-top:5px}
+.home-metrics span{color:#61768a;font-size:13px}
+#entry-dialog,#trace-dialog{border:0;border-radius:16px;box-shadow:0 20px 90px #102d4040}
+#entry-dialog form{gap:18px}#entry-dialog label{font-size:13px;color:#53667a}
+#entry-dialog form button{grid-column:1/-1;margin-top:8px}#entry-help{color:#62788c;font-size:14px}
+@media(max-width:800px){main{display:block;padding:16px}nav{display:flex;padding:0;position:static}
+nav button{padding:8px}nav h2{display:none}.home-metrics{gap:8px}.home-metrics button{padding:12px}
+.home-intro h2{font-size:24px}.process-map article{padding:16px}.list-tools{width:100%}}
+
+#actions{display:flex;flex-wrap:nowrap;overflow-x:auto;border-bottom:1px solid #ccdce5;padding:4px 0 0;gap:5px}
+#actions button{flex-shrink:0;border-radius:8px 8px 0 0;border-bottom:3px solid transparent;padding:12px 17px}
+#actions button[aria-selected="true"]{background:white;color:#086b77;border-bottom-color:#087e8b;font-weight:700}
+.filter-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:end;padding:18px 0;background:#fff}
+.filter-bar label{font-size:12px;color:#587084;flex:1 1 145px;max-width:230px}
+.filter-bar label:first-child{flex-basis:230px}
+.filter-bar label[hidden]{display:none}
+.filter-bar select,.filter-bar input{font-size:13px;width:100%;background:#f8fafc}
+.pagination{display:flex;justify-content:flex-end;gap:14px;align-items:center;padding-top:16px;font-size:12px;color:#60798c}
+.scroll{max-height:65vh}th{position:sticky;top:0;z-index:1}
+@media(max-width:800px){.filter-bar label{max-width:none}.pagination{justify-content:center}}
+
+.quality-summary{margin:16px 0 0}
+.quality-summary>div{border:1px solid #dce6ec;background:#f7fafb;padding:14px;border-radius:10px}
+.quality-summary p{grid-column:1/-1;margin:0;color:#52677b;font-size:13px}
+
+/* Shared layout for document lists and entry forms. */
+.list-header{align-items:center;min-height:54px;gap:14px}
+.list-tools{margin-left:auto;justify-content:flex-end}
+.list-tools button,#entry-dialog form button{min-height:42px;padding:9px 16px;font-weight:650}
+.filter-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:12px;align-items:end;padding:16px;margin:16px 0;background:#f6f8fb;border:1px solid #e2e9ef;border-radius:10px}
+.filter-bar label,.filter-bar label:first-child{max-width:none;min-width:0}
+.filter-bar input,.filter-bar select{background:white}
+.filter-bar button{min-height:40px;background:white;color:#486274;border-color:#cdd8e2}
+.scroll{border:1px solid #e1e8ef;border-radius:9px}
+thead th{background:#eff4f8;border-bottom:1px solid #dbe5ed}
+tbody tr:nth-child(even){background:#fafcfd}
+tbody tr:hover{background:#eff7f8}
+tbody tr:last-child td{border-bottom:0}
+.number-cell{text-align:right;font-variant-numeric:tabular-nums}
+td button{min-height:30px}
+.pagination button{padding:5px 11px}
+#entry-dialog h2{padding-right:68px;letter-spacing:-.5px}
+#entry-dialog form{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
+#entry-dialog .wide-field{grid-column:1/-1}
+@media(max-width:540px){.list-tools{margin-left:0;justify-content:flex-start}
+.filter-bar{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px}
+.filter-bar label:first-child{grid-column:1/-1}
+#entry-dialog form{grid-template-columns:1fr}}
+</style>
+<header><h1>ShipYard 생산관리</h1></header>
+<main>
+<nav id="tabs" aria-label="생산관리 메뉴"></nav>
+<div id="workspace"><section id="context"><label for="hull-filter">조회 호선</label><select id="hull-filter"></select></section>
+<section id="work"><h2 id="heading"></h2><div class="actions" id="actions"></div><p id="step-help"></p><p id="status" role="status"></p><div id="next-actions" class="workflow"></div></section>
+<div id="records"></div></div>
+<dialog id="entry-dialog" aria-labelledby="entry-title"><button id="entry-close" type="button">닫기</button>
+<h2 id="entry-title"></h2><p id="entry-help"></p><form id="entry"></form><p id="entry-status" role="status"></p></dialog>
+<dialog id="trace-dialog" aria-labelledby="trace-title"><button id="trace-close" type="button">닫기</button><h2 id="trace-title"></h2><div id="trace-content"></div></dialog>
+</main>
+<script>
+const overview = '생산 현황';
+const groups = {
+  [overview]: [[], []],
+  '12주 계획': [['activities','forecast','plans'], ['activities','plans']],
+  '작업지시·실적': [['orders','results'], ['orders','production_results']],
+  '블록 이동': [['moves','confirm','telemetry'], ['blocks','moves','telemetry']],
+  '자재 소요계획 (MRP)': [['requirements','receipts'], ['mrp','requirements','receipts']],
+  '제약 일정 (APS)': [['operations'], ['aps','operations']],
+  '구매·입고': [['purchase_requests','purchase_orders','goods_receipts'],
+    ['purchase_requests','purchase_orders','goods_receipts']],
+  '자재 출고': [['issues'], ['issues','inventory_ledger','warehouse_stock']],
+  '기준정보': [['hulls','vessel_details','blocks','block_details','locations','centers','center_locations',
+    'equipment','materials','suppliers','warehouse_stock'],
+    ['hulls','vessel_details','blocks','block_details','locations','centers','center_locations','equipment',
+    'materials','suppliers','warehouse_stock']]
+};
+const names = {activities:'공정 등록',forecast:'예정일 갱신',plans:'12주 계획 발행',orders:'작업지시 등록',
+  results:'실적·검사 등록',moves:'이동 시작',confirm:'이동 확정',telemetry:'텔레메트리 입력',
+  hulls:'호선 등록',locations:'시설 등록',blocks:'블록 등록',equipment:'장비 등록'};
+const titles = {activities:'기준계획과 최신 예정',plans:'발행된 12주 계획',orders:'주간·일일 작업지시',
+  blocks:'블록과 마지막 확인 위치',moves:'블록 이동 이력',telemetry:'크레인 텔레메트리',
+  hulls:'호선',locations:'작업장·도크·안벽',equipment:'장비'};
+Object.assign(names,{center_locations:'작업장과 시설 연결',warehouse_stock:'기존 재고 창고 배정',suppliers:'공급업체 등록',purchase_requests:'구매요청 등록',purchase_orders:'발주 등록',
+  goods_receipts:'입고·검수 등록',issues:'작업지시 자재 출고',
+vessel_details:'호선 상세 저장',block_details:'블록 상세 저장',materials:'자재 등록',
+  receipts:'입고 예정 등록',requirements:'공정 소요 등록',centers:'작업장 능력 등록',operations:'제약 작업 등록'});
+Object.assign(titles,{production_results:'번호별 생산 실적·검사 이력',inventory_ledger:'창고 재고 수불부',center_locations:'워크센터별 생산 시설',warehouse_stock:'창고별 가용 재고',suppliers:'공급업체',purchase_requests:'공정 소요와 연결된 구매요청',
+  purchase_orders:'구매 발주와 미입고 잔량',goods_receipts:'입고·검수 이력',issues:'작업지시별 출고 이력',
+vessel_details:'호선 상세',block_details:'블록 상세',materials:'자재·현재고',
+  receipts:'입고 예정',requirements:'공정별 자재 소요',centers:'작업장 가용시간',operations:'공정별 제약',
+  mrp:'일자별 자재 소요 계산',aps:'제약을 적용한 일정 제안'});
+Object.assign(names,{hull_milestones:'주요 일정 등록',milestone_update:'일정 변경·실적',block_structure:'구성 블록 연결',
+  erection_links:'탑재 선후행 연결',erection_plans:'탑재 계획 등록',block_gate_checks:'준비 항목 확인'});
+Object.assign(titles,{hull_milestones:'호선 주요 일정',milestone_history:'주요 일정 변경 이력',block_structure:'블록 구성',
+  erection_links:'탑재 선후행',erection_plans:'블록 탑재 계획',block_readiness:'블록 준비 현황',block_gate_checks:'준비 확인 이력'});
+const labels = {first_inspection:'최초 판정',first_actual:'최초 검사 실제일',attempts:'기록된 검사 횟수',latest_result:'최근 실적 번호',id:'ID',name:'이름',kind:'유형',hull:'호선',location:'마지막 확인 위치',block:'블록',stage:'공정',
+  baseline:'기준일',forecast:'최신 예정일',actual:'실제일',reason:'지연 원인',actual_reason:'실적 지연 원인',inspection:'검사',start:'시작 월요일',
+  end_exclusive:'종료 경계일(제외)',issued_at:'발행 시각',snapshot:'발행 내역',activity:'공정 ID',cadence:'구분',
+  day:'작업 예정일',instruction:'작업 내용',parent:'상위 주간 지시',result:'실적 내용',equipment:'장비',
+  origin:'출발지',destination:'목적지',started_at:'이동 시작',confirmed_at:'이동 확정',move:'이동 작업 ID',
+  x:'X 좌표(m)',y:'Y 좌표(m)',load:'하중(t)',status:'장비 상태',recorded_at:'수신 시각',
+  active_move:'진행 중 이동 ID',position_status:'위치 상태',forecast_variance_days:'예정 차이(일)',actual_variance_days:'실적 차이(일)'};
+Object.assign(labels,{milestone:'주요 일정',milestone_id:'원천 일정',parent_block:'상위 블록',child_block:'구성 블록',
+ predecessor_block:'선행 블록',successor_block:'후행 블록',gate:'준비 항목',verdict:'확인 결과',
+ evidence:'확인 근거·문서 번호',erection_plan:'탑재 계획 번호',blockers:'미완료·미확인 항목',checks:'준비 근거',document_no:'계획 번호',plan_id:'발행 계획',movement:'수불 유형',source_document:'원천 문서',
+  qty_delta:'수불 수량',balance:'처리 후 잔량',source:'출발 창고',requirement:'자재 소요 ID',request:'구매요청',supplier:'공급업체',purchase_order:'발주',
+  promised_day:'납기 예정일',open_qty:'미입고량',work_order:'주간 작업지시',issued_qty:'누계 출고량',remaining_qty:'미출고 소요량',
+vessel_type:'선종',vessel_name:'선명',customer:'선주',length_m:'전장(m)',beam_m:'폭(m)',
+  delivery:'인도 예정일',zone:'구역',assembly:'조립 단계',weight_t:'중량(t)',drawing:'도면·리비전',unit:'단위',
+  stock:'현재고',lead_days:'조달기간(일)',material:'자재',qty:'수량',receipt_day:'입고 예정일',need_day:'소요일',
+  available:'소요 직전 가용량',shortage:'부족량',release_day:'발주 권고일',hours:'일 가용시간(h)',center:'작업장',
+  duration:'작업시간(h)',predecessor:'선행 공정',earliest:'최초 착수 가능일',scheduled_start:'제안 착수일',
+  scheduled_end:'제안 완료일',planning_status:'제약 상태'});
+const measures = ['length_m','beam_m','weight_t'];
+const integerFields = ['stock','lead_days','qty','hours','duration'];
+const positions = {confirmed:'확인',unknown:'미확인',in_transit:'이동 중'};
+const optional = new Set(['block','location','parent','reason','predecessor','plan_id']);
+const dateFields = new Set(['baseline','forecast','actual','start','day','delivery','receipt_day','need_day','earliest','promised_day']);
+const refs = {hull:'hulls',block:'blocks',location:'locations',destination:'locations',
+  activity:'activities',parent:'orders',equipment:'equipment',move:'moves',material:'materials',center:'centers',predecessor:'operations',requirement:'requirements',request:'purchase_requests',
+  supplier:'suppliers',purchase_order:'purchase_orders',work_order:'orders',source:'locations',plan_id:'plans',parent_block:'blocks',child_block:'blocks',
+ predecessor_block:'blocks',successor_block:'blocks'};
+const byId = id => document.getElementById(id);
+const add = (parent, tag, value) => {
+  const node = document.createElement(tag);
+  if (value != null) node.textContent = value;
+  parent.append(node);
+  return node;
+};
+async function api(route, data) {
+  const response = await fetch('/api/' + route, data && {
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)
+  });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error);
+  return payload;
+}
+function status(message, error = false) {
+  byId('status').textContent = message;
+  byId('status').dataset.error = error;
+}
+const traceKinds = new Set(['activities','requirements','mrp','orders','production_results','purchase_requests',
+  'purchase_orders','goods_receipts','issues','inventory_ledger','materials','blocks','moves','plans']);
+const workflowHelp = {
+  plans:'발행본에서 공정을 골라 해당 계획 번호가 연결된 작업지시를 만듭니다.',
+  requirements:'공정별 자재와 소요일을 등록합니다. MRP 부족 행에서 구매요청으로 이어집니다.',
+  purchase_requests:'자재 소요를 선택한 뒤 구매 수량을 등록합니다.',
+  purchase_orders:'미발주 구매요청과 공급업체를 선택해 납기일을 정합니다.',
+  goods_receipts:'발주·입고 창고·검사 결과를 기록합니다. 합격 수량이 창고 재고에 반영됩니다.',
+  orders:'주간 지시를 먼저 만들고, 필요한 경우 같은 주에 일일 지시를 연결합니다.',
+  issues:'주간 작업지시와 소요 자재를 선택해 창고에서 출고합니다.',
+  results:'작업지시별 실제일과 검사 결과를 저장합니다. 재검사마다 별도 실적 번호가 발행됩니다.'
+};
+const modules = {
+  '업무 홈': [overview],
+  '계획': ['호선·블록 계획','12주 계획','자재 소요계획 (MRP)','제약 일정 (APS)'],
+  '실행': ['구매·입고','자재 출고','작업지시·실적','블록 이동'],
+  '진척·품질': ['생산 진척','품질 검사'],
+  '관리': ['기준정보']
+};
+const views = {
+  '호선·블록 계획': [['hull_milestones','hull_milestones','호선 주요 일정'],
+    ['milestone_history',null,'일정 변경 이력'],['block_structure','block_structure','블록 구성'],
+    ['erection_links','erection_links','탑재 선후행'],['erection_plans','erection_plans','탑재 계획'],
+    ['block_readiness',null,'블록 준비 현황'],['block_gate_checks','block_gate_checks','준비 확인 이력']],
+  '생산 진척': [['progress',null,'공정별 계획·실적'],['readiness',null,'작업 착수 준비']],
+  '품질 검사': [['quality_orders','results','작업 검사'],['quality_receipts',null,'입고 검사']],
+  '12주 계획': [['activities','activities','공정 목록'],['plans','plans','계획 발행본']],
+  '자재 소요계획 (MRP)': [['mrp',null,'자재 부족'],['requirements','requirements','공정 자재 소요'],['receipts','receipts','수동 입고 예정']],
+  '제약 일정 (APS)': [['aps',null,'제안 일정'],['operations','operations','작업 제약']],
+  '구매·입고': [['purchase_requests','purchase_requests','구매요청'],['purchase_orders','purchase_orders','발주'],['goods_receipts','goods_receipts','입고·검수']],
+  '자재 출고': [['issues','issues','자재 출고'],['inventory_ledger',null,'수불부'],['warehouse_stock',null,'창고 재고']],
+  '작업지시·실적': [['orders','orders','작업지시'],['production_results','results','실적·검사']],
+  '블록 이동': [['blocks',null,'블록 위치'],['moves','moves','이동 이력'],['telemetry','telemetry','장비 관측']],
+  '기준정보': groups['기준정보'][0].map(kind => [kind,kind,titles[kind]])
+};
+function targetView(page, step) {
+  const target = {forecast:'activities', confirm:'moves',milestone_update:'hull_milestones'}[step];
+  return (views[page] || []).find(([route, action]) => action === step || route === target)?.[0];
+}
+const derivedRoutes = {progress:'activities',readiness:'orders',quality_orders:'orders',quality_receipts:'goods_receipts'};
+Object.assign(labels,{readiness:'착수 준비',missing_qty:'미출고 수량',center_location:'작업 시설',linked_plan:'계획 연결'});
+function viewRows(route) {
+  if (route === 'progress') return scoped('activities');
+  if (route === 'readiness') return scoped('orders').filter(row => row.cadence === '주간').map(row => {
+    const requirements = data.requirements.filter(req => req.activity === row.activity);
+    const missing = requirements.reduce((total,req) => total + Math.max(0,req.qty -
+      data.issues.filter(issue => issue.requirement === req.id).reduce((sum,issue) => sum + issue.qty,0)),0);
+    const operation = data.operations.find(item => item.activity === row.activity);
+    const facility = data.center_locations.find(item => item.center === operation?.center);
+    return {...row, center_location:facility?.location ?? '', missing_qty:missing,
+      linked_plan:row.plan_id ? '발행본 연결' : '계획 미연결',
+      readiness:row.inspection === '합격' ? '완료' : missing ? '자재 출고 필요' :
+        requirements.length ? '실적 등록 가능' : '자재 소요 확인 필요'};
+  });
+  if (route === 'quality_orders') {
+    const histories = new Map();
+    for (const result of scoped('production_results')) {
+      if (!histories.has(result.work_order)) histories.set(result.work_order, []);
+      histories.get(result.work_order).push(result);
+    }
+    return scoped('orders').map(order => {
+      const history = histories.get(order.id) || [];
+      const legacy = history.some(result => !result.recorded_at);
+      const first = [...history].sort((a,b) => (a.recorded_at || '').localeCompare(b.recorded_at || '') ||
+        a.id.localeCompare(b.id, 'en', {numeric:true}))[0];
+      return {id:order.id, activity:order.activity, actual:order.actual,
+        first_inspection:legacy ? '이전 이력 미확인' : first?.inspection,
+        first_actual:legacy ? null : first?.actual,
+        inspection:order.inspection, result:order.result,
+        attempts:history.length, latest_result:history.at(-1)?.id};
+    });
+  }
+  if (route === 'quality_receipts') return scoped('goods_receipts');
+  return scoped(route);
+}
+function rowState(route, row) {
+  if (route === 'block_readiness' || route === 'readiness') return row.readiness;
+  if (route === 'progress') return row.actual ? '완료' : row.forecast_variance_days > 0 ? '예정 지연' : '계획 진행';
+  if (route === 'quality_receipts') return row.inspection;
+  if (route === 'quality_orders') return row.inspection || '검사 대기';
+  if (route === 'mrp') return row.shortage ? '부족' : '충족';
+  if (route === 'purchase_requests') {
+    return data.purchase_orders.some(order => order.request === row.id) ? '발주 완료' : '발주 대기';
+  }
+  if (route === 'purchase_orders') {
+    if (!row.open_qty) return '입고 완료';
+    return row.open_qty === row.qty ? '입고 대기' : '부분 입고';
+  }
+  if (route === 'orders') return row.inspection === '합격' ? '완료' : row.inspection === '불합격' ? '재검사 필요' : '실적 대기';
+  if (route === 'moves') return row.confirmed_at ? '이동 확정' : '이동 중';
+  return '';
+}
+function follow(route, row) {
+  if (route === 'block_readiness') return ['호선·블록 계획','block_gate_checks',{block:row.id}];
+  if (route === 'hull_milestones') return ['호선·블록 계획','milestone_update',{id:row.id,forecast:row.forecast,actual:row.actual ?? '',reason:row.reason}];
+  if (route === 'quality_orders') return ['작업지시·실적','results',{id:row.id}];
+  route = derivedRoutes[route] || route;
+  const actions = {
+    moves: !row.confirmed_at && ['블록 이동','confirm',{id:row.id}],
+    activities: ['자재 소요계획 (MRP)','requirements',{activity:row.id}],
+    requirements: ['구매·입고','purchase_requests',{requirement:row.id}],
+    mrp: ['구매·입고','purchase_requests',{requirement:row.id,qty:row.shortage}],
+    purchase_requests: ['구매·입고','purchase_orders',{request:row.id}],
+    purchase_orders: ['구매·입고','goods_receipts',{purchase_order:row.id,qty:row.open_qty}],
+    orders: row.cadence === '주간' && !row.actual
+      ? ['자재 출고','issues',{work_order:row.id}] : ['작업지시·실적','results',{id:row.id}]
+  };
+  return actions[route];
+}
+function actionAllowed(route,row) {
+  route = derivedRoutes[route] || route;
+  return !((route === 'mrp' && !row.shortage) || (route === 'purchase_orders' && !row.open_qty) ||
+    (route === 'purchase_requests' && data.purchase_orders.some(order => order.request === row.id)) ||
+    (route === 'orders' && row.inspection === '합격') || (route === 'activities' && Boolean(row.actual)));
+}
+function table(parent, rows, route, actions = true) {
+  if (!rows.length) { add(parent,'p','등록된 데이터가 없습니다.'); return; }
+  const grid = add(add(parent,'div'),'table');
+  grid.parentNode.className = 'scroll';
+  const traceRoute = derivedRoutes[route] || route;
+  const showState = Boolean(rowState(route,rows[0]));
+  const columns = Object.keys(rows[0]).filter(key => !['snapshot','checks'].includes(key));
+  const header = add(add(grid,'thead'),'tr');
+  for (const key of columns) add(header,'th',key === 'day' && route === 'inventory_ledger' ? '수불일' :
+    key === 'location' && route === 'inventory_ledger' ? '창고' : labels[key] || key).scope = 'col';
+  if (showState) add(header,'th','처리 상태').scope = 'col';
+  const hasActions = actions && rows.some(row => follow(route,row));
+  if (hasActions) add(header,'th','다음 작업').scope = 'col';
+  const body = add(grid,'tbody');
+  for (const row of rows) {
+    const tr = add(body,'tr');
+    for (const key of columns) {
+      const value = key === 'position_status' ? positions[row[key]] : row[key];
+      const display = key === 'qty_delta' && value > 0 ? '+' + value : key === 'location' && route === 'inventory_ledger'
+        ? (data.locations.find(item => item.id === value)?.name ?? value) : key.endsWith('_at') && value ? new Date(value).toLocaleString('ko-KR') : value;
+      const cell = add(tr,'td');
+      if (typeof value === 'number' && !['id','plan_id'].includes(key)) cell.className = 'number-cell';
+      if (key === 'id' && traceKinds.has(traceRoute)) {
+        const link = add(cell,'button',route === 'plans' ? row.document_no : display);
+        link.className = 'trace-link';
+        link.onclick = () => showTrace(traceRoute,route === 'plans' ? data.plans.find(plan => plan.id === row.id) : row);
+      } else if (key === 'source_document' && route === 'inventory_ledger') {
+        const original = row.movement === '입고' ? 'goods_receipts' : row.movement === '출고' ? 'issues' : null;
+        const document = original && data[original].find(item => item.id === value);
+        if (document) {
+          const source = add(cell,'button',value);
+          source.className = 'trace-link';
+          source.onclick = () => showTrace(original,document);
+        } else cell.textContent = value ?? '';
+      } else if (key === 'plan_id' && value) {
+        cell.textContent = data.plans.find(plan => plan.id === value)?.document_no ?? value;
+      } else cell.textContent = display ?? '';
+    }
+    if (showState) {
+      const state = rowState(route,row);
+      const pill = add(add(tr,'td'),'span',state);
+      pill.className = 'pill';
+      pill.dataset.tone = /완료|충족|확정/.test(state) ? 'done' : 'warn';
+    }
+    const next = actions ? follow(route,row) : null;
+    const cell = hasActions ? add(tr,'td') : null;
+    if (cell && next) {
+      const button = add(cell,'button',route === 'quality_orders' && row.inspection === '불합격' ? '재검사 등록' : names[next[1]]);
+      button.onclick = () => openGroup(...next);
+      button.disabled = !actionAllowed(route,row);
+      if (['orders','readiness'].includes(route) && row.cadence === '주간' && !row.actual) {
+        add(cell,'button','실적 등록').onclick = () => openGroup('작업지시·실적','results',{id:row.id});
+      }
+    }
+  }
+}
+let meta, data, group = overview, action, view, hull = '', preset = {};
+const listPreferences = {};
+const lastViews = {};
+const entryDialog = byId('entry-dialog');
+byId('entry-close').onclick = () => entryDialog.close();
+async function refresh() {
+  data = Object.fromEntries(await Promise.all(Object.keys(titles).map(async route => [route, await api(route)])));
+}
+function selectOptions(key) {
+  const fixed = {milestone:meta.milestones,gate:meta.gates,verdict:['확인','보류','해당 없음'],stage:meta.stages,kind:['야드','작업장','도크','안벽','창고'],cadence:['주간','일일'],inspection:['합격','불합격']};
+  if (fixed[key]) return fixed[key].map(value => [value,value]);
+  let source = refs[key];
+  if (key === 'id') source = {forecast:'activities',results:'orders',confirm:'moves',milestone_update:'hull_milestones'}[action];
+  if (!source) return null;
+  let rows = ['locations','equipment','materials','centers','suppliers','plans'].includes(source) ? data[source] : scoped(source);
+  if (key === 'plan_id' && preset.activity) rows = rows.filter(plan => plan.snapshot.some(row => row.id === preset.activity));
+  if (key === 'requirement' && preset.work_order) {
+    const activity = data.orders.find(row => row.id === preset.work_order)?.activity;
+    rows = rows.filter(row => row.activity === activity);
+  }
+  if (key === 'source' || (key === 'location' && ['goods_receipts','warehouse_stock'].includes(action))) {
+    rows = rows.filter(row => row.kind === '창고');
+  }
+  if (key === 'location' && action === 'center_locations') rows = rows.filter(row => row.kind !== '창고');
+  if (key === 'work_order') rows = rows.filter(row => row.cadence === '주간' && !row.actual);
+  if (key === 'request') rows = rows.filter(row => !data.purchase_orders.some(order => order.request === row.id));
+  if (key === 'purchase_order') rows = rows.filter(row => row.open_qty > 0);
+  if (key === 'parent') rows = rows.filter(row => row.cadence === '주간' && !row.actual);
+  if (action === 'confirm') rows = rows.filter(row => !row.confirmed_at);
+  if (action === 'forecast' && key === 'id') rows = rows.filter(row => !row.actual);
+  if (action === 'results' && key === 'id') rows = rows.filter(row => !row.actual || row.inspection === '불합격');
+  return rows.map(row => [row.id ?? row.activity, [row.document_no ?? row.id ?? row.activity,row.name || row.stage || row.instruction].filter(Boolean).join(' · ')]);
+}
+function buttons(parent, keys, active, text, onClick) {
+  parent.replaceChildren();
+  for (const key of keys) {
+    const button = add(parent,'button',text(key));
+    button.setAttribute('aria-pressed',String(key === active));
+    button.onclick = () => onClick(key);
+  }
+}
+function scoped(route) {
+  const activities = new Set(data.activities.filter(row => row.hull === hull).map(row => row.id));
+  const blocks = new Set(data.blocks.filter(row => row.hull === hull).map(row => row.id));
+  const moves = new Set(data.moves.filter(row => blocks.has(row.block)).map(row => row.id));
+  const requirements = new Set(data.requirements.filter(row => activities.has(row.activity)).map(row => row.id));
+  const purchaseOrders = new Set(data.purchase_orders.filter(row => requirements.has(row.requirement)).map(row => row.id));
+  const predicates = {
+    purchase_requests: row => requirements.has(row.requirement),
+    purchase_orders: row => purchaseOrders.has(row.id),
+    goods_receipts: row => purchaseOrders.has(row.purchase_order),
+    issues: row => requirements.has(row.requirement),
+    production_results: row => data.orders.some(order => order.id === row.work_order && activities.has(order.activity)),
+    hulls: row => row.id === hull,
+    hull_milestones: row => row.hull === hull,
+    milestone_history: row => data.hull_milestones.some(item => item.id === row.milestone_id && item.hull === hull),
+    block_structure: row => blocks.has(row.parent_block),
+    erection_links: row => blocks.has(row.successor_block),
+    erection_plans: row => blocks.has(row.block),
+    block_gate_checks: row => blocks.has(row.block),
+    block_readiness: row => row.hull === hull,
+    activities: row => row.hull === hull,
+    vessel_details: row => row.hull === hull,
+    block_details: row => blocks.has(row.block),
+    mrp: row => activities.has(row.activity),
+    aps: row => activities.has(row.activity),
+    operations: row => activities.has(row.activity),
+    requirements: row => activities.has(row.activity),
+    blocks: row => row.hull === hull,
+    orders: row => activities.has(row.activity),
+    moves: row => moves.has(row.id),
+    telemetry: row => moves.has(row.move)
+  };
+  return hull && predicates[route] ? data[route].filter(predicates[route]) : data[route];
+}
+byId('trace-close').onclick = () => byId('trace-dialog').close();
+
+function showTrace(route, row) {
+  const dialog = byId('trace-dialog');
+  const content = byId('trace-content');
+  content.replaceChildren();
+  byId('trace-title').textContent = (row.document_no ?? row.id) + ' · 원천 문서 추적';
+  const summary = add(content,'section');
+  add(summary,'h3',titles[route] ?? '문서 상세');
+  const detail = {...row};
+  delete detail.snapshot;
+  table(summary,[detail],route,false);
+  const next = follow(route,row);
+  if (next && actionAllowed(route,row)) {
+    const button = add(summary,'button',names[next[1]]);
+    button.className = 'primary';
+    button.onclick = () => { dialog.close(); openGroup(...next); };
+  }
+  const purchase = route === 'purchase_orders' ? row :
+    data.purchase_orders.find(order => order.id === row.purchase_order);
+  const request = route === 'purchase_requests' ? row :
+    data.purchase_requests.find(item => item.id === purchase?.request);
+  const requirementId = ['requirements','mrp'].includes(route) ? row.id :
+    row.requirement ?? request?.requirement;
+  const requirement = data.requirements.find(item => item.id === requirementId);
+  const orderId = route === 'orders' ? row.id : row.work_order;
+  const order = data.orders.find(item => item.id === orderId);
+  const activityIds = new Set();
+  const material = route === 'materials' ? row.id : route === 'inventory_ledger' ? row.material : null;
+  const block = route === 'blocks' ? row.id : route === 'moves' ? row.block : null;
+  const activity = route === 'activities' ? row.id : row.activity ?? requirement?.activity ?? order?.activity;
+  if (activity) activityIds.add(activity);
+  if (route === 'plans') for (const item of row.snapshot) activityIds.add(item.id);
+  if (block) for (const item of data.activities.filter(item => item.block === block)) activityIds.add(item.id);
+  const reqs = data.requirements.filter(item => material ? item.material === material : activityIds.has(item.activity));
+  if (material) for (const item of reqs) activityIds.add(item.activity);
+  const reqIds = new Set(reqs.map(item => item.id));
+  const orders = data.orders.filter(item => activityIds.has(item.activity) &&
+    (route !== 'plans' || item.plan_id === row.id));
+  const orderIds = new Set(orders.map(item => item.id));
+  const plans = route === 'plans' ? [row] : data.plans.filter(plan => plan.snapshot.some(item => activityIds.has(item.id)));
+  const requests = data.purchase_requests.filter(item => reqIds.has(item.requirement));
+  const requestIds = new Set(requests.map(item => item.id));
+  const purchases = data.purchase_orders.filter(item => requestIds.has(item.request));
+  const purchaseIds = new Set(purchases.map(item => item.id));
+  const receipts = data.goods_receipts.filter(item => purchaseIds.has(item.purchase_order));
+  const issues = data.issues.filter(item => reqIds.has(item.requirement));
+  const transactionIds = new Set([...receipts,...issues].map(item => item.id));
+  const blocks = new Set(data.activities.filter(item => activityIds.has(item.id)).map(item => item.block));
+  if (block) blocks.add(block);
+  const chain = [
+    ['plans',plans.map(({id,document_no,start,end_exclusive}) => ({id,document_no,start,end_exclusive}))],
+    ['activities',data.activities.filter(item => activityIds.has(item.id))],
+    ['requirements',reqs], ['purchase_requests',requests], ['purchase_orders',purchases],
+    ['goods_receipts',receipts], ['orders',orders], ['issues',issues],
+    ['production_results',data.production_results.filter(item => orderIds.has(item.work_order))],
+    ['inventory_ledger',data.inventory_ledger.filter(item => material ? item.material === material : transactionIds.has(item.source_document))],
+    ['moves',data.moves.filter(item => blocks.has(item.block))]
+  ];
+  for (const [kind, rows] of chain) {
+    if (!rows.length) continue;
+    const section = add(content,'section');
+    add(section,'h3',titles[kind]);
+    table(section,rows,kind, false);
+  }
+  if (content.childElementCount === 1) add(content,'p','연결된 원천 문서가 없습니다.');
+  if (!dialog.open) dialog.showModal();
+  dialog.scrollTop = 0;
+}
+
+function openGroup(key, nextAction, initial = {}) {
+  group = key;
+  view = nextAction ? targetView(key,nextAction) : lastViews[key] || views[key]?.[0][0];
+  render();
+  if (nextAction && Object.keys(initial).length) openEntry(nextAction,initial);
+}
+function renderOverview(records) {
+  const intro = add(records,'div');
+  intro.className = 'home-intro';
+  add(intro,'h2','생산을 준비하고, 현장으로 연결하세요');
+  add(intro,'p','처리 대기 문서를 선택하면 필요한 정보가 채워진 다음 작업이 열립니다.');
+  const metrics = add(records,'div');
+  metrics.className = 'home-metrics';
+  for (const [label,count,page,step] of [
+    ['자재 부족',scoped('mrp').filter(row => row.shortage > 0).length,'자재 소요계획 (MRP)'],
+    ['미입고 발주',scoped('purchase_orders').filter(row => row.open_qty > 0).length,'구매·입고','purchase_orders'],
+    ['미완료 작업',scoped('orders').filter(row => row.inspection !== '합격').length,'작업지시·실적','orders']
+  ]) {
+    const card = add(metrics,'button');
+    add(card,'span',label);
+    add(card,'strong',count + '건');
+    card.onclick = () => openGroup(page,step);
+  }
+  const queue = add(records,'section');
+  add(queue,'h2','처리할 업무');
+  const list = add(queue,'ul');
+  list.className = 'queue';
+  const currentOrders = scoped('orders');
+  const pending = [
+    ...scoped('mrp').filter(row => row.shortage &&
+      !data.purchase_requests.some(req => req.requirement === row.id &&
+        !data.purchase_orders.some(order => order.request === req.id))).map(row =>
+      [row.id + ' · ' + row.material, row.shortage + ' 부족 · ' + row.need_day + ' 소요', follow('mrp',row)]),
+    ...scoped('purchase_requests').filter(row => rowState('purchase_requests',row) === '발주 대기').map(row =>
+      [row.id,'구매요청 · 발주 대기',follow('purchase_requests',row)]),
+    ...scoped('purchase_orders').filter(row => row.open_qty > 0).map(row =>
+      [row.id,row.open_qty + ' 미입고 · 납기 ' + row.promised_day,follow('purchase_orders',row)]),
+    ...currentOrders.filter(row => row.inspection === '불합격').map(row =>
+      [row.id,'검사 불합격 · 재검사 필요',['작업지시·실적','results',{id:row.id}]]),
+    ...scoped('moves').filter(row => !row.confirmed_at).map(row =>
+      [row.id,row.block + ' · 이동 확정 대기',follow('moves',row)])
+  ];
+  for (const [title,hint,next] of pending) {
+    const item = add(list,'li');
+    const label = add(item,'div');
+    add(label,'strong',title);
+    add(label,'span',hint);
+    add(item,'button',names[next[1]]).onclick = () => openGroup(...next);
+  }
+  if (!pending.length) add(queue,'p','선택한 호선에 처리할 항목이 없습니다.');
+  const process = add(records,'section');
+  add(process,'h2','생산·자재 업무 흐름');
+  const map = add(process,'div');
+  map.className = 'process-map';
+  for (const [label,detail,links] of [
+    ['생산 준비','발행 계획의 공정에서 주간 작업지시를 만들고 일일 지시를 연결합니다.',
+      [['계획 발행본','12주 계획','plans'],['작업지시','작업지시·실적','orders']]],
+    ['자재 준비','부족분은 구매요청 → 발주 → 입고·검수로 이어집니다. 기존 가용 재고도 출고에 사용할 수 있습니다.',
+      [['MRP 부족','자재 소요계획 (MRP)'],['구매·입고','구매·입고']]],
+    ['현장 실행과 실적','작업지시와 가용 재고가 준비되면 출고합니다. 공정 필수 자재를 출고한 뒤 합격 실적을 등록합니다.',
+      [['자재 출고','자재 출고'],['실적·검사','작업지시·실적','results']]]
+  ]) {
+    const lane = add(map,'article');
+    if (label === '현장 실행과 실적') lane.className = 'join';
+    const icons = {'생산 준비':'📐','자재 준비':'📦','현장 실행과 실적':'🏗️'};
+    const icon = add(lane,'div',icons[label]);
+    icon.className = 'stage-picture';
+    icon.setAttribute('aria-hidden','true');
+    add(lane,'h3',label);
+    const path = add(lane,'div');
+    path.className = 'visual-path';
+    const stages = label === '생산 준비' ? ['공정 계획','12주 발행','작업지시'] :
+      label === '자재 준비' ? ['소요 계산','구매·발주','검수·입고'] : ['작업지시 + 가용 재고','현장 출고','실적·검사'];
+    stages.forEach((name,index) => {
+      if (index) add(path,'i','→').setAttribute('aria-hidden','true');
+      add(path,'span',name);
+    });
+    add(lane,'p',detail);
+    const linksBox = add(lane,'div');
+    linksBox.className = 'workflow';
+    for (const [text,page,step] of links) add(linksBox,'button',text).onclick = () => openGroup(page,step);
+  }
+}
+function renderLedger(section, rows) {
+  const toolbar = add(section,'div');
+  toolbar.className = 'actions';
+  const filter = (caption, items) => {
+    const field = add(add(toolbar,'label',caption),'select');
+    add(field,'option','전체').value = '';
+    for (const item of items) add(field,'option',item.id + ' · ' + item.name).value = item.id;
+    return field;
+  };
+  const material = filter('자재',data.materials);
+  const warehouse = filter('창고',data.locations.filter(item => item.kind === '창고'));
+  const result = add(section,'div');
+  const update = () => {
+    result.replaceChildren();
+    table(result,rows.filter(row => (!material.value || row.material === material.value) &&
+      (!warehouse.value || row.location === warehouse.value)), 'inventory_ledger');
+  };
+  material.onchange = warehouse.onchange = update;
+  update();
+}
+function openEntry(step, initial = {}) {
+  action = step;
+  preset = initial;
+  byId('entry-title').textContent = names[step];
+  byId('entry-help').textContent = workflowHelp[step] ?? '';
+  byId('entry-help').hidden = !workflowHelp[step];
+  byId('entry-status').textContent = '';
+  const form = byId('entry');
+  form.replaceChildren();
+  for (const key of meta.fields[action]) {
+    if (key === 'id' && meta.numbered.includes(action)) continue;
+    const required = !(key === 'actual' && action === 'milestone_update') && ((key === 'location' && action !== 'blocks') || !optional.has(key) || (key === 'block' && ['moves','block_details','erection_plans','block_gate_checks'].includes(action)));
+    const fieldLabel = key === 'location' && action !== 'blocks' ? (action === 'center_locations' ? '생산 시설' : '창고') : key === 'day' ? ({goods_receipts:'실제 입고일',issues:'실제 출고일'}[action] || labels[key]) : labels[key];
+    const label = add(form,'label',fieldLabel + (required ? ' *' : ''));
+    if (['instruction','reason','result','evidence'].includes(key)) label.className = 'wide-field';
+    const options = selectOptions(key);
+    const field = add(label, options ? 'select' : 'input');
+    field.name = key;
+    if (['vessel_details','block_details'].includes(action) && key === meta.fields[action][0]) {
+      field.onchange = () => {
+        const existing = data[action].find(row => row[key] === field.value);
+        for (const name of meta.fields[action].slice(1)) form.elements[name].value = existing?.[name] ?? '';
+      };
+    }
+    field.required = required;
+    if (options) {
+      add(field,'option','선택').value = '';
+      for (const [value, text] of options) add(field,'option',text).value = value;
+    } else {
+      field.type = dateFields.has(key) ? 'date' : ['x','y','load',...measures,...integerFields].includes(key) ? 'number' : 'text';
+      field.maxLength = 1000;
+      if (field.type === 'number') field.step = integerFields.includes(key) ? '1' : 'any';
+      if (integerFields.includes(key)) field.min = ['stock','lead_days'].includes(key) ? 0 : 1;
+      if (measures.includes(key)) { field.min = 0.001; field.step = '0.001'; }
+      if (key === 'load') field.min = 0;
+    }
+    if (preset[key] != null) field.value = preset[key];
+    if (action === 'issues' && key === 'work_order') {
+      field.onchange = () => {
+        const selected = data.orders.find(order => order.id === field.value);
+        const requirements = form.elements.requirement;
+        requirements.replaceChildren();
+        add(requirements,'option','선택').value = '';
+        for (const req of scoped('requirements').filter(req => req.activity === selected?.activity)) {
+          add(requirements,'option',req.id + ' · ' + req.material).value = req.id;
+        }
+      };
+    }
+  }
+  const submit = add(form,'button',names[action]);
+  submit.type = 'submit';
+  form.onsubmit = async event => {
+    event.preventDefault();
+    submit.disabled = true;
+    let saved;
+    try {
+      saved = await api(action,Object.fromEntries(new FormData(form)));
+    } catch (error) {
+      byId('entry-status').textContent = error.message;
+      byId('entry-status').dataset.error = 'true';
+      submit.disabled = false;
+      return;
+    }
+    try {
+      await refresh();
+      entryDialog.close();
+      preset = {};
+      render(saved.id ? `${saved.id} 저장 완료` : '저장했습니다.');
+      const next = follow(action,data[action]?.find(row => row.id === saved.id) || {});
+      if (next && next[2] && Object.values(next[2]).every(value => value != null)) {
+        const button = add(byId('next-actions'),'button',names[next[1]]);
+        button.onclick = () => openGroup(...next);
+      }
+    } catch (error) {
+      entryDialog.close();
+      status('저장했습니다. 목록을 새로 고치려면 페이지를 다시 불러오세요.',true);
+    }
+  };
+  entryDialog.showModal();
+}
+function render(message = '') {
+  const nav = byId('tabs');
+  nav.replaceChildren();
+  for (const [label,pages] of Object.entries(modules)) {
+    add(nav,'h2',label);
+    for (const page of pages) {
+      const button = add(nav,'button', page === overview ? '처리할 업무' : page);
+      button.setAttribute('aria-pressed',String(group === page));
+      button.onclick = () => openGroup(page);
+    }
+  }
+  const filter = byId('hull-filter');
+  filter.replaceChildren();
+  add(filter,'option','전체 호선').value = '';
+  for (const row of data.hulls) add(filter,'option',row.id + ' · ' + row.name).value = row.id;
+  filter.value = hull;
+  filter.onchange = () => { hull = filter.value; render(); filter.focus(); };
+  byId('work').hidden = group === overview;
+  const records = byId('records');
+  records.replaceChildren();
+  if (group === overview) {
+    renderOverview(records);
+    return;
+  }
+  const choices = views[group];
+  const selected = choices.find(([route]) => route === view) || choices[0];
+  const [route,step,heading] = selected;
+  byId('heading').textContent = group;
+  byId('step-help').hidden = true;
+  byId('next-actions').replaceChildren();
+  buttons(byId('actions'),choices.map(item => item[0]),route,
+          key => choices.find(item => item[0] === key)[2],key => { view = key; lastViews[group] = key; render(); });
+  byId('actions').setAttribute('role','tablist');
+  byId('actions').setAttribute('aria-label',group + ' 조회 탭');
+  [...byId('actions').children].forEach((button,index,buttons) => {
+    const selected = choices[index][0] === route;
+    button.setAttribute('role','tab');
+    button.setAttribute('aria-selected',String(selected));
+    button.tabIndex = selected ? 0 : -1;
+    button.onkeydown = event => {
+      const offset = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+      if (!offset) return;
+      event.preventDefault();
+      const next = (index + offset + buttons.length) % buttons.length;
+      view = choices[next][0]; lastViews[group] = view; render();
+      byId('actions').children[next].focus();
+    };
+  });
+  const section = add(records,'section');
+  const header = add(section,'div');
+  header.className = 'list-header';
+  const title = add(header,'h3',heading);
+  const tools = add(header,'div');
+  tools.className = 'list-tools';
+  if (step) {
+    const create = add(tools,'button',names[step]);
+    create.className = 'primary';
+    create.onclick = () => openEntry(step);
+  }
+  if (route === 'activities') add(tools,'button',names.forecast).onclick = () => openEntry('forecast');
+  const rows = viewRows(route);
+  let qualitySummary;
+  if (route === 'quality_orders') {
+    qualitySummary = add(section,'div');
+    qualitySummary.className = 'home-metrics quality-summary';
+  }
+  const queryKey = group + '/' + route;
+  const saved = listPreferences[queryKey] || {};
+  const filters = add(section,'div');
+  filters.className = 'filter-bar';
+  const search = add(add(filters,'label','검색'),'input');
+  search.type = 'search'; search.placeholder = '문서번호 · 품목명 · 공정'; search.value = saved.search || '';
+  const select = (label,options,value) => {
+    const field = add(add(filters,'label',label),'select');
+    for (const [key,text] of options) add(field,'option',text).value = key;
+    field.value = value;
+    return field;
+  };
+  const states = [...new Set(rows.map(row => rowState(route,row)).filter(Boolean))];
+  const state = select('처리 상태',[['','전체 상태'],...states.map(value => [value,value])],saved.state || '');
+  state.parentElement.hidden = !states.length;
+  const material = select('자재',[['','전체 자재'],...data.materials.map(row => [row.id,row.id + ' · ' + row.name])],saved.material || '');
+  material.parentElement.hidden = !rows.some(row => 'material' in row);
+  const location = select('창고·시설',[['','전체 위치'],...data.locations.map(row => [row.id,row.name])],saved.location || '');
+  location.parentElement.hidden = !rows.some(row => 'location' in row || 'source' in row);
+  const dateKeys = ['first_actual','day','need_day','promised_day','actual','forecast','start','recorded_at','issued_at'];
+  const dateKey = route === 'quality_orders' ? 'first_actual' : dateKeys.find(key => rows.some(row => row[key]));
+  const from = add(add(filters,'label',dateKey ? (labels[dateKey] || dateKey) + ' 시작' : '시작일'),'input');
+  const until = add(add(filters,'label','종료일'),'input');
+  from.type = until.type = 'date'; from.value = saved.from || ''; until.value = saved.until || '';
+  from.parentElement.hidden = until.parentElement.hidden = !dateKey;
+  const columns = rows.length ? Object.keys(rows[0]).filter(key => key !== 'snapshot') : ['id'];
+  const sort = select('정렬 기준',columns.map(key => [key,labels[key] || key]),saved.sort || columns[0]);
+  const direction = select('정렬 방향',[['asc','오름차순'],['desc','내림차순']],saved.direction || 'asc');
+  const reset = add(filters,'button','조건 초기화');
+  const body = add(section,'div');
+  const pagination = add(section,'div'); pagination.className = 'pagination';
+  let page = 0;
+  const pageSize = 20;
+  const update = () => {
+    body.replaceChildren(); pagination.replaceChildren();
+    const query = {search:search.value,state:state.value,material:material.value,location:location.value,
+      from:from.value,until:until.value,sort:sort.value,direction:direction.value};
+    listPreferences[queryKey] = query;
+    if (from.value && until.value && from.value > until.value) {
+      add(body,'p','시작일은 종료일 이전으로 선택하세요.'); return;
+    }
+    const term = search.value.trim().toLowerCase();
+    const hits = rows.filter(row => {
+      const names = [data.materials.find(item => item.id === row.material)?.name,
+        data.activities.find(item => item.id === row.activity)?.stage];
+      const searchable = [...Object.values(row),...names].map(value => typeof value === 'object' ? JSON.stringify(value) : String(value ?? '')).join(' ').toLowerCase();
+      const day = String(row[dateKey] || '').slice(0,10);
+      return (!term || searchable.includes(term)) && (!state.value || rowState(route,row) === state.value) &&
+        (material.parentElement.hidden || !material.value || row.material === material.value) &&
+        (location.parentElement.hidden || !location.value || row.location === location.value || row.source === location.value) &&
+        (!dateKey || ((!from.value || day >= from.value) && (!until.value || (day && day <= until.value))));
+    });
+    hits.sort((a,b) => {
+      const left = a[sort.value], right = b[sort.value];
+      const order = typeof left === 'number' && typeof right === 'number' ? left-right :
+        String(left ?? '').localeCompare(String(right ?? ''),'ko',{numeric:true});
+      return direction.value === 'desc' ? -order : order;
+    });
+    if (qualitySummary) {
+      qualitySummary.replaceChildren();
+      const inspected = hits.filter(row => ['합격','불합격'].includes(row.first_inspection));
+      const failed = inspected.filter(row => row.first_inspection === '불합격').length;
+      const pending = hits.filter(row => row.inspection === '불합격').length;
+      for (const [label,value] of [['최초 불합격률',inspected.length ? (100*failed/inspected.length).toFixed(1)+'%' : '집계 없음'],
+        ['최초 검사 불합격 / 확인 건수',failed+' / '+inspected.length+'건'],['현재 재검사 필요',pending+'건']]) {
+        const card = add(qualitySummary,'div');
+        add(card,'span',label);
+        add(card,'strong',value);
+      }
+      add(qualitySummary,'p','조회 조건에 해당하는 작업지시 기준입니다. 최초 검사 이력이 확인된 지시만 불합격률에 포함합니다.');
+    }
+    title.textContent = heading + ' (' + hits.length + '건)';
+    const pages = Math.max(1,Math.ceil(hits.length/pageSize));
+    page = Math.min(page,pages-1);
+    if (!hits.length) add(body,'p','조건에 맞는 문서가 없습니다. 검색 조건을 초기화하거나 새 문서를 등록하세요.');
+    else renderList(body,route,hits.slice(page*pageSize,(page+1)*pageSize));
+    const previous = add(pagination,'button','이전'); previous.disabled = page === 0;
+    previous.onclick = () => { page--; update(); };
+    add(pagination,'span',(page+1) + ' / ' + pages + ' 페이지 · 페이지당 20건');
+    const next = add(pagination,'button','다음'); next.disabled = page+1 >= pages;
+    next.onclick = () => { page++; update(); };
+  };
+  const apply = () => { page = 0; update(); };
+  search.oninput = apply;
+  for (const field of [state,material,location,from,until,sort,direction]) field.onchange = apply;
+  reset.onclick = () => {
+    search.value = state.value = material.value = location.value = from.value = until.value = '';
+    sort.value = columns[0]; direction.value = 'asc'; apply();
+  };
+  update();
+  status(message);
+}
+
+function renderList(section, route, items) {
+    if (route === 'block_readiness') {
+      for (const block of items) {
+        const details = add(section,'details');
+        add(details,'summary',block.id + ' · ' + block.readiness + (block.forecast ? ' · 탑재 예정 ' + block.forecast : ''));
+        add(details,'p',block.blockers || '등록된 준비 조건을 모두 확인했습니다.');
+        table(details,block.checks);
+        add(details,'button','준비 항목 확인').onclick = () => openEntry('block_gate_checks',{block:block.id});
+      }
+    } else if (route === 'plans' && items.length) {
+      for (const plan of items) {
+        const details = add(section,'details');
+        add(details,'summary',`${plan.document_no} · ${plan.start}부터 ${plan.end_exclusive} 전까지 · ${new Date(plan.issued_at).toLocaleString('ko-KR')}`);
+        const trace = add(details,'button','계획 문서 추적');
+        trace.onclick = () => showTrace('plans',plan);
+        const rows = hull ? plan.snapshot.filter(row => row.hull === hull) : plan.snapshot;
+        table(details, rows, 'activities', false);
+        for (const row of rows.filter(row => !data.activities.find(activity => activity.id === row.id)?.actual)) {
+          const create = add(details,'button',row.id + ' 작업지시');
+          create.className = 'record-action';
+          create.onclick = () => {
+            const date = new Date((row.forecast < plan.end_exclusive && row.forecast >= plan.start ? row.forecast : row.baseline) + 'T00:00:00Z');
+            date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7);
+            openGroup('작업지시·실적','orders',{activity:row.id,plan_id:plan.id,cadence:'주간',day:date.toISOString().slice(0,10)});
+          };
+        }
+      }
+    } else table(section,items,route);
+}
+
+Promise.all([api('meta'),refresh()]).then(([metadata]) => { meta = metadata; render(); })
+  .catch(error => { byId('work').hidden = false; status(error.message,true); });
+</script>
+</html>
