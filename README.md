@@ -2,7 +2,7 @@
 
 **디지털 트윈 연동을 위한 조선소 생산관리 ERP (MVP)**
 
-호선·블록 계획부터 자재 구매, 작업 실적, 블록 이동까지 조선 생산 데이터를 한곳에서 관리하고, 그 결과를 Unity 등 디지털 트윈이 바로 읽을 수 있는 JSON API로 제공합니다.
+호선·블록 계획부터 자재 구매, 작업 실적, 블록 이동까지 조선 생산 데이터를 한곳에서 관리하고, 그 결과를 Unity 등 디지털 트윈이 바로 읽을 수 있는 JSON API로 제공합니다. (Python · PostgreSQL 17)
 트윈은 ERP가 확정한 **블록 위치·이동 상태**를 기준으로, 크레인 **텔레메트리(X/Y·하중)**를 시간순으로 재생합니다.
 
 ![ShipYard-ERP 데모](docs/demo.gif)
@@ -35,24 +35,20 @@ GET /api/telemetry  → move, recorded_at, x, y (m), load (t)
 
 ## 실행 방법
 
-Python 3.9 이상이 필요합니다.
-
-**SQLite로 빠르게 실행**
-
-```sh
-python3 -B app.py --db local.sqlite3     # http://127.0.0.1:8001
-```
-
-**PostgreSQL(Docker)로 실행**
+Python 3.9 이상과 Docker가 필요합니다. 데이터베이스는 **PostgreSQL 17**(Docker Compose, `127.0.0.1:55432`)을 사용합니다.
 
 ```sh
 cp .env.example .env                      # SHIPYARD_DB_PASSWORD 값 변경
-docker compose up -d
+docker compose up -d                      # PostgreSQL 17 실행
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-./shipyard-postgres app.py                # 기본 데이터로 서버 실행
+./shipyard-postgres app.py                # 서버 실행 → http://127.0.0.1:8001
 ./shipyard-postgres seed_sn2036.py        # SN2036 실습 데이터
 ./shipyard-postgres seed_twin.py          # 디지털 트윈용 SN2037~2039 데이터
 ```
+
+`shipyard-postgres`는 `.env`의 비밀번호로 `SHIPYARD_DATABASE_URL`을 구성한 뒤 Python을 실행하는 스크립트입니다. 기존 SQLite 예시 DB를 옮길 때는 `migrate_sqlite.py`를 사용합니다.
+
+> Docker 없이 화면만 확인하려면 SQLite 파일로도 실행할 수 있습니다: `python3 -B app.py --db local.sqlite3`
 
 **테스트**
 
@@ -69,7 +65,8 @@ shipbuilding.py   호선 일정, 블록 구성·선후행, 탑재 준비 판정
 planning.py       MRP · APS
 procurement.py    구매·입고·출고
 traceability.py   문서 번호와 원천 문서 추적
-storage.py        PostgreSQL / SQLite 어댑터
+storage.py        PostgreSQL 어댑터 (로컬 SQLite 겸용)
+compose.yaml      PostgreSQL 17 컨테이너
 seed_*.py         가상 데이터
 ```
 
