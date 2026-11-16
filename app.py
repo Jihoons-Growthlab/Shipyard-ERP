@@ -9,12 +9,18 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import governance
+import lots
 import planning
 import procurement
+import production
+import quality
+import resources
 import storage
 import traceability
 import shipbuilding
 import sys
+from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parent
 DATABASE = ROOT / 'shipyard.sqlite3'
@@ -62,6 +68,24 @@ FIELDS.update(planning.FIELDS)
 FIELDS.update(procurement.FIELDS)
 SCHEMA += shipbuilding.SCHEMA + planning.SCHEMA + procurement.SCHEMA + traceability.SCHEMA
 READS = shipbuilding.READS | {'inventory_ledger', 'production_results'} | set(procurement.FIELDS) | set(planning.FIELDS) | {'mrp', 'aps'} | {'hulls', 'locations', 'blocks', 'equipment', 'activities', 'plans', 'orders', 'moves', 'telemetry'}
+# Shipyard extensions: assembly stages/man-hours, crane & dock constraints, steel lots, ITP/NCR/punch, roles & audit.
+EXTENSIONS = (production, resources, lots, quality, governance)
+OPTIONAL = {'block', 'location', 'parent', 'reason', 'predecessor', 'plan_id'}
+ACTION_OPTIONAL = {}
+DATE_KEYS = {'baseline', 'forecast', 'start', 'day', 'actual', 'delivery', 'receipt_day', 'need_day', 'earliest',
+             'promised_day'}
+CHOICES = {}
+for module in EXTENSIONS:
+    SCHEMA += module.SCHEMA
+    FIELDS.update(module.FIELDS)
+    traceability.PREFIXES.update(module.PREFIXES)
+    READS |= module.READS
+    ACTION_OPTIONAL.update(module.OPTIONAL)
+    DATE_KEYS |= module.DATES
+    planning.NUMBERS.update(module.NUMBERS)
+    planning.MEASURES.update(getattr(module, 'MEASURES', set()))
+    CHOICES.update(module.CHOICES)
+shipbuilding.EXTRA_BLOCKERS[:] = [production.blockers, resources.blockers, quality.blockers]
 
 
 def connect():
@@ -101,7 +125,7 @@ def insert(db, table, **values):
     if table in {'plans', 'telemetry'} and 'id' not in values:
         return db.execute(query + ' RETURNING id', tuple(values.values())).fetchone()['id']
     db.execute(query, tuple(values.values()))
-    key = {'operations': 'activity', 'center_locations': 'center'}.get(table, 'id')
+    key = {'operations': 'activity', 'center_locations': 'center', 'holidays': 'holiday'}.get(table, 'id')
     return values.get(key)
 
 
@@ -116,6 +140,11 @@ def activity_view(row):
 def read(db, table):
     if table == "block_readiness":
         return shipbuilding.readiness(db)
+    for module in EXTENSIONS:
+        if table in module.READS:
+            rows = module.read(db, table)
+            if rows is not None:
+                return rows
     queries = {
         'orders': 'SELECT o.*, p.plan_id FROM orders o LEFT JOIN order_plans p ON p.work_order=o.id ORDER BY o.id',
         'goods_receipts': 'SELECT g.*, l.location FROM goods_receipts g LEFT JOIN receipt_locations l ON l.receipt=g.id ORDER BY g.id',
@@ -150,7 +179,7 @@ def read(db, table):
 def write(db, action, data):
     fields = FIELDS[action]
     require(isinstance(data, dict) and not (data.keys() - set(fields)), '지원하지 않는 입력 항목입니다.')
-    optional = {'block', 'location', 'parent', 'reason', 'predecessor', 'plan_id'}
+    optional = OPTIONAL | ACTION_OPTIONAL.get(action, set())
     values = {}
     for key in fields:
         value = data.get(key)
@@ -170,12 +199,21 @@ def write(db, action, data):
             value = (value or '').strip()
             require(len(value) <= 1000 and '\x00' not in value, f'{key} 입력이 유효하지 않습니다.')
             require(value or key in optional, f'{key} 값을 입력하세요.')
-            if key in {'baseline', 'forecast', 'start', 'day', 'actual', 'delivery', 'receipt_day', 'need_day', 'earliest', 'promised_day'}:
+            if key in DATE_KEYS and value:
                 day(value)
             if not value and key != 'reason':
                 value = None
         values[key] = value
     v = values
+    if action == 'milestone_update' and v['actual']:
+        milestone = lookup(db, 'hull_milestones', v['id'])
+        if milestone['actual'] != v['actual']:
+            production.milestone_gate(db, milestone['hull'], milestone['milestone'], require)
+            quality.milestone_gate(db, milestone['hull'], milestone['milestone'], require)
+    for module in EXTENSIONS:
+        if action in module.FIELDS:
+            planning.validate(db, action, v)
+            return module.write(db, action, v, sys.modules[__name__])
     if action in shipbuilding.FIELDS:
         return shipbuilding.write(db, action, v, sys.modules[__name__])
     if action in procurement.FIELDS:
@@ -296,6 +334,7 @@ def write(db, action, data):
     if action == 'moves':
         block = lookup(db, 'blocks', v['block'])
         require(block['location'] != v['destination'], '출발지와 목적지가 같을 수 없습니다.')
+        resources.check_move(db, v['block'], v['equipment'], require)
         v.update(origin=block['location'], started_at=now())
     if action == 'confirm':
         move = lookup(db, 'moves', v['id'])
@@ -371,7 +410,11 @@ class Handler(BaseHTTPRequestHandler):
             return
         table = path[5:]
         if table == 'meta':
-            self.send(200, {'fields': FIELDS, 'stages': STAGES, 'numbered': list(traceability.PREFIXES), 'gates': shipbuilding.GATES, 'milestones': shipbuilding.MILESTONES})
+            self.send(200, {'fields': FIELDS, 'stages': STAGES, 'numbered': list(traceability.PREFIXES),
+                            'gates': shipbuilding.GATES, 'milestones': shipbuilding.MILESTONES,
+                            'optional': {key: sorted(value) for key, value in ACTION_OPTIONAL.items()},
+                            'dates': sorted(DATE_KEYS), 'measures': sorted(planning.MEASURES),
+                            'integers': sorted(planning.NUMBERS - planning.MEASURES), 'choices': CHOICES})
         elif table in READS:
             with closing(connect()) as db, db:
                 storage.begin_read(db)
@@ -390,9 +433,14 @@ class Handler(BaseHTTPRequestHandler):
             length = int(self.headers.get('Content-Length', '0'))
             require(0 < length <= 16384, '요청 크기를 확인하세요.')
             data = json.loads(self.rfile.read(length))
+            user = unquote(self.headers.get('X-ShipYard-User', '')).strip()
             with closing(connect()) as db, db:
                 storage.begin_write(db)
+                user = governance.authorize(db, user, action[5:])
                 key = write(db, action[5:], data)
+                governance.audit(db, sys.modules[__name__], user, action[5:], key, data)
+        except PermissionError as exc:
+            self.send(403, {'error': str(exc)})
         except (ValueError, OverflowError) as exc:
             self.send(400, {'error': str(exc)})
         except storage.INTEGRITY_ERRORS:

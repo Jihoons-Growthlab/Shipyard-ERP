@@ -1,4 +1,8 @@
 """Ship milestones, block dependencies and evidence-based erection readiness."""
+import production
+
+# Extra readiness checks registered by other modules: fn(db, block_row, erection_plan_row_or_None) -> [str]
+EXTRA_BLOCKERS = []
 
 MILESTONES = ['착공', '기공', '진수', '시운전', '인도']
 GATES = ['도면 출도', '자재 준비', '조립 완료', '의장 완료', '도장 완료', '검사 승인', '시설 확보', '이동 준비']
@@ -117,13 +121,8 @@ def readiness(db):
             assembly = checks.get((child,'조립 완료'))
             if not assembly or assembly['verdict'] != '확인' or any(not item['actual'] for item in child_activities):
                 blockers.append('구성 블록 조립 미확인 ' + child)
-        unmet = []
-        for prior in sorted(set(predecessors.get(key,[]))):
-            prior_plan = plans.get(prior)
-            confirmed = prior_plan and db.execute('''SELECT 1 FROM moves WHERE block=? AND destination=?
-                AND confirmed_at IS NOT NULL''',(prior,prior_plan['destination'])).fetchone()
-            if not confirmed:
-                unmet.append(prior)
+        # A predecessor counts as erected only with a passing erection inspection record.
+        unmet = [prior for prior in sorted(set(predecessors.get(key,[]))) if not production.erected(db, prior)]
         if unmet:
             blockers.append('선행 블록 탑재 미확인 ' + ', '.join(unmet))
         plan = plans.get(key)
@@ -132,10 +131,14 @@ def readiness(db):
         moving = db.execute('SELECT id FROM moves WHERE block=? AND confirmed_at IS NULL',(key,)).fetchone()
         if moving:
             blockers.append('이동 중 ' + moving['id'])
+        for check in EXTRA_BLOCKERS:
+            blockers.extend(check(db, block, plan))
+        erected_day = production.erected(db, key)
         output.append({'id':key,'hull':block['hull'],'location':block['location'],
                        'erection_plan':plan['id'] if plan else None,
                        'forecast':plan['forecast'] if plan else None,
                        'destination':plan['destination'] if plan else None,
-                       'readiness':'준비 확인' if not blockers else '준비 필요',
+                       'readiness':'탑재 완료' if erected_day else '준비 확인' if not blockers else '준비 필요',
+                       'erected_day':erected_day,
                        'blockers':' / '.join(blockers),'checks':evidence})
     return output

@@ -86,45 +86,49 @@ def mrp(db):
     return rows
 
 
+def workday(day, closed):
+    while day.weekday() >= 5 or day.isoformat() in closed:
+        day += timedelta(days=1)
+    return day
+
+
 def aps(db):
     shortages = {row['activity'] for row in mrp(db) if row['shortage']}
+    closed = {row['holiday'] for row in db.execute('SELECT holiday FROM holidays')}
     finish = {}
     capacities = {}
     rows = []
-    # Operations have one predecessor, registered before the successor.
     operations = list(db.execute('''SELECT o.*, c.hours, a.actual, a.forecast FROM operations o
         JOIN centers c ON c.id=o.center JOIN activities a ON a.id=o.activity
         ORDER BY a.forecast, o.activity'''))
+    preds = {row['activity']: {row['predecessor']} - {None} for row in operations}
+    for link in db.execute('SELECT activity, predecessor FROM operation_links'):
+        preds[link['activity']].add(link['predecessor'])
     while operations:
-        operation = next(row for row in operations if not row['predecessor'] or row['predecessor'] in finish)
+        # Predecessor links are validated acyclic, so one operation always has finished predecessors.
+        operation = next(row for row in operations if preds[row['activity']] <= finish.keys())
         operations.remove(operation)
         key = operation['activity']
-        prior = operation['predecessor']
+        prior = sorted(preds[key])
         start = end = None
         if operation['actual']:
             end = date.fromisoformat(operation['actual'])
             status = '완료'
-        elif key in shortages or (prior and finish[prior] is None):
+        elif key in shortages or any(finish[item] is None for item in prior):
             status = '자재 부족' if key in shortages else '선행 작업 보류'
         else:
             start = date.fromisoformat(operation['earliest'])
-            if prior:
-                start = max(start, finish[prior] + timedelta(days=1))
+            for item in prior:
+                start = max(start, finish[item] + timedelta(days=1))
             center = operation['center']
-            start = max(start, capacities.get(center, start))
-            while start.weekday() >= 5:
-                start += timedelta(days=1)
+            start = workday(max(start, capacities.get(center, start)), closed)
             end = start
-            working_days = (operation['duration'] - 1) // operation['hours']
-            end += timedelta(days=(working_days // 5) * 7)
-            for _ in range(working_days % 5):
-                end += timedelta(days=1)
-                while end.weekday() >= 5:
-                    end += timedelta(days=1)
+            for _ in range((operation['duration'] - 1) // operation['hours']):
+                end = workday(end + timedelta(days=1), closed)
             capacities[center] = end + timedelta(days=1)
             status = '일정 제안'
         finish[key] = end
-        rows.append({'activity': key, 'center': operation['center'], 'predecessor': prior,
+        rows.append({'activity': key, 'center': operation['center'], 'predecessor': ', '.join(prior) or None,
                      'forecast': operation['forecast'], 'scheduled_start': start.isoformat() if start else None,
                      'scheduled_end': end.isoformat() if end else None, 'planning_status': status})
     return rows

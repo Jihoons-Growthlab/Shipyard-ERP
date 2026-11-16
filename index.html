@@ -152,7 +152,7 @@ td button{min-height:30px}
 <header><h1>ShipYard 생산관리</h1></header>
 <main>
 <nav id="tabs" aria-label="생산관리 메뉴"></nav>
-<div id="workspace"><section id="context"><label for="hull-filter">조회 호선</label><select id="hull-filter"></select></section>
+<div id="workspace"><section id="context"><label for="hull-filter">조회 호선</label><select id="hull-filter"></select><label for="user-select">작업자</label><select id="user-select"></select></section>
 <section id="work"><h2 id="heading"></h2><div class="actions" id="actions"></div><p id="step-help"></p><p id="status" role="status"></p><div id="next-actions" class="workflow"></div></section>
 <div id="records"></div></div>
 <dialog id="entry-dialog" aria-labelledby="entry-title"><button id="entry-close" type="button">닫기</button>
@@ -172,9 +172,9 @@ const groups = {
     ['purchase_requests','purchase_orders','goods_receipts']],
   '자재 출고': [['issues'], ['issues','inventory_ledger','warehouse_stock']],
   '기준정보': [['hulls','vessel_details','blocks','block_details','locations','centers','center_locations',
-    'equipment','materials','suppliers','warehouse_stock'],
+    'equipment','materials','suppliers','contractors','warehouse_stock'],
     ['hulls','vessel_details','blocks','block_details','locations','centers','center_locations','equipment',
-    'materials','suppliers','warehouse_stock']]
+    'materials','suppliers','contractors','warehouse_stock']]
 };
 const names = {activities:'공정 등록',forecast:'예정일 갱신',plans:'12주 계획 발행',orders:'작업지시 등록',
   results:'실적·검사 등록',moves:'이동 시작',confirm:'이동 확정',telemetry:'텔레메트리 입력',
@@ -195,6 +195,20 @@ Object.assign(names,{hull_milestones:'주요 일정 등록',milestone_update:'�
   erection_links:'탑재 선후행 연결',erection_plans:'탑재 계획 등록',block_gate_checks:'준비 항목 확인'});
 Object.assign(titles,{hull_milestones:'호선 주요 일정',milestone_history:'주요 일정 변경 이력',block_structure:'블록 구성',
   erection_links:'탑재 선후행',erection_plans:'블록 탑재 계획',block_readiness:'블록 준비 현황',block_gate_checks:'준비 확인 이력'});
+Object.assign(names,{contractors:'협력사 등록',block_stages:'조립 단계 등록',work_logs:'공수·진척 실적 등록',
+  outfitting_items:'의장품 등록',outfitting_events:'의장품 진행 등록',drawing_revisions:'도면 출도·설계 변경',
+  erection_records:'탑재 검사 기록',equipment_specs:'장비 능력 저장',dock_bookings:'도크 점유 예약',holidays:'휴일 등록',
+  operation_links:'추가 선행 공정 연결',receipt_lots:'입고 로트 등록',issue_lots:'출고 로트 배정',material_returns:'반납·잔재·폐기 등록',
+  inspection_points:'검사 항목(ITP) 등록',inspection_records:'입회 검사 결과 등록',ncrs:'NCR 발행',ncr_close:'NCR 종결',
+  punch_items:'펀치 등록',punch_close:'펀치 종결',users:'사용자 등록'});
+Object.assign(titles,{contractors:'사내협력사',block_stages:'블록 조립 단계',work_logs:'공수·진척 실적',
+  outfitting_items:'의장품 현황',outfitting_events:'의장품 진행 이력',drawing_revisions:'도면 리비전·설계 변경',
+  erection_records:'탑재 검사 실적',block_progress:'블록별 물량·공수 진척',hull_progress:'호선별 물량 진척',
+  contractor_summary:'협력사별 투입 공수',equipment_specs:'장비 정격하중·배치',dock_bookings:'도크 점유 예약',
+  holidays:'휴일 달력',operation_links:'추가 선행 공정',erection_schedule:'크레인·도크 제약 탑재 일정',
+  receipt_lots:'입고 로트·히트번호',issue_lots:'출고 로트 배정',material_returns:'반납·잔재·폐기',
+  block_traceability:'블록별 강재 추적',material_rollup:'블록 트리 자재 소요',inspection_points:'검사 계획(ITP)',
+  inspection_records:'입회 검사 실적',ncrs:'부적합 보고서(NCR)',punch_items:'펀치리스트',users:'사용자 권한',audit_log:'감사 이력'});
 const labels = {first_inspection:'최초 판정',first_actual:'최초 검사 실제일',attempts:'기록된 검사 횟수',latest_result:'최근 실적 번호',id:'ID',name:'이름',kind:'유형',hull:'호선',location:'마지막 확인 위치',block:'블록',stage:'공정',
   baseline:'기준일',forecast:'최신 예정일',actual:'실제일',reason:'지연 원인',actual_reason:'실적 지연 원인',inspection:'검사',start:'시작 월요일',
   end_exclusive:'종료 경계일(제외)',issued_at:'발행 시각',snapshot:'발행 내역',activity:'공정 ID',cadence:'구분',
@@ -213,6 +227,21 @@ vessel_type:'선종',vessel_name:'선명',customer:'선주',length_m:'전장(m)'
   available:'소요 직전 가용량',shortage:'부족량',release_day:'발주 권고일',hours:'일 가용시간(h)',center:'작업장',
   duration:'작업시간(h)',predecessor:'선행 공정',earliest:'최초 착수 가능일',scheduled_start:'제안 착수일',
   scheduled_end:'제안 완료일',planning_status:'제약 상태'});
+Object.assign(labels,{trade:'공종',assembly_stage:'조립 단계',planned_mh:'계획 공수(M/H)',actual_mh:'투입 공수(M/H)',
+  earned_mh:'기성 공수(M/H)',progress_pct:'누적 진척률(%)',block_stage:'조립 단계 ID',work_day:'실적일',manhours:'투입 공수(M/H)',
+  contractor:'협력사',note:'비고',stages:'등록 단계 수',completed_stages:'완료 단계 수',current_stage:'진행 단계',
+  earned_t:'기성 물량(t)',productivity:'생산성(기성/투입)',blocks:'블록 수',weight_progress_pct:'물량 진척률(%)',
+  mh_progress_pct:'공수 진척률(%)',logs:'실적 건수',item_type:'의장품 유형',outfit_stage:'의장 구분',required_day:'소요일',
+  item:'대상',event:'진행 단계',event_day:'진행일',drawing_no:'도면 번호',revision:'리비전',issued_day:'출도일',
+  change_type:'변경 구분',description:'내용',dock:'탑재 시설',erect_day:'탑재일',erected_day:'탑재 합격일',
+  equipment_type:'장비 유형',capacity_t:'정격하중(t)',station:'배치 시설',start_day:'시작일',end_day:'종료일',
+  holiday:'휴일',predecessor_blocks:'선행 블록',crane:'배정 크레인',scheduled_day:'제안 탑재일',delay_days:'계획 대비(일)',
+  receipt:'입고 번호',heat_no:'히트번호',cert_no:'밀시트 번호',warehouse:'창고',lot:'로트',issue:'출고 번호',
+  return_type:'반납 유형',return_day:'반납일',own_qty:'자체 소요',tree_qty:'하위 포함 소요',levels:'블록 단계 수',
+  activity_ref:'관련 공정',witness:'입회',planned_day:'검사 예정일',point:'검사 항목',inspect_day:'검사일',
+  inspector:'검사자',remarks:'비고·결함 내용',cause:'원인',disposition:'처리 방안',raised_day:'발행일',
+  closed_day:'종결일',close_evidence:'종결 근거',category:'등급',raised_by:'제기 주체',last_record:'최근 검사 번호',
+  role:'권한',user_id:'작업자',action:'작업',document:'문서',payload:'입력값'});
 const measures = ['length_m','beam_m','weight_t'];
 const integerFields = ['stock','lead_days','qty','hours','duration'];
 const positions = {confirmed:'확인',unknown:'미확인',in_transit:'이동 중'};
@@ -221,7 +250,9 @@ const dateFields = new Set(['baseline','forecast','actual','start','day','delive
 const refs = {hull:'hulls',block:'blocks',location:'locations',destination:'locations',
   activity:'activities',parent:'orders',equipment:'equipment',move:'moves',material:'materials',center:'centers',predecessor:'operations',requirement:'requirements',request:'purchase_requests',
   supplier:'suppliers',purchase_order:'purchase_orders',work_order:'orders',source:'locations',plan_id:'plans',parent_block:'blocks',child_block:'blocks',
- predecessor_block:'blocks',successor_block:'blocks'};
+ predecessor_block:'blocks',successor_block:'blocks',block_stage:'block_stages',contractor:'contractors',item:'outfitting_items',
+ point:'inspection_points',lot:'receipt_lots',issue:'issues',receipt:'goods_receipts',dock:'locations',warehouse:'locations',
+ station:'locations',activity_ref:'activities'};
 const byId = id => document.getElementById(id);
 const add = (parent, tag, value) => {
   const node = document.createElement(tag);
@@ -229,9 +260,12 @@ const add = (parent, tag, value) => {
   parent.append(node);
   return node;
 };
+let currentUser = '';
+try { currentUser = localStorage.getItem('shipyard-user') || ''; } catch (error) { currentUser = ''; }
 async function api(route, data) {
   const response = await fetch('/api/' + route, data && {
-    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)
+    method:'POST',headers:{'Content-Type':'application/json','X-ShipYard-User':encodeURIComponent(currentUser)},
+    body:JSON.stringify(data)
   });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error);
@@ -255,10 +289,10 @@ const workflowHelp = {
 };
 const modules = {
   '업무 홈': [overview],
-  '계획': ['호선·블록 계획','12주 계획','자재 소요계획 (MRP)','제약 일정 (APS)'],
-  '실행': ['구매·입고','자재 출고','작업지시·실적','블록 이동'],
-  '진척·품질': ['생산 진척','품질 검사'],
-  '관리': ['기준정보']
+  '계획': ['호선·블록 계획','12주 계획','자재 소요계획 (MRP)','제약 일정 (APS)','도크·크레인 계획'],
+  '실행': ['구매·입고','자재 출고','강재 추적','작업지시·실적','블록 조립·공수','의장품','블록 이동'],
+  '진척·품질': ['생산 진척','물량·공수 진척','품질 검사'],
+  '관리': ['기준정보','설계 도면','사용자·감사']
 };
 const views = {
   '호선·블록 계획': [['hull_milestones','hull_milestones','호선 주요 일정'],
@@ -266,7 +300,21 @@ const views = {
     ['erection_links','erection_links','탑재 선후행'],['erection_plans','erection_plans','탑재 계획'],
     ['block_readiness',null,'블록 준비 현황'],['block_gate_checks','block_gate_checks','준비 확인 이력']],
   '생산 진척': [['progress',null,'공정별 계획·실적'],['readiness',null,'작업 착수 준비']],
-  '품질 검사': [['quality_orders','results','작업 검사'],['quality_receipts',null,'입고 검사']],
+  '품질 검사': [['quality_orders','results','작업 검사'],['quality_receipts',null,'입고 검사'],
+    ['inspection_points','inspection_points','검사 계획(ITP)'],['inspection_records','inspection_records','입회 검사 실적'],
+    ['ncrs','ncrs','부적합(NCR)'],['punch_items','punch_items','펀치리스트']],
+  '도크·크레인 계획': [['erection_schedule',null,'탑재 일정 제안'],['dock_bookings','dock_bookings','도크 점유 예약'],
+    ['equipment_specs','equipment_specs','장비 능력'],['holidays','holidays','휴일 달력'],['operation_links','operation_links','추가 선행 공정']],
+  '블록 조립·공수': [['block_stages','block_stages','조립 단계'],['work_logs','work_logs','공수·진척 실적'],
+    ['erection_records','erection_records','탑재 검사 실적']],
+  '의장품': [['outfitting_items','outfitting_items','의장품'],['outfitting_events','outfitting_events','진행 이력']],
+  '강재 추적': [['receipt_lots','receipt_lots','입고 로트·히트번호'],['issue_lots','issue_lots','출고 로트 배정'],
+    ['material_returns','material_returns','반납·잔재·폐기'],['block_traceability',null,'블록별 강재 추적'],
+    ['material_rollup',null,'블록 트리 자재 소요']],
+  '물량·공수 진척': [['hull_progress',null,'호선 물량 진척'],['block_progress',null,'블록 물량·공수'],
+    ['contractor_summary',null,'협력사 공수']],
+  '설계 도면': [['drawing_revisions','drawing_revisions','도면 리비전·설계 변경']],
+  '사용자·감사': [['users','users','사용자 권한'],['audit_log',null,'감사 이력']],
   '12주 계획': [['activities','activities','공정 목록'],['plans','plans','계획 발행본']],
   '자재 소요계획 (MRP)': [['mrp',null,'자재 부족'],['requirements','requirements','공정 자재 소요'],['receipts','receipts','수동 입고 예정']],
   '제약 일정 (APS)': [['aps',null,'제안 일정'],['operations','operations','작업 제약']],
@@ -277,7 +325,7 @@ const views = {
   '기준정보': groups['기준정보'][0].map(kind => [kind,kind,titles[kind]])
 };
 function targetView(page, step) {
-  const target = {forecast:'activities', confirm:'moves',milestone_update:'hull_milestones'}[step];
+  const target = {forecast:'activities', confirm:'moves',milestone_update:'hull_milestones',ncr_close:'ncrs',punch_close:'punch_items'}[step];
   return (views[page] || []).find(([route, action]) => action === step || route === target)?.[0];
 }
 const derivedRoutes = {progress:'activities',readiness:'orders',quality_orders:'orders',quality_receipts:'goods_receipts'};
@@ -331,12 +379,23 @@ function rowState(route, row) {
   }
   if (route === 'orders') return row.inspection === '합격' ? '완료' : row.inspection === '불합격' ? '재검사 필요' : '실적 대기';
   if (route === 'moves') return row.confirmed_at ? '이동 확정' : '이동 중';
+  if (route === 'ncrs' || route === 'punch_items') return row.closed_day ? '종결' : '미결';
+  if (route === 'inspection_points') return row.inspection || '검사 대기';
+  if (route === 'outfitting_items') return row.status;
+  if (route === 'block_stages') return row.actual ? '완료' : row.progress_pct ? '진행 중' : '착수 전';
   return '';
 }
 function follow(route, row) {
   if (route === 'block_readiness') return ['호선·블록 계획','block_gate_checks',{block:row.id}];
   if (route === 'hull_milestones') return ['호선·블록 계획','milestone_update',{id:row.id,forecast:row.forecast,actual:row.actual ?? '',reason:row.reason}];
   if (route === 'quality_orders') return ['작업지시·실적','results',{id:row.id}];
+  if (route === 'ncrs') return !row.closed_day && ['품질 검사','ncr_close',{id:row.id}];
+  if (route === 'punch_items') return !row.closed_day && ['품질 검사','punch_close',{id:row.id}];
+  if (route === 'inspection_points') return row.inspection !== '합격' && ['품질 검사','inspection_records',{point:row.id}];
+  if (route === 'outfitting_items') return row.status !== '검사 완료' && ['의장품','outfitting_events',{item:row.id}];
+  if (route === 'block_stages') return !row.actual && ['블록 조립·공수','work_logs',{block_stage:row.id}];
+  if (route === 'goods_receipts' && row.inspection === '합격') return ['강재 추적','receipt_lots',{receipt:row.id}];
+  if (route === 'issues') return ['강재 추적','issue_lots',{issue:row.id}];
   route = derivedRoutes[route] || route;
   const actions = {
     moves: !row.confirmed_at && ['블록 이동','confirm',{id:row.id}],
@@ -421,10 +480,10 @@ async function refresh() {
   data = Object.fromEntries(await Promise.all(Object.keys(titles).map(async route => [route, await api(route)])));
 }
 function selectOptions(key) {
-  const fixed = {milestone:meta.milestones,gate:meta.gates,verdict:['확인','보류','해당 없음'],stage:meta.stages,kind:['야드','작업장','도크','안벽','창고'],cadence:['주간','일일'],inspection:['합격','불합격']};
+  const fixed = {milestone:meta.milestones,gate:meta.gates,verdict:['확인','보류','해당 없음'],stage:meta.stages,kind:['야드','작업장','도크','안벽','창고'],cadence:['주간','일일'],inspection:['합격','불합격'],...meta.choices};
   if (fixed[key]) return fixed[key].map(value => [value,value]);
   let source = refs[key];
-  if (key === 'id') source = {forecast:'activities',results:'orders',confirm:'moves',milestone_update:'hull_milestones'}[action];
+  if (key === 'id') source = {forecast:'activities',results:'orders',confirm:'moves',milestone_update:'hull_milestones',ncr_close:'ncrs',punch_close:'punch_items'}[action];
   if (!source) return null;
   let rows = ['locations','equipment','materials','centers','suppliers','plans'].includes(source) ? data[source] : scoped(source);
   if (key === 'plan_id' && preset.activity) rows = rows.filter(plan => plan.snapshot.some(row => row.id === preset.activity));
@@ -436,6 +495,14 @@ function selectOptions(key) {
     rows = rows.filter(row => row.kind === '창고');
   }
   if (key === 'location' && action === 'center_locations') rows = rows.filter(row => row.kind !== '창고');
+  if (key === 'warehouse') rows = rows.filter(row => row.kind === '창고');
+  if (key === 'station') rows = rows.filter(row => row.kind !== '창고');
+  if (key === 'dock') rows = rows.filter(row => action === 'dock_bookings' ? row.kind === '도크' : ['도크','야드'].includes(row.kind));
+  if (['ncr_close','punch_close'].includes(action) && key === 'id') rows = rows.filter(row => !row.closed_day);
+  if (key === 'receipt') rows = rows.filter(row => row.inspection === '합격');
+  if (key === 'block_stage') rows = rows.filter(row => !row.actual);
+  if (key === 'point') rows = rows.filter(row => row.inspection !== '합격');
+  if (key === 'item') rows = rows.filter(row => row.status !== '검사 완료');
   if (key === 'work_order') rows = rows.filter(row => row.cadence === '주간' && !row.actual);
   if (key === 'request') rows = rows.filter(row => !data.purchase_orders.some(order => order.request === row.id));
   if (key === 'purchase_order') rows = rows.filter(row => row.open_qty > 0);
@@ -443,7 +510,8 @@ function selectOptions(key) {
   if (action === 'confirm') rows = rows.filter(row => !row.confirmed_at);
   if (action === 'forecast' && key === 'id') rows = rows.filter(row => !row.actual);
   if (action === 'results' && key === 'id') rows = rows.filter(row => !row.actual || row.inspection === '불합격');
-  return rows.map(row => [row.id ?? row.activity, [row.document_no ?? row.id ?? row.activity,row.name || row.stage || row.instruction].filter(Boolean).join(' · ')]);
+  return rows.map(row => [row.id ?? row.activity, [row.document_no ?? row.id ?? row.activity,row.name || row.stage || row.instruction ||
+    row.item || row.heat_no || row.description || (row.assembly_stage && row.block + ' ' + row.assembly_stage)].filter(Boolean).join(' · ')]);
 }
 function buttons(parent, keys, active, text, onClick) {
   parent.replaceChildren();
@@ -465,6 +533,23 @@ function scoped(route) {
     goods_receipts: row => purchaseOrders.has(row.purchase_order),
     issues: row => requirements.has(row.requirement),
     production_results: row => data.orders.some(order => order.id === row.work_order && activities.has(order.activity)),
+    block_stages: row => blocks.has(row.block),
+    work_logs: row => data.block_stages.some(stage => stage.id === row.block_stage && blocks.has(stage.block)),
+    erection_records: row => blocks.has(row.block),
+    block_progress: row => row.hull === hull,
+    hull_progress: row => row.hull === hull,
+    contractor_summary: row => row.hull === hull,
+    outfitting_items: row => row.hull === hull,
+    outfitting_events: row => data.outfitting_items.some(item => item.id === row.item && item.hull === hull),
+    drawing_revisions: row => blocks.has(row.block),
+    dock_bookings: row => row.hull === hull,
+    erection_schedule: row => row.hull === hull,
+    block_traceability: row => blocks.has(row.block),
+    material_rollup: row => row.hull === hull,
+    inspection_points: row => row.hull === hull,
+    inspection_records: row => data.inspection_points.some(point => point.id === row.point && point.hull === hull),
+    ncrs: row => row.hull === hull,
+    punch_items: row => row.hull === hull,
     hulls: row => row.id === hull,
     hull_milestones: row => row.hull === hull,
     milestone_history: row => data.hull_milestones.some(item => item.id === row.milestone_id && item.hull === hull),
@@ -573,7 +658,10 @@ function renderOverview(records) {
   for (const [label,count,page,step] of [
     ['자재 부족',scoped('mrp').filter(row => row.shortage > 0).length,'자재 소요계획 (MRP)'],
     ['미입고 발주',scoped('purchase_orders').filter(row => row.open_qty > 0).length,'구매·입고','purchase_orders'],
-    ['미완료 작업',scoped('orders').filter(row => row.inspection !== '합격').length,'작업지시·실적','orders']
+    ['미완료 작업',scoped('orders').filter(row => row.inspection !== '합격').length,'작업지시·실적','orders'],
+    ['미결 NCR',scoped('ncrs').filter(row => !row.closed_day).length,'품질 검사','ncrs'],
+    ['미결 펀치',scoped('punch_items').filter(row => !row.closed_day).length,'품질 검사','punch_items'],
+    ['탑재 일정 제약',scoped('erection_schedule').filter(row => !['일정 제안','탑재 완료'].includes(row.planning_status)).length,'도크·크레인 계획']
   ]) {
     const card = add(metrics,'button');
     add(card,'span',label);
@@ -597,7 +685,11 @@ function renderOverview(records) {
     ...currentOrders.filter(row => row.inspection === '불합격').map(row =>
       [row.id,'검사 불합격 · 재검사 필요',['작업지시·실적','results',{id:row.id}]]),
     ...scoped('moves').filter(row => !row.confirmed_at).map(row =>
-      [row.id,row.block + ' · 이동 확정 대기',follow('moves',row)])
+      [row.id,row.block + ' · 이동 확정 대기',follow('moves',row)]),
+    ...scoped('ncrs').filter(row => !row.closed_day).map(row =>
+      [row.id,(row.block || row.hull) + ' · ' + row.disposition + ' · 미결 NCR',follow('ncrs',row)]),
+    ...scoped('punch_items').filter(row => !row.closed_day && row.category !== 'C').map(row =>
+      [row.id,row.category + '등급 펀치 · ' + row.description,follow('punch_items',row)])
   ];
   for (const [title,hint,next] of pending) {
     const item = add(list,'li');
@@ -671,14 +763,16 @@ function openEntry(step, initial = {}) {
   form.replaceChildren();
   for (const key of meta.fields[action]) {
     if (key === 'id' && meta.numbered.includes(action)) continue;
-    const required = !(key === 'actual' && action === 'milestone_update') && ((key === 'location' && action !== 'blocks') || !optional.has(key) || (key === 'block' && ['moves','block_details','erection_plans','block_gate_checks'].includes(action)));
+    const required = !(key === 'actual' && action === 'milestone_update') && !(meta.optional[action] || []).includes(key) &&
+      ((key === 'location' && action !== 'blocks') || !optional.has(key) || (key === 'predecessor' && action === 'operation_links') ||
+      (key === 'block' && ['moves','block_details','erection_plans','block_gate_checks','block_stages','drawing_revisions','erection_records'].includes(action)));
     const fieldLabel = key === 'location' && action !== 'blocks' ? (action === 'center_locations' ? '생산 시설' : '창고') : key === 'day' ? ({goods_receipts:'실제 입고일',issues:'실제 출고일'}[action] || labels[key]) : labels[key];
     const label = add(form,'label',fieldLabel + (required ? ' *' : ''));
-    if (['instruction','reason','result','evidence'].includes(key)) label.className = 'wide-field';
+    if (['instruction','reason','result','evidence','description','remarks','note'].includes(key)) label.className = 'wide-field';
     const options = selectOptions(key);
     const field = add(label, options ? 'select' : 'input');
     field.name = key;
-    if (['vessel_details','block_details'].includes(action) && key === meta.fields[action][0]) {
+    if (['vessel_details','block_details','equipment_specs'].includes(action) && key === meta.fields[action][0]) {
       field.onchange = () => {
         const existing = data[action].find(row => row[key] === field.value);
         for (const name of meta.fields[action].slice(1)) form.elements[name].value = existing?.[name] ?? '';
@@ -693,6 +787,7 @@ function openEntry(step, initial = {}) {
       field.maxLength = 1000;
       if (field.type === 'number') field.step = integerFields.includes(key) ? '1' : 'any';
       if (integerFields.includes(key)) field.min = ['stock','lead_days'].includes(key) ? 0 : 1;
+      if (key === 'progress_pct') field.max = 100;
       if (measures.includes(key)) { field.min = 0.001; field.step = '0.001'; }
       if (key === 'load') field.min = 0;
     }
@@ -757,6 +852,15 @@ function render(message = '') {
   for (const row of data.hulls) add(filter,'option',row.id + ' · ' + row.name).value = row.id;
   filter.value = hull;
   filter.onchange = () => { hull = filter.value; render(); filter.focus(); };
+  const userSelect = byId('user-select');
+  userSelect.replaceChildren();
+  add(userSelect,'option',data.users.length ? '작업자 선택' : '권한 미사용').value = '';
+  for (const row of data.users) add(userSelect,'option',row.id + ' · ' + row.name + ' (' + row.role + ')').value = row.id;
+  userSelect.value = data.users.some(row => row.id === currentUser) ? currentUser : '';
+  userSelect.onchange = () => {
+    currentUser = userSelect.value;
+    try { localStorage.setItem('shipyard-user', currentUser); } catch (error) { /* per-viewer convenience only */ }
+  };
   byId('work').hidden = group === overview;
   const records = byId('records');
   records.replaceChildren();
@@ -929,7 +1033,13 @@ function renderList(section, route, items) {
     } else table(section,items,route);
 }
 
-Promise.all([api('meta'),refresh()]).then(([metadata]) => { meta = metadata; render(); })
+Promise.all([api('meta'),refresh()]).then(([metadata]) => {
+  meta = metadata;
+  for (const key of meta.dates) dateFields.add(key);
+  for (const key of meta.integers) if (!integerFields.includes(key)) integerFields.push(key);
+  for (const key of meta.measures) if (!measures.includes(key)) measures.push(key);
+  render();
+})
   .catch(error => { byId('work').hidden = false; status(error.message,true); });
 </script>
 </html>
