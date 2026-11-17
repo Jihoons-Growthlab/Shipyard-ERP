@@ -1,0 +1,7 @@
+{
+  "name": "GrowthLab.Authoring.Editor",
+  "rootNamespace": "GrowthLab.Authoring.Editor",
+  "references": [],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

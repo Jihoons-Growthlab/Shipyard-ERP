@@ -1,6 +1,0 @@
-#!/bin/sh
-set -eu
-cd "$(dirname "$0")"
-. ./.env
-export SHIPYARD_DATABASE_URL="postgresql://shipyard:${SHIPYARD_DB_PASSWORD}@127.0.0.1:55432/shipyard"
-exec .venv/bin/python -B "$@"

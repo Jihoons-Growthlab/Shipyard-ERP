@@ -1,0 +1,23 @@
+# Unity
+unity/Library/
+unity/Temp/
+unity/Logs/
+unity/obj/
+unity/UserSettings/
+unity/*.csproj
+unity/*.sln
+# Generated scene, prefabs and materials (rebuilt from Authoring/ by ShipyardTwin > Create Scene)
+unity/Assets/ShipyardTwin/Generated/
+unity/Assets/ShipyardTwin/Generated.meta
+# Outputs
+Builds/
+TestResults/
+data/
+__pycache__/
+.DS_Store
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.key

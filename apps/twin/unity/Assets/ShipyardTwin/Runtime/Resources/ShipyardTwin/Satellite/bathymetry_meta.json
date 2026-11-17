@@ -1,0 +1,10 @@
+{
+ "format": "shipyard-bathymetry/1",
+ "grid": 384,
+ "attribution": "국립해양조사원 수심정보(150m 격자)",
+ "datum": "기준면 미확인",
+ "points": 509,
+ "filled_vertices": 55232,
+ "min_m": -0.15,
+ "max_m": 10.37
+}

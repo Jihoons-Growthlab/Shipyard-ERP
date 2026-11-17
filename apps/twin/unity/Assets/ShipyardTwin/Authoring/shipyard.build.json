@@ -1,0 +1,22 @@
+{
+  "Scene": "Assets/ShipyardTwin/Generated/ShipyardTwin.unity",
+  "Camera": { "Position": [200, 130, -20], "LookAt": [445, 6, 175], "Background": "#BDCCDB" },
+  "Light": { "Rotation": [38, -52, 0], "Intensity": 1.2 },
+  "Prefabs": [
+    { "Name": "Base", "Shape": "Cube", "Color": "#FFFFFF" }
+  ],
+  "Objects": [
+    { "Name": "Bootstrap", "Components": ["ShipyardTwinBootstrap"],
+      "Set": ["BaseMaterial=Assets/ShipyardTwin/Generated/Materials/Base.mat"] },
+    { "Name": "Yard", "Components": ["YardEnvironment"] },
+    { "Name": "SatelliteGround", "Components": ["SatelliteGround"] },
+    { "Name": "Scenery", "Components": ["YardScenery"] },
+    { "Name": "Ship", "Components": ["ShipView"] },
+    { "Name": "GoliathCrane", "Components": ["GantryCraneView"] },
+    { "Name": "CameraRig", "Components": ["OrbitCameraRig"] },
+    { "Name": "DepthMap", "Components": ["DepthMapOverlay"] }
+  ],
+  "Ui": [
+    { "Name": "Panel", "Uxml": "Dashboard.uxml", "Components": ["WorldLabels", "ErectionPanelView", "DashboardShellView", "HoverTooltipView"] }
+  ]
+}

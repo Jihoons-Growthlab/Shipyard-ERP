@@ -1,0 +1,11 @@
+{
+  "name": "com.growthlab.auth",
+  "version": "0.1.0",
+  "displayName": "GrowthLab Auth",
+  "description": "Optional token session with single-flight refresh, expiry skew, sign-out race handling and a 401-retrying REST wrapper.",
+  "unity": "6000.3",
+  "keywords": ["auth", "token", "refresh"],
+  "dependencies": {
+    "com.growthlab.network": "0.1.0"
+  }
+}

@@ -1,0 +1,121 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:gl="GrowthLab.UI" xmlns:tw="ShipyardTwin">
+    <Style src="Dashboard.uss" />
+    <ui:VisualElement name="screen" class="gl-screen tw-screen" picking-mode="Ignore">
+
+        <!-- Left icon rail -->
+        <ui:VisualElement name="rail" class="tw-rail">
+            <ui:VisualElement class="tw-mark">
+                <tw:DashboardIcon glyph="mark" class="tw-mark-icon" />
+            </ui:VisualElement>
+            <ui:VisualElement class="tw-rail-divider" />
+            <ui:Button name="nav-erection" class="tw-nav" tooltip="블록 탑재 시뮬레이션">
+                <tw:DashboardIcon glyph="crane" class="tw-nav-icon" />
+                <ui:Label text="블록 탑재" class="tw-nav-label" />
+            </ui:Button>
+            <ui:Button name="nav-depth" class="tw-nav" tooltip="수심도 표시">
+                <tw:DashboardIcon glyph="depth" class="tw-nav-icon" />
+                <ui:Label text="수심도" class="tw-nav-label" />
+            </ui:Button>
+            <ui:VisualElement class="gl-spacer" picking-mode="Ignore" />
+            <ui:Button name="nav-chat" class="tw-nav" tooltip="챗봇">
+                <tw:DashboardIcon glyph="chat" class="tw-nav-icon" />
+                <ui:Label text="챗봇" class="tw-nav-label" />
+            </ui:Button>
+        </ui:VisualElement>
+
+        <!-- Erection drawer (slides in from the rail) -->
+        <ui:VisualElement name="erection-panel" class="gl-panel tw-drawer">
+            <ui:VisualElement class="tw-drawer-header">
+                <ui:Label text="블록 탑재 시뮬레이션" class="gl-title tw-drawer-title" />
+                <ui:Button name="erection-close" class="tw-icon-button" tooltip="탑재 패널 닫기">
+                    <tw:DashboardIcon glyph="close" class="tw-icon-sm" />
+                </ui:Button>
+            </ui:VisualElement>
+            <ui:Label name="data-status" text="데이터 불러오는 중..." class="tw-data-status" />
+            <ui:ScrollView name="erection-scroll" mode="Vertical" class="gl-grow tw-scroll">
+                <ui:Label text="호선 선택" class="gl-section" />
+                <ui:VisualElement name="hull-list" class="tw-chips" />
+                <ui:Label name="yard-summary" text="-" class="tw-wrap tw-dim tw-summary" />
+                <ui:VisualElement name="sim" class="tw-sim">
+                    <ui:VisualElement class="tw-drawer-header">
+                        <ui:Label name="hull" text="-" class="gl-subtitle tw-shrink" />
+                        <ui:Label name="status" text="대기" class="tw-status" />
+                    </ui:VisualElement>
+                    <ui:Label name="date" text="-" class="gl-section" />
+                    <ui:Label name="step" text="-" />
+                    <gl:Gauge name="blocks" label="탑재 블록" unit="개" min="0" max="100" decimals="0" />
+                    <gl:Gauge name="weight" label="탑재 중량" unit="t" min="0" max="100" decimals="0" />
+                    <ui:VisualElement class="gl-row tw-controls">
+                        <ui:Button name="play" text="재생" class="tw-primary gl-grow" />
+                        <ui:Button name="speed" text="속도 ×1" class="tw-secondary" />
+                        <ui:Button name="restart" text="처음부터" class="tw-secondary" />
+                    </ui:VisualElement>
+                    <ui:Label text="인양 중" class="gl-section" />
+                    <gl:StatCard name="lift" title="대기" level="Offline">
+                        <ui:Label name="lift-detail" text="인양 중인 블록 없음" />
+                    </gl:StatCard>
+                </ui:VisualElement>
+                <ui:Label name="sim-placeholder" text="호선을 고르면 그 호선의 탑재 시뮬레이션을 준비합니다. 재생을 눌러야 시작합니다." class="tw-wrap tw-dim" />
+                <ui:Label name="unplaced-title" text="미배치" class="gl-section" />
+                <ui:Label name="unplaced" text="-" class="tw-wrap tw-dim" />
+                <ui:Label text="왼쪽 드래그: 이동 · 오른쪽 드래그: 회전 · 가운데 드래그: 이동 · 휠: 확대&#10;1 전체 · 2 선수 · 3 선미 · 4 크레인 · 5 위 · 6 조선소 · F 따라가기" class="gl-subtitle tw-wrap" />
+                <ui:Label text="탑재 이력" class="gl-section" />
+                <gl:MessageList name="events" capacity="40" empty-text="아직 탑재된 블록 없음" class="tw-events" />
+            </ui:ScrollView>
+        </ui:VisualElement>
+
+        <!-- Chat drawer (same slot) -->
+        <ui:VisualElement name="chat-panel" class="gl-panel tw-drawer">
+            <ui:VisualElement class="tw-drawer-header">
+                <ui:Label text="챗봇" class="gl-title tw-drawer-title" />
+                <ui:Button name="chat-close" class="tw-icon-button" tooltip="챗봇 닫기">
+                    <tw:DashboardIcon glyph="close" class="tw-icon-sm" />
+                </ui:Button>
+            </ui:VisualElement>
+            <ui:VisualElement class="tw-drawer-header">
+                <ui:Label text="조선소 도우미" class="gl-subtitle tw-shrink" />
+                <ui:Label text="연결 준비 중" class="tw-status" />
+            </ui:VisualElement>
+            <ui:VisualElement class="gl-card">
+                <ui:Label text="챗봇이 아직 연결되지 않았습니다. 대화 기능은 다음 작업에서 연결합니다." class="tw-wrap" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Exit (top right) -->
+        <ui:Button name="exit" class="tw-exit" tooltip="종료">
+            <tw:DashboardIcon glyph="power" class="tw-exit-icon" />
+            <ui:Label text="종료" class="tw-exit-label" />
+        </ui:Button>
+
+        <!-- Depth legend (bottom right, shown while the depth toggle is on; filled by DepthMapOverlay) -->
+        <ui:VisualElement name="depth-legend" class="gl-panel tw-legend">
+            <ui:VisualElement class="tw-drawer-header">
+                <ui:Label text="수심도" class="tw-legend-title" />
+                <ui:Label name="depth-status" text="데이터 없음" class="tw-status tw-status--muted" />
+            </ui:VisualElement>
+            <ui:VisualElement name="depth-scale" class="tw-scale" />
+            <ui:Label name="depth-detail" text="측량 수심 자료가 없습니다." class="tw-wrap tw-dim" />
+        </ui:VisualElement>
+
+        <!-- Hover tooltip beside the cursor (HoverTooltipView); never takes the pointer -->
+        <ui:VisualElement name="hover-tip" class="tw-tip" picking-mode="Ignore">
+            <ui:VisualElement class="tw-tip-header" picking-mode="Ignore">
+                <ui:Label name="hover-kind" text="블록" class="tw-tip-kind" picking-mode="Ignore" />
+                <ui:Label name="hover-title" text="-" class="tw-tip-title" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="hover-detail" text="" class="tw-tip-detail" picking-mode="Ignore" />
+        </ui:VisualElement>
+
+        <!-- Exit confirmation -->
+        <ui:VisualElement name="exit-confirm" class="tw-backdrop">
+            <ui:VisualElement class="gl-panel tw-dialog">
+                <ui:Label text="시뮬레이션을 종료할까요?" class="gl-title" />
+                <ui:Label name="exit-detail" text="앱을 닫습니다." class="gl-subtitle" />
+                <ui:VisualElement class="gl-row tw-dialog-buttons">
+                    <ui:Button name="exit-cancel" text="취소" class="tw-secondary" />
+                    <ui:Button name="exit-confirm-button" text="종료" class="tw-danger" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

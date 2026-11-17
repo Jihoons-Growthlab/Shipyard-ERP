@@ -1,0 +1,11 @@
+{
+  "name": "com.growthlab.data",
+  "version": "0.1.0",
+  "displayName": "GrowthLab Data",
+  "description": "JSON serialization and crash-safe local key-value storage.",
+  "unity": "6000.3",
+  "keywords": ["data", "json", "save", "storage"],
+  "dependencies": {
+    "com.unity.modules.jsonserialize": "1.0.0"
+  }
+}

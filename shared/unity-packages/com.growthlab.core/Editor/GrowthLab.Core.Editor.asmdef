@@ -1,0 +1,7 @@
+{
+  "name": "GrowthLab.Core.Editor",
+  "rootNamespace": "GrowthLab.Core.Editor",
+  "references": ["GrowthLab.Core"],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

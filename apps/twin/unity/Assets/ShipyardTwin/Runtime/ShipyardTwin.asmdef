@@ -1,0 +1,12 @@
+{
+  "name": "ShipyardTwin",
+  "rootNamespace": "ShipyardTwin",
+  "references": [
+    "GrowthLab.Core",
+    "GrowthLab.UI",
+    "GrowthLab.Network",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Core.Runtime"
+  ],
+  "autoReferenced": false
+}

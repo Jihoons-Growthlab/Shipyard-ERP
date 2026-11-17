@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/*.unity)",
+      "Read(**/*.prefab)",
+      "Read(**/*.mat)",
+      "Read(**/Library/**)",
+      "Read(**/Temp/**)",
+      "Edit(**/*.unity)",
+      "Edit(**/*.prefab)"
+    ]
+  }
+}

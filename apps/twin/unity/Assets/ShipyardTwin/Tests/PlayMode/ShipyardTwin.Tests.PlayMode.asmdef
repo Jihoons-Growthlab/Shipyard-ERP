@@ -1,0 +1,19 @@
+{
+  "name": "ShipyardTwin.Tests.PlayMode",
+  "rootNamespace": "ShipyardTwin.Tests",
+  "references": [
+    "ShipyardTwin",
+    "GrowthLab.Core",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "autoReferenced": false,
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

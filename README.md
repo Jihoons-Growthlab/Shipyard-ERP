@@ -1,77 +1,71 @@
-# ShipYard-ERP
+# SIWS · 조선소 생산관리 ERP와 디지털 트윈
 
-**디지털 트윈 연동을 위한 조선소 생산관리 ERP (MVP)**
+호선별 생산계획, 설계·제조 BOM, 작업지시·실적, 블록 이동을 ERP에서 관리합니다. Unity에서는 야드 배치와 도크의 블록 탑재를 3D로 재생합니다. Portal에서 ERP와 Swagger에 접근할 수 있습니다.
 
-호선·블록 계획부터 자재 구매, 작업 실적, 블록 이동까지 조선 생산 데이터를 한곳에서 관리하고, 그 결과를 Unity 등 디지털 트윈이 바로 읽을 수 있는 JSON API로 제공합니다. (Python · PostgreSQL 17)
-트윈은 ERP가 확정한 **블록 위치·이동 상태**를 기준으로, 크레인 **텔레메트리(X/Y·하중)**를 시간순으로 재생합니다.
+## 화면별 시연
 
-![ShipYard-ERP 데모](docs/demo.gif)
+[화면별 GIF와 시연 순서](docs/demo.md) · [기능 명세](docs/spec.md)
 
-> 데모: 업무 홈 → 호선 선택 → 블록 탑재 준비 현황 → 블록 이동 → ERP API 기반 크레인 이동 재생
-> 모든 호선·블록·좌표 데이터는 가상(모의) 데이터입니다.
+### SIWS 포털
 
-## 주요 기능
+![SIWS 포털 로그인과 조선소 운영 현황 프리뷰](docs/media/portal/portal-overview.gif)
 
-| 영역 | 내용 |
-|---|---|
-| 계획 | 호선 주요 일정(착공~인도), 블록 구성·탑재 선후행, 12주 계획 발행본, MRP(자재 부족), APS(제약 일정) |
-| 실행 | 구매요청 → 발주 → 입고·검수 → 자재 출고(수불부), 주간/일일 작업지시와 실적 |
-| 진척·품질 | 공정별 계획 대비 실적, 작업 검사와 최초 불합격률, 블록 탑재 준비(근거 기반) 판정 |
-| 블록 이동 | 이동 시작·확정 트랜잭션, 확인 위치 / 이동 중 / 미확인 상태 관리, 장비 관측값 기록 |
+포털 프리뷰의 로그인과 운영 현황 화면입니다. 등록 호선·블록, 이동 중, 재검사 필요 건을 요약하고 생산관리 ERP와 Unity 디지털 트윈 진입 카드를 제공합니다. 저장소의 기본 포털은 ERP·Swagger 링크와 Unity 실행 안내를 제공합니다. [포털 시연과 실행 경로](docs/demo.md#siws-포털)
 
-## 디지털 트윈 연동
+### Unity 디지털 트윈
 
-```
-GET /api/blocks     → 블록 id, 확인 위치(location), position_status(confirmed | in_transit | unknown)
-GET /api/moves      → block, equipment, origin → destination, started_at / confirmed_at
-GET /api/telemetry  → move, recorded_at, x, y (m), load (t)
-```
+![Unity에서 본 SN2040 블록 탑재 진행 시점](docs/media/shipyard-twin.gif)
 
-- 트윈은 `blocks.id → moves.block → telemetry.move` 순으로 연결하고 `recorded_at` 기준으로 재생합니다.
-- 블록의 위치는 **ERP에서 이동을 확정해야** 바뀝니다. 텔레메트리만으로는 위치가 바뀌지 않습니다.
-- 가상 시설 기준점: `DT-FAB(20,30)`, `DT-OUT(160,50)`, `DT-YARD(290,115)`, `DT-DOCK(430,170)`
-- 가상 데이터: SN2037~SN2039 호선, 블록 72개, 이동 39건, 관측값 약 2,200건
-- 그 밖의 조회 항목(`hulls`, `locations`, `activities`, `plans`, `orders`, `mrp`, `aps`, `meta` 등)도 `GET /api/<항목>`으로 조회합니다.
+Unity에서 가상 호선 SN2040의 여러 탑재 시점을 캡처했습니다. 탑재 패널의 블록 수·중량 진척과 함께 도크에 선체가 조립되는 과정을 볼 수 있습니다.
 
-## 실행 방법
+## 구현 기능
 
-Python 3.9 이상과 Docker가 필요합니다. 데이터베이스는 **PostgreSQL 17**(Docker Compose, `127.0.0.1:55432`)을 사용합니다.
+| 화면 | 주요 기능 |
+| --- | --- |
+| Portal | ERP와 Swagger 진입 |
+| 업무 홈 | 자재 부족, 구매·작업·이동과 미결 품질 건 확인, 호선별 조회 |
+| 대일정 | 호선 주요 일정, 도크 점유, 선석 배정, 일정 변경 이력 |
+| 중일정 | 탑재 선후행, 블록 적치·준비, 크레인 부하, 의장 진척, 안벽 이동 |
+| 소일정 | 12주 계획·주간 발행, APS 일정 제안, 크레인 작업 배정 |
+| EBOM → MBOM → MRP | 도면·설계 BOM 리비전, 제조 공정·투입품, 발행 전 비교, 자재 소요와 부족 근거 |
+| 실행 | 구매·입고·출고, 강재 로트, 작업지시·실적, 조립·공수, 의장품, 블록 이동 |
+| 진척·품질 | 계획 대비 실적, 물량·공수, 검사 계획·입회 실적, NCR·펀치리스트 |
+| 관리·지도 | 기준정보, 시설·도크 배치, 조선소 지도, 그룹별 권한·감사 이력 |
+| Unity Twin | 3D 야드, 크레인 탑재 재생, 카메라 프리셋, 대상 툴팁, 수심도 |
 
-```sh
-cp .env.example .env                      # SHIPYARD_DB_PASSWORD 값 변경
-docker compose up -d                      # PostgreSQL 17 실행
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-./shipyard-postgres app.py                # 서버 실행 → http://127.0.0.1:8001
-./shipyard-postgres seed_sn2036.py        # SN2036 실습 데이터
-./shipyard-postgres seed_twin.py          # 디지털 트윈용 SN2037~2039 데이터
-```
+## 시스템 구조
 
-`shipyard-postgres`는 `.env`의 비밀번호로 `SHIPYARD_DATABASE_URL`을 구성한 뒤 Python을 실행하는 스크립트입니다. 기존 SQLite 예시 DB를 옮길 때는 `migrate_sqlite.py`를 사용합니다.
+~~~mermaid
+flowchart LR
+    Portal["Portal"] --> ERP["ERP 웹 · API"]
+    ERP --> DB["PostgreSQL"]
+    ERP --> Cache["Redis"]
+    ERP --> Twin["Unity Twin"]
+    ERP --> Export["Python 스냅샷 내보내기"]
+    Export --> Twin
+~~~
 
-> Docker 없이 화면만 확인하려면 SQLite 파일로도 실행할 수 있습니다: `python3 -B app.py --db local.sqlite3`
+| 경로 | 구성 |
+| --- | --- |
+| apps/portal | 정적 HTML 진입 화면 |
+| apps/erp | Python HTTP API, JavaScript 업무 화면, 생산·BOM·야드 업무 모듈 |
+| apps/twin/unity | Unity 6 · C# · URP · UI Toolkit. 야드 렌더링, 탑재 재생과 패널 |
+| apps/twin/pipeline | 예시 시설·블록·운영계획 생성, OBJ 모델 생성, 스냅샷 내보내기 |
+| shared/contracts | ERP–Twin 데이터 연동 기준 |
+| shared/unity-packages | 공용 Unity 패키지 |
+| tools | 로컬 실행과 데이터 이관 |
 
-**테스트**
+## 실행
 
-```sh
-python3 -B -m unittest -v
-```
+[로컬 개발 가이드](docs/development.md)에서 최초 설치와 환경변수 설정을 마친 뒤, 저장소 루트에서 실행합니다.
 
-## 구성
+| 서비스 | 명령 | 접속 |
+| --- | --- | --- |
+| PostgreSQL 17 · Redis | `tools/dev db-up` | 55432 · 56379 |
+| ERP | `tools/dev erp` | [ERP](http://127.0.0.1:8001/) · [Swagger](http://127.0.0.1:8001/docs) |
+| Portal | `tools/dev portal` | [Portal](http://127.0.0.1:8080/) |
+| Unity Twin | `tools/dev twin-build` 후 `tools/dev twin-run` | macOS 앱 · 에디터 6000.3.23f1 |
 
-```
-app.py            HTTP 서버, 스키마, API
-index.html        업무 화면 (단일 페이지)
-shipbuilding.py   호선 일정, 블록 구성·선후행, 탑재 준비 판정
-planning.py       MRP · APS
-procurement.py    구매·입고·출고
-traceability.py   문서 번호와 원천 문서 추적
-storage.py        PostgreSQL 어댑터 (로컬 SQLite 겸용)
-compose.yaml      PostgreSQL 17 컨테이너
-seed_*.py         가상 데이터
-```
-
-자세한 사용법은 [USER_GUIDE.md](USER_GUIDE.md), 작업 내역은 [REPORT.md](REPORT.md)를 참고하세요.
-
-## 범위와 한계
-
-로컬 환경에서만 실행하는 MVP입니다. 사용자 권한과 감사 이력, 블록의 세부 좌표·회전·3D 형상, 실제 센서 연결은 포함하지 않습니다.
+- [ERP 업무 흐름](apps/erp/docs/ERP_WORKFLOW.md) · [ERP 사용 가이드와 API](apps/erp/README.md)
+- [Unity 실행과 데이터 갱신](apps/twin/README.md) · [Unity 코드 구조](apps/twin/docs/project-map.md)
+- [ERP–Twin 연동 기준](shared/contracts/README.md) · [스냅샷 형식](apps/twin/docs/TWIN_FORMAT.md)
