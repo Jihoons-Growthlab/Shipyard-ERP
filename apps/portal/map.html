@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>조선소 지도 · ShipYard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;color:#162d41;background:#f3f7fa;font:14px/1.5 system-ui,sans-serif;word-break:keep-all}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;background:#10283e;color:white}
+h1,h2,p{margin:0}h1{font-size:20px}header p{color:#b7cedd;font-size:12px}
+header a{color:white;text-decoration:none;padding:7px 12px;border:1px solid #587286;border-radius:7px;white-space:nowrap}
+main{display:grid;grid-template-columns:minmax(0,1fr) 320px;height:calc(100dvh - 72px);min-height:520px}
+.map-area{position:relative;min-height:360px}
+#map{height:100%;background-color:#153247;background-image:linear-gradient(#ffffff0c 1px,transparent 1px),linear-gradient(90deg,#ffffff0c 1px,transparent 1px);background-size:32px 32px}
+.map-tools{position:absolute;right:14px;top:14px;z-index:500;display:flex;gap:8px}
+button{font:inherit;cursor:pointer;color:inherit;background:#fff;border:1px solid #ccd9e2;border-radius:7px;padding:7px 10px}
+button:focus-visible,a:focus-visible{outline:3px solid #17a6ba;outline-offset:2px}
+aside{padding:20px;background:#fff;border-left:1px solid #d5e0e8;overflow:auto}
+aside h2{font-size:17px;margin:0 0 8px}.muted{color:#526a7d;font-size:13px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.filters button[aria-pressed=true],.item[aria-pressed=true]{background:#e5f4f6;border-color:#398c98}
+#details{border:1px solid #d6e4eb;border-radius:10px;background:#f5fafc;padding:12px;margin:14px 0}
+#details strong{display:block;margin-bottom:4px}
+#list{display:grid;gap:6px}.item{display:flex;align-items:center;gap:9px;text-align:left}
+.dot{width:10px;height:10px;flex:none;border-radius:50%}
+.map-label{background:#10283eeb;color:white;border:1px solid #7094a4;border-radius:5px;padding:2px 6px;box-shadow:none;font-weight:650}
+.map-label::before{display:none}
+#status:empty{display:none}#status{margin-top:10px}
+[hidden]{display:none!important}
+@media(max-width:760px){main{height:auto;display:block}.map-area{height:56dvh}aside{border-left:0}}
+
+.hoon-lockup{display:inline-flex;align-items:center;gap:12px;color:#18374c;white-space:nowrap}
+.hoon-word{display:inline-flex;align-items:center;gap:0;line-height:1}
+.hoon-word img{display:block;width:42px;height:42px;object-fit:contain;mix-blend-mode:multiply;filter:grayscale(1) invert(1) contrast(2) url(#hoon-ink)}
+.hoon-word b{font:italic 700 48px/.86 "Snell Roundhand","Apple Chancery","Brush Script MT",cursive;letter-spacing:-.05em;padding:0 3px 4px 0}
+.hoon-industry{font-weight:750;font-size:13px;letter-spacing:.11em;border-left:1px solid #9eb2c0;padding-left:12px}
+.hoon-lockup.hoon-on-dark{color:#fff}
+.hoon-on-dark .hoon-word img{mix-blend-mode:lighten;filter:none}
+.hoon-on-dark .hoon-industry{color:#d6e7ee}
+.hoon-account{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;font:400 14px/1.55 Inter,"Apple SD Gothic Neo",system-ui,sans-serif;color:#3f566a}
+.hoon-account button,.hoon-account a{font:inherit;padding:6px 12px;min-height:0;color:inherit;background:#fff;border:1px solid #cdd8e2;border-radius:7px;box-shadow:none}
+.hoon-account button:hover,.hoon-account a:hover{background:#eef4f8;filter:none}
+.hoon-account[hidden]{display:none}
+@media(max-width:570px){.hoon-lockup{gap:6px}.hoon-word img{width:32px;height:32px}.hoon-word b{font-size:37px}.hoon-industry{font-size:9px;padding-left:6px}}
+
+header{background:#fff;color:#18374c;border-bottom:1px solid #dce5ed;flex-wrap:wrap}
+
+#map-logout[hidden]{display:none}
+</style>
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="hoon-ink" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values=".973 0 0 0 .027  0 .639 0 0 .361  0 0 .596 0 .404  0 0 0 1 0"/>
+  </filter>
+</svg>
+<header><span class="hoon-lockup" role="img" aria-label="Hoon Heavy Industries"><span class="hoon-word" aria-hidden="true"><img src="/shipyard-icon.png" alt="" width="42" height="42"><b>oon</b></span><span class="hoon-industry" aria-hidden="true">HEAVY INDUSTRIES</span></span><div class="hoon-account"><span id="map-account"></span><a href="/">SIWS 업무 홈</a><button id="map-logout" type="button" hidden>로그아웃</button></div></header>
+<main aria-label="조선소 지도">
+  <section class="map-area" aria-label="조선소 배치 지도">
+    <div id="map"></div>
+    <div class="map-tools"><button id="fit">전체 보기</button><button id="satellite" hidden aria-pressed="false">위성 영상</button></div>
+  </section>
+  <aside>
+    <h2>시설과 선체</h2>
+    <p class="muted" id="summary">시설 정보를 불러오는 중입니다.</p>
+    <div class="filters" id="filters" aria-label="시설 유형"></div>
+    <div id="details" aria-live="polite"><p class="muted">지도나 목록에서 시설을 선택하면 용도를 볼 수 있습니다.</p></div>
+    <div id="list"></div>
+    <p class="muted" id="status" role="status"></p>
+  </aside>
+</main>
+<script>
+const KIND_COLORS = {'도크':'#63c8f2','안벽':'#c2abfa','작업장':'#ffd17b','야드':'#68dec3','창고':'#f4acd8','선체':'#ff937d'};
+const SITE = {lat:34.833114, lon:128.59749, x_axis_bearing_deg:235};
+const R = 6378137;
+const ALIASES = {'DTW-FAB':'GY-ASSY2','DTW-OUT':'GY-OUTFIT','DTW-YARD':'GY-PE2','DTW-DOCK':'GY-DOCK2'};
+const PURPOSE = {
+  'GY-FAB':'후판을 절단하고 가공해 블록 조립에 필요한 부재를 만듭니다.',
+  'GY-ASSY1':'가공한 부재를 용접해 선체 블록을 조립합니다.',
+  'GY-ASSY2':'가공한 부재를 용접해 선체 블록을 조립합니다.',
+  'GY-OUTFIT':'블록을 탑재하기 전에 배관과 장비를 설치합니다.',
+  'GY-PAINT':'블록 표면을 처리하고 도장합니다.',
+  'GY-PE1':'여러 블록을 결합하거나 탑재 차례를 기다리는 공간입니다.',
+  'GY-PE2':'여러 블록을 결합하거나 탑재 차례를 기다리는 공간입니다.',
+  'GY-QOUTFIT':'진수 이후 안벽에서 진행하는 의장 작업을 지원합니다.',
+  'GY-QSTOCK':'안벽 의장에 사용할 자재를 작업 순서에 맞춰 준비합니다.',
+  'GY-STOCK':'완성한 블록을 다음 공정이나 이동 전까지 보관합니다.',
+  'GY-STORE':'생산에 투입할 자재를 보관하고 출고합니다.'
+};
+const PURPOSE_BY_KIND = {
+  '도크':'크레인으로 블록을 인양해 선체에 탑재합니다.',
+  '안벽':'진수한 선박을 계류하고 후행 의장과 시운전을 준비합니다.',
+  '작업장':'블록 생산과 의장 작업을 수행합니다.',
+  '야드':'블록이나 자재를 다음 공정에 투입하기 전까지 적치합니다.',
+  '창고':'생산 자재를 보관하고 출고합니다.'
+};
+// Facility geometry from ShipyardTwin/data/yard.jsonl.
+const TWIN_LAYOUT = [
+  {"location": "DT-DOCK", "x": 430, "y": 170, "z": 0, "heading_deg": 0, "size_x_m": 370, "size_y_m": 100, "size_z_m": 0, "name": "1도크", "kind": "도크"},
+  {"location": "GY-DOCK2", "x": 430, "y": 10, "z": 0, "heading_deg": 0, "size_x_m": 370, "size_y_m": 100, "size_z_m": 0, "name": "2도크", "kind": "도크"},
+  {"location": "GY-PIER", "x": 935, "y": -150, "z": 0, "heading_deg": 0, "size_x_m": 640, "size_y_m": 40, "size_z_m": 0, "name": "의장 피어", "kind": "안벽"},
+  {"location": "GY-FAB", "x": 40, "y": 400, "z": 0, "heading_deg": 0, "size_x_m": 170, "size_y_m": 70, "size_z_m": 22, "name": "강재 가공공장", "kind": "작업장"},
+  {"location": "GY-ASSY1", "x": 40, "y": 300, "z": 0, "heading_deg": 0, "size_x_m": 170, "size_y_m": 80, "size_z_m": 30, "name": "블록 조립 1공장", "kind": "작업장"},
+  {"location": "GY-ASSY2", "x": 40, "y": 190, "z": 0, "heading_deg": 0, "size_x_m": 170, "size_y_m": 80, "size_z_m": 30, "name": "블록 조립 2공장", "kind": "작업장"},
+  {"location": "GY-OUTFIT", "x": 40, "y": 80, "z": 0, "heading_deg": 0, "size_x_m": 170, "size_y_m": 70, "size_z_m": 24, "name": "선행의장 공장", "kind": "작업장"},
+  {"location": "GY-PAINT", "x": 40, "y": -30, "z": 0, "heading_deg": 0, "size_x_m": 150, "size_y_m": 70, "size_z_m": 26, "name": "도장 공장", "kind": "작업장"},
+  {"location": "GY-PE1", "x": 197.5, "y": 170, "z": 0, "heading_deg": 0, "size_x_m": 95, "size_y_m": 100, "size_z_m": 0, "name": "1 PE장", "kind": "야드"},
+  {"location": "GY-PE2", "x": 197.5, "y": 10, "z": 0, "heading_deg": 0, "size_x_m": 95, "size_y_m": 100, "size_z_m": 0, "name": "2 PE장", "kind": "야드"},
+  {"location": "GY-QOUTFIT", "x": 470, "y": -150, "z": 0, "heading_deg": 0, "size_x_m": 120, "size_y_m": 60, "size_z_m": 18, "name": "안벽 의장공장", "kind": "작업장"},
+  {"location": "GY-QSTOCK", "x": 300, "y": -150, "z": 0, "heading_deg": 0, "size_x_m": 160, "size_y_m": 60, "size_z_m": 0, "name": "의장 자재 적치장", "kind": "야드"},
+  {"location": "GY-STOCK", "x": -115, "y": -60, "z": 0, "heading_deg": 0, "size_x_m": 70, "size_y_m": 160, "size_z_m": 0, "name": "블록 적치장", "kind": "야드"},
+  {"location": "GY-STORE", "x": -110, "y": 190, "z": 0, "heading_deg": 0, "size_x_m": 60, "size_y_m": 200, "size_z_m": 14, "name": "자재 창고", "kind": "창고"}
+];
+let site = SITE;
+function yardToGeo(x, y) {
+  const b = site.x_axis_bearing_deg * Math.PI / 180;
+  const east = x * Math.sin(b) - y * Math.cos(b), north = x * Math.cos(b) + y * Math.sin(b);
+  return [site.lat + north / R * 180 / Math.PI, site.lon + east / (R * Math.cos(site.lat * Math.PI / 180)) * 180 / Math.PI];
+}
+function rectangle(cx, cy, sx, sy, headingDeg) {
+  const a = headingDeg * Math.PI / 180;
+  return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([u, v]) => {
+    const dx = u * sx / 2, dy = v * sy / 2;
+    return yardToGeo(cx + dx * Math.cos(a) - dy * Math.sin(a), cy + dx * Math.sin(a) + dy * Math.cos(a));
+  });
+}
+
+
+const $ = id => document.getElementById(id);
+const map = L.map('map', {maxZoom:20}).setView([SITE.lat,SITE.lon],17);
+L.control.scale({imperial:false}).addTo(map);
+const shapes = L.layerGroup().addTo(map);
+map.createPane('yardSurface');
+const surfacePane = map.getPane('yardSurface');
+surfacePane.style.zIndex = '425';
+surfacePane.style.pointerEvents = 'none';
+const surface = L.layerGroup().addTo(map);
+map.createPane('facilities');
+map.getPane('facilities').style.zIndex = '450';
+let items = [], visible = [], selected = null, filter = '', satellite = null;
+const shapeById = new Map();
+const token = (() => { try { return sessionStorage.getItem('shipyard-token'); } catch { return null; } })();
+
+async function api(route) {
+  const response = await fetch('/api/' + route, {headers: token ? {Authorization:'Bearer ' + token} : {}});
+  if (!response.ok) throw new Error(response.status === 401 ? 'SIWS에 로그인한 뒤 지도를 다시 열어 주세요.' : 'ERP 지도 데이터를 불러오지 못했습니다.');
+  return response.json();
+}
+
+function node(tag, text) {
+  const element = document.createElement(tag);
+  element.textContent = text;
+  return element;
+}
+
+function select(item, focusMap = false) {
+  selected = item;
+  for (const entry of visible) {
+    const active = entry === item;
+    shapeById.get(entry.id).setStyle({weight:active ? 4 : 2, fillOpacity:active ? .78 : .45});
+    entry.button.setAttribute('aria-pressed', String(active));
+  }
+  const details = $('details');
+  details.replaceChildren(node('strong',item.name), node('p',item.description));
+  if (item.dimensions) {
+    const size = node('p',item.dimensions);
+    size.className = 'muted';
+    details.append(size);
+  }
+  if (focusMap) map.panTo(shapeById.get(item.id).getBounds?.().getCenter() || shapeById.get(item.id).getLatLng());
+}
+
+function render() {
+  shapes.clearLayers();
+  shapeById.clear();
+  $('list').replaceChildren();
+  visible = items.filter(item => !filter || item.kind === filter);
+  $('details').replaceChildren(node('p','지도나 목록에서 시설 또는 선체를 선택하세요.'));
+  for (const item of visible) {
+    const color = KIND_COLORS[item.kind] || '#bed2df';
+    const style = {pane:'facilities',color, weight:2, fillColor:color, fillOpacity:.45};
+    const shape = (item.points ? L.polygon(item.points,style) : L.circleMarker(item.center,{...style,radius:7})).addTo(shapes);
+    shape.bindTooltip(node('span',item.label || item.name),{permanent:true,direction:'center',className:'map-label'});
+    shape.on('click', () => select(item));
+    shapeById.set(item.id,shape);
+    const button = node('button','');
+    button.className = 'item';
+    button.setAttribute('aria-pressed','false');
+    const dot = node('span','');
+    dot.className = 'dot';
+    dot.style.background = color;
+    button.append(dot,node('span',item.name));
+    button.onclick = () => select(item,true);
+    item.button = button;
+    $('list').append(button);
+  }
+  if (visible.includes(selected)) select(selected);
+  else selected = null;
+}
+
+function fit() {
+  const points = visible.flatMap(item => item.points || [item.center]);
+  if (points.length) map.fitBounds(points,{padding:[28,28],maxZoom:18});
+}
+$('fit').onclick = fit;
+
+// The perimeter follows the Twin layout in yard metres. The fitting pier stays narrow
+// so the deck does not fill the water between the pier and the dry docks.
+const TWIN_APRON = [
+  [-165,-152], [210,-152], [210,-185], [1265,-185], [1265,-115],
+  [605,-115], [605,230], [145,230], [145,450], [-65,450],
+  [-65,310], [-165,310]
+];
+
+function drawYardSurface(layout, twinLayout) {
+  surface.clearLayers();
+  const options = {pane:'yardSurface', interactive:false};
+  const slab = (points, fillColor, color, weight = 1) =>
+    L.polygon(points, {...options, fillColor, fillOpacity:1, color, weight}).addTo(surface);
+
+  if (twinLayout) {
+    slab(TWIN_APRON.map(([x,y]) => yardToGeo(x,y)), '#c8c7bf', '#5c6970', 3);
+    // Concrete paving joints on the main production apron.
+    for (let x = -140; x <= 580; x += 32) {
+      const bottom = x >= 210 ? -181 : -149;
+      const top = x < -65 ? 307 : x < 145 ? 447 : 227;
+      L.polyline([yardToGeo(x,bottom),yardToGeo(x,top)],
+        {...options,color:'#777a77',weight:1,opacity:.24}).addTo(surface);
+    }
+    for (let y = -128; y <= 416; y += 32) {
+      const left = y > 310 ? -65 : -165;
+      const right = y < -115 ? 1265 : y <= 230 ? 605 : 145;
+      L.polyline([yardToGeo(left+3,y),yardToGeo(right-3,y)],
+        {...options,color:'#777a77',weight:1,opacity:.24}).addTo(surface);
+    }
+  }
+
+  for (const f of layout.values()) {
+    if (f.size_x_m <= 0 || f.size_y_m <= 0) continue;
+    const {x,y,size_x_m:width,size_y_m:depth,heading_deg:heading} = f;
+    if (f.kind === '도크' && width > 12 && depth > 12) {
+      slab(rectangle(x,y,width,depth,heading), '#d6d5cb', '#69747a', 2);
+      slab(rectangle(x,y,width-12,depth-12,heading), '#3d505b', '#a5a299', 2);
+    } else if (!twinLayout || f.kind === '안벽') {
+      slab(rectangle(x,y,width,depth,heading), '#c8c7bf', '#7c8586');
+    }
+  }
+}
+
+function facility(f) {
+  const sized = f.size_x_m > 0 && f.size_y_m > 0;
+  return {id:f.location, name:f.name, kind:f.kind,
+    points:sized ? rectangle(f.x,f.y,f.size_x_m,f.size_y_m,f.heading_deg) : null,
+    center:yardToGeo(f.x,f.y),
+    description:PURPOSE[f.location] || PURPOSE_BY_KIND[f.kind] || '조선소 시설입니다.',
+    dimensions:sized ? `${f.size_x_m} × ${f.size_y_m} m` : ''};
+}
+
+function ship(placement, vessel, dock) {
+  const {origin_x:x,origin_y:y,heading_deg:heading,hull} = placement;
+  const {length_m:length,beam_m:beam} = vessel;
+  const a = heading * Math.PI / 180;
+  const points = [[0,-.35],[.1,-.5],[.78,-.5],[1,0],[.78,.5],[.1,.5],[0,.35]].map(([u,v]) =>
+    yardToGeo(x + u*length*Math.cos(a) - v*beam*Math.sin(a),y + u*length*Math.sin(a) + v*beam*Math.cos(a)));
+  return {id:'hull-'+hull,name:`${hull} · ${vessel.vessel_name || vessel.vessel_type}`,label:hull,kind:'선체',points,
+    description:`${vessel.vessel_type} · ${dock?.name || '배치 시설 미등록'}`,
+    dimensions:`전장 ${length} m · 선폭 ${beam} m`};
+}
+
+function imageryBounds(zoom, x, y, size) {
+  const world = 256 * 2 ** zoom;
+  const latitude = pixel => Math.atan(Math.sinh(Math.PI * (1 - 2 * pixel / world))) * 180 / Math.PI;
+  const longitude = pixel => pixel / world * 360 - 180;
+  return [[latitude(y * 256 + size), longitude(x * 256)],
+          [latitude(y * 256), longitude(x * 256 + size)]];
+}
+
+async function setupImagery(config, useTwinImagery) {
+  const imagery = L.layerGroup();
+  if (config.vworld_key) {
+    L.tileLayer(`https://api.vworld.kr/req/wmts/1.0.0/${encodeURIComponent(config.vworld_key)}/Satellite/{z}/{y}/{x}.jpeg`,
+      {maxNativeZoom:19,maxZoom:20,attribution:'지도 © 브이월드 (국토교통부)'}).addTo(imagery);
+  }
+  if (useTwinImagery) {
+    try {
+      const response = await fetch('/map/twin-satellite.json');
+      if (!response.ok) throw new Error('영상 정보 없음');
+      const m = await response.json();
+      const attribution = '위성 영상 © 브이월드 (국토교통부)';
+      const overview = L.imageOverlay('/map/twin-satellite.jpg',
+        imageryBounds(m.zoom,m.tile_x0,m.tile_y0,m.size_px),{attribution}).addTo(imagery);
+      overview.once('error', () => { $('status').textContent = '디지털 트윈 항공영상을 불러오지 못했습니다.'; });
+      if (m.inner_size_px) {
+        L.imageOverlay('/map/twin-satellite-detail.jpg',
+          imageryBounds(m.inner_zoom,m.inner_tile_x0,m.inner_tile_y0,m.inner_size_px)).addTo(imagery);
+      }
+    } catch {
+      if (!config.vworld_key) $('status').textContent = '디지털 트윈 항공영상 파일을 찾을 수 없습니다.';
+    }
+  }
+  if (!imagery.getLayers().length) return;
+  satellite = imagery.addTo(map);
+  const button = $('satellite');
+  button.hidden = false;
+  const update = () => {
+    const show = map.hasLayer(satellite);
+    button.setAttribute('aria-pressed',String(show));
+    button.textContent = show ? '배치도' : '위성 영상';
+  };
+  button.onclick = () => {
+    if (map.hasLayer(satellite)) map.removeLayer(satellite);
+    else satellite.addTo(map);
+    update();
+  };
+  update();
+}
+
+async function showAccount() {
+  const user = await api('me');
+  $('map-account').textContent = (user.name || user.id) + ' (' + user.id + ' · ' + user.group_id + ')';
+  $('map-logout').hidden = false;
+}
+$('map-logout').onclick = async () => {
+  try {
+    await fetch('/api/logout',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}'});
+  } finally {
+    sessionStorage.removeItem('shipyard-token');
+    location.assign('/');
+  }
+};
+showAccount().catch(() => {});
+
+async function load() {
+  const [sites, live, placements, vessels, config] = await Promise.all([
+    api('yard_sites'),api('location_geo'),api('hull_placements'),
+    api('vessel_details'),fetch('/map/config').then(response => response.ok ? response.json() : {}).catch(() => ({}))
+  ]);
+  const activeSite = sites[0];
+  const sameSite = activeSite && ['lat','lon','x_axis_bearing_deg'].every(key => Math.abs(activeSite[key]-SITE[key]) < 1e-6);
+  site = activeSite || SITE;
+  const layout = new Map((sameSite || !activeSite ? TWIN_LAYOUT : []).map(f => [f.location,f]));
+  for (const f of live) {
+    const twinId = sameSite ? ALIASES[f.location] : null;
+    if (twinId && layout.has(twinId)) continue;
+    layout.set(f.location,f);
+  }
+  const facilities = Array.from(layout.values(),facility);
+  const ships = placements.flatMap(placement => {
+    const vessel = vessels.find(v => v.hull === placement.hull);
+    const dock = layout.get(placement.dock) || layout.get(ALIASES[placement.dock]);
+    return vessel?.length_m && vessel?.beam_m ? [ship(placement,vessel,dock)] : [];
+  });
+  items = [...facilities,...ships];
+  $('summary').textContent = `시설 ${facilities.length}곳 · 배치된 선체 ${ships.length}척`;
+  const filters = $('filters');
+  for (const name of ['',...Object.keys(KIND_COLORS).filter(kind => items.some(item => item.kind === kind))]) {
+    const button = node('button',name || '전체');
+    button.setAttribute('aria-pressed',String(!name));
+    button.onclick = () => {
+      filter = name;
+      for (const sibling of filters.children) sibling.setAttribute('aria-pressed',String(sibling === button));
+      render();
+      fit();
+    };
+    filters.append(button);
+  }
+  await setupImagery(config, sameSite || !activeSite);
+  drawYardSurface(layout, sameSite || !activeSite);
+  render();
+  fit();
+}
+load().catch(error => {
+  $('summary').textContent = '시설 정보를 표시할 수 없습니다.';
+  $('status').textContent = error.message;
+});
+</script>
+</body>
+</html>
