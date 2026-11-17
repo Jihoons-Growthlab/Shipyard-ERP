@@ -1,0 +1,11 @@
+{
+  "name": "com.growthlab.core",
+  "version": "0.1.0",
+  "displayName": "GrowthLab Core",
+  "description": "Shared Unity foundation for games and simulations: ordered initialization and shutdown, type-keyed events, logging, settings, and async scene loading.",
+  "unity": "6000.3",
+  "keywords": ["core", "initialization", "events", "settings", "scene"],
+  "dependencies": {
+    "com.unity.modules.jsonserialize": "1.0.0"
+  }
+}

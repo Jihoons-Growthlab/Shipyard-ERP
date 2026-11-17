@@ -1,0 +1,6 @@
+{
+  "name": "GrowthLab.Auth",
+  "rootNamespace": "GrowthLab.Auth",
+  "references": ["GrowthLab.Network"],
+  "autoReferenced": true
+}

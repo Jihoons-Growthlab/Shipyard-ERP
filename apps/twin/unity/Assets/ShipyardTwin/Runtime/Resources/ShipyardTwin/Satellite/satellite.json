@@ -1,0 +1,48 @@
+{
+ "format": "shipyard-satellite/1",
+ "zoom": 16,
+ "tile_x0": 56172,
+ "tile_y0": 25990,
+ "tiles": 12,
+ "size_px": 3072,
+ "attribution": "VWorld (MOLIT); elevation: Mapzen Terrain Tiles (AWS)",
+ "centre_lat": 34.83151871021974,
+ "centre_lon": 128.59604998197224,
+ "sea_seeds": [
+  [
+   1321,
+   1802
+  ],
+  [
+   1258,
+   1846
+  ],
+  [
+   1196,
+   1890
+  ],
+  [
+   1274,
+   1736
+  ],
+  [
+   1211,
+   1779
+  ],
+  [
+   1149,
+   1823
+  ]
+ ],
+ "grid": 384,
+ "terrain_zoom": 14,
+ "terrain_x0": 14043,
+ "terrain_y0": 6497,
+ "terrain_tiles_x": 3,
+ "terrain_tiles_y": 4,
+ "inner_zoom": 18,
+ "inner_tile_x0": 224706,
+ "inner_tile_y0": 103978,
+ "inner_tiles": 12,
+ "inner_size_px": 3072
+}

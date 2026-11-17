@@ -1,0 +1,500 @@
+{
+ "format": "shipyard-scenery/1",
+ "roads": [
+  {
+   "x0": 137.5,
+   "y0": -78.0,
+   "x1": 137.5,
+   "y1": 450.0,
+   "width": 14
+  },
+  {
+   "x0": -62.0,
+   "y0": -150.0,
+   "x1": -62.0,
+   "y1": 450.0,
+   "width": 10
+  },
+  {
+   "x0": -62.0,
+   "y0": 450.0,
+   "x1": 137.5,
+   "y1": 450.0,
+   "width": 10
+  },
+  {
+   "x0": -171.0,
+   "y0": -150.0,
+   "x1": -62.0,
+   "y1": -150.0,
+   "width": 10
+  },
+  {
+   "x0": -62.0,
+   "y0": 25.0,
+   "x1": 137.5,
+   "y1": 25.0,
+   "width": 8
+  },
+  {
+   "x0": -62.0,
+   "y0": 132.5,
+   "x1": 137.5,
+   "y1": 132.5,
+   "width": 8
+  },
+  {
+   "x0": -62.0,
+   "y0": 245.0,
+   "x1": 137.5,
+   "y1": 245.0,
+   "width": 8
+  },
+  {
+   "x0": -62.0,
+   "y0": 352.5,
+   "x1": 137.5,
+   "y1": 352.5,
+   "width": 8
+  },
+  {
+   "x0": 137.5,
+   "y0": 90.0,
+   "x1": 605.0,
+   "y1": 90.0,
+   "width": 10
+  },
+  {
+   "x0": 137.5,
+   "y0": 255.0,
+   "x1": 605.0,
+   "y1": 255.0,
+   "width": 10
+  },
+  {
+   "x0": -62.0,
+   "y0": -78.0,
+   "x1": 575.0,
+   "y1": -78.0,
+   "width": 12
+  },
+  {
+   "x0": 575.0,
+   "y0": -78.0,
+   "x1": 575.0,
+   "y1": -150,
+   "width": 10
+  },
+  {
+   "x0": 575.0,
+   "y0": -150,
+   "x1": 1235.0,
+   "y1": -150,
+   "width": 8
+  }
+ ],
+ "props": [
+  {
+   "model": "GY-FAB",
+   "x": 40,
+   "y": 400,
+   "heading": 0
+  },
+  {
+   "model": "GY-ASSY1",
+   "x": 40,
+   "y": 300,
+   "heading": 0
+  },
+  {
+   "model": "GY-ASSY2",
+   "x": 40,
+   "y": 190,
+   "heading": 0
+  },
+  {
+   "model": "GY-OUTFIT",
+   "x": 40,
+   "y": 80,
+   "heading": 0
+  },
+  {
+   "model": "GY-PAINT",
+   "x": 40,
+   "y": -30,
+   "heading": 0
+  },
+  {
+   "model": "GY-QOUTFIT",
+   "x": 470,
+   "y": -150,
+   "heading": 0
+  },
+  {
+   "model": "GY-STORE",
+   "x": -110,
+   "y": 190,
+   "heading": 0
+  },
+  {
+   "model": "office",
+   "x": -115,
+   "y": 55.0,
+   "heading": 90
+  },
+  {
+   "model": "gatehouse",
+   "x": -163.0,
+   "y": -159.0,
+   "heading": 0
+  },
+  {
+   "model": "car_white",
+   "x": -153,
+   "y": 40.0,
+   "heading": 0
+  },
+  {
+   "model": "car_silver",
+   "x": -153,
+   "y": 45.0,
+   "heading": 0
+  },
+  {
+   "model": "car_black",
+   "x": -153,
+   "y": 50.0,
+   "heading": 0
+  },
+  {
+   "model": "car_red",
+   "x": -153,
+   "y": 55.0,
+   "heading": 0
+  },
+  {
+   "model": "car_white",
+   "x": -153,
+   "y": 60.0,
+   "heading": 0
+  },
+  {
+   "model": "car_silver",
+   "x": -153,
+   "y": 65.0,
+   "heading": 0
+  },
+  {
+   "model": "car_black",
+   "x": -160,
+   "y": 40.0,
+   "heading": 0
+  },
+  {
+   "model": "car_red",
+   "x": -160,
+   "y": 45.0,
+   "heading": 0
+  },
+  {
+   "model": "car_white",
+   "x": -160,
+   "y": 50.0,
+   "heading": 0
+  },
+  {
+   "model": "car_silver",
+   "x": -160,
+   "y": 55.0,
+   "heading": 0
+  },
+  {
+   "model": "car_black",
+   "x": -160,
+   "y": 60.0,
+   "heading": 0
+  },
+  {
+   "model": "car_red",
+   "x": -160,
+   "y": 65.0,
+   "heading": 0
+  },
+  {
+   "model": "luffing_crane",
+   "x": 668.33,
+   "y": -162.0,
+   "heading": 90
+  },
+  {
+   "model": "luffing_crane",
+   "x": 775.0,
+   "y": -138.0,
+   "heading": 270
+  },
+  {
+   "model": "luffing_crane",
+   "x": 881.67,
+   "y": -162.0,
+   "heading": 90
+  },
+  {
+   "model": "luffing_crane",
+   "x": 988.33,
+   "y": -138.0,
+   "heading": 270
+  },
+  {
+   "model": "luffing_crane",
+   "x": 1095.0,
+   "y": -162.0,
+   "heading": 90
+  },
+  {
+   "model": "luffing_crane",
+   "x": 1201.67,
+   "y": -138.0,
+   "heading": 270
+  },
+  {
+   "model": "light_tower",
+   "x": 721.67,
+   "y": -144.5,
+   "heading": 0
+  },
+  {
+   "model": "light_tower",
+   "x": 828.33,
+   "y": -155.5,
+   "heading": 0
+  },
+  {
+   "model": "light_tower",
+   "x": 935.0,
+   "y": -144.5,
+   "heading": 0
+  },
+  {
+   "model": "light_tower",
+   "x": 1041.67,
+   "y": -155.5,
+   "heading": 0
+  },
+  {
+   "model": "light_tower",
+   "x": 1148.33,
+   "y": -144.5,
+   "heading": 0
+  },
+  {
+   "model": "container_blue",
+   "x": 629.0,
+   "y": -143.5,
+   "heading": 0
+  },
+  {
+   "model": "container_orange",
+   "x": 629.0,
+   "y": -156.5,
+   "heading": 0
+  },
+  {
+   "model": "light_tower",
+   "x": 147.3,
+   "y": -58.0,
+   "heading": 90
+  },
+  {
+   "model": "light_tower",
+   "x": 147.3,
+   "y": 27.0,
+   "heading": 90
+  },
+  {
+   "model": "light_tower",
+   "x": 147.3,
+   "y": 112.0,
+   "heading": 90
+  },
+  {
+   "model": "light_tower",
+   "x": 147.3,
+   "y": 197.0,
+   "heading": 90
+  },
+  {
+   "model": "light_tower",
+   "x": 147.3,
+   "y": 282.0,
+   "heading": 90
+  },
+  {
+   "model": "light_tower",
+   "x": 147.3,
+   "y": 367.0,
+   "heading": 90
+  },
+  {
+   "model": "luffing_crane",
+   "x": 337.5,
+   "y": 242.0,
+   "heading": 270
+  },
+  {
+   "model": "luffing_crane",
+   "x": 522.5,
+   "y": 242.0,
+   "heading": 270
+  },
+  {
+   "model": "luffing_crane",
+   "x": 337.5,
+   "y": -62.0,
+   "heading": 90
+  },
+  {
+   "model": "luffing_crane",
+   "x": 522.5,
+   "y": -62.0,
+   "heading": 90
+  },
+  {
+   "model": "plate_stack",
+   "x": 128.0,
+   "y": 375,
+   "heading": 90
+  },
+  {
+   "model": "plate_stack",
+   "x": 128.0,
+   "y": 391,
+   "heading": 90
+  },
+  {
+   "model": "plate_stack",
+   "x": 128.0,
+   "y": 407,
+   "heading": 90
+  },
+  {
+   "model": "plate_stack",
+   "x": 128.0,
+   "y": 423,
+   "heading": 90
+  },
+  {
+   "model": "pipe_stack",
+   "x": 128.0,
+   "y": 62,
+   "heading": 90
+  },
+  {
+   "model": "pipe_stack",
+   "x": 128.0,
+   "y": 80,
+   "heading": 90
+  },
+  {
+   "model": "pipe_stack",
+   "x": 128.0,
+   "y": 98,
+   "heading": 90
+  },
+  {
+   "model": "forklift",
+   "x": 128.0,
+   "y": 110,
+   "heading": 180
+  },
+  {
+   "model": "forklift",
+   "x": 128.0,
+   "y": 92,
+   "heading": 90
+  },
+  {
+   "model": "forklift",
+   "x": 128.0,
+   "y": 202,
+   "heading": 90
+  },
+  {
+   "model": "truck",
+   "x": -62.0,
+   "y": 95.0,
+   "heading": 90
+  },
+  {
+   "model": "transporter",
+   "x": 137.5,
+   "y": 132.5,
+   "heading": 90
+  }
+ ],
+ "routes": [
+  {
+   "model": "transporter_loaded",
+   "speed": 2.5,
+   "loop": false,
+   "path": [
+    -62.0,
+    132.5,
+    137.5,
+    132.5,
+    137.5,
+    90.0,
+    580.0,
+    90.0
+   ]
+  },
+  {
+   "model": "transporter",
+   "speed": 3.0,
+   "loop": true,
+   "path": [
+    137.5,
+    -78.0,
+    137.5,
+    450.0,
+    -62.0,
+    450.0,
+    -62.0,
+    -78.0
+   ]
+  },
+  {
+   "model": "forklift",
+   "speed": 2.0,
+   "loop": true,
+   "path": [
+    -62.0,
+    25.0,
+    137.5,
+    25.0,
+    137.5,
+    132.5,
+    -62.0,
+    132.5
+   ]
+  },
+  {
+   "model": "truck",
+   "speed": 5.0,
+   "loop": false,
+   "path": [
+    -171.0,
+    -150.0,
+    -62.0,
+    -150.0,
+    -62.0,
+    -78.0,
+    575.0,
+    -78.0,
+    575.0,
+    -150,
+    1225.0,
+    -150
+   ]
+  }
+ ]
+}

@@ -1,33 +1,18 @@
-# Secrets / local env
 .env
 .env.*
 !.env.example
-*.pem
 *.key
+*.pem
 *.p12
+*.pfx
 *.crt
-
-# Local databases (demo/fixture data, DB dumps)
-*.sqlite3
-*.sqlite3-*
 *.db
 *.sql.gz
+*.sqlite3*
 *.dump
-
-# Python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Logs
 *.log
-
-# OS / editor
+.venv/
+__pycache__/
 .DS_Store
-.idea/
-.vscode/
-*.swp
+.claude/settings.local.json
+apps/twin/unity/Assets/**/satellite*.jpg

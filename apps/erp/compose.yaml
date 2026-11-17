@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: shipyard
+      POSTGRES_USER: shipyard
+      POSTGRES_PASSWORD: ${SHIPYARD_DB_PASSWORD:?Set SHIPYARD_DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shipyard -d shipyard"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+  redis:
+    image: redis:8.10.3-alpine
+    environment:
+      REDIS_PASSWORD: ${SHIPYARD_REDIS_PASSWORD:?Set SHIPYARD_REDIS_PASSWORD in .env}
+    command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\" --appendonly yes --maxmemory 256mb --maxmemory-policy volatile-lru"]
+    ports:
+      - "127.0.0.1:56379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+volumes:
+  postgres-data:
+  redis-data:

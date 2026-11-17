@@ -1,0 +1,168 @@
+/* ShipyardTwin dashboard shell: icon rail, sliding drawers, exit, depth legend. Colours come from GrowthLabUI.uss. */
+
+.tw-screen { padding: 0; }
+
+/* ---------- rail ---------- */
+.tw-rail {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 72px;
+    align-items: center; padding: 16px 0 14px 0;
+    background-color: rgba(16, 19, 26, 0.96);
+    border-right-width: 1px; border-color: var(--gl-border);
+}
+.tw-mark {
+    width: 36px; height: 36px; border-radius: 10px;
+    align-items: center; justify-content: center;
+    background-color: rgba(84, 160, 255, 0.14);
+}
+.tw-mark-icon { width: 20px; height: 20px; color: var(--gl-accent); }
+.tw-rail-divider { width: 32px; height: 1px; margin: 14px 0 10px 0; background-color: var(--gl-border); }
+
+Button.tw-nav {
+    width: 58px; height: 60px; margin: 4px 0; padding: 0;
+    align-items: center; justify-content: center;
+    border-width: 1px; border-radius: 10px; border-color: rgba(0, 0, 0, 0);
+    background-color: rgba(0, 0, 0, 0);
+    transition-property: background-color, border-color;
+    transition-duration: 0.15s;
+}
+Button.tw-nav:hover { background-color: rgba(255, 255, 255, 0.06); }
+Button.tw-nav:focus { border-color: rgba(84, 160, 255, 0.55); }
+Button.tw-nav--active, Button.tw-nav--active:hover {
+    background-color: rgba(84, 160, 255, 0.16);
+    border-color: rgba(84, 160, 255, 0.45);
+}
+.tw-nav-icon { width: 22px; height: 22px; color: var(--gl-text-dim); }
+.tw-nav-label { font-size: 10px; margin-top: 5px; padding: 0; color: var(--gl-text-dim); -unity-text-align: middle-center; }
+Button.tw-nav:hover .tw-nav-icon, Button.tw-nav:hover .tw-nav-label { color: var(--gl-text); }
+Button.tw-nav--active .tw-nav-icon, Button.tw-nav--active .tw-nav-label,
+Button.tw-nav--active:hover .tw-nav-icon, Button.tw-nav--active:hover .tw-nav-label { color: var(--gl-accent); }
+
+/* ---------- drawers ---------- */
+.tw-drawer {
+    position: absolute; left: 86px; top: 16px; bottom: 16px; width: 360px;
+    border-radius: 12px; padding: 16px;
+    translate: -460px 0; opacity: 0; visibility: hidden;
+    transition-property: translate, opacity;
+    transition-duration: 0.3s, 0.22s;
+    transition-timing-function: ease-out-cubic, ease-out;
+}
+.tw-drawer--open { translate: 0 0; opacity: 1; }
+.tw-drawer--instant { transition-duration: 0s, 0s; }
+.tw-drawer-header { flex-direction: row; justify-content: space-between; align-items: flex-start; }
+.tw-drawer-title { flex-shrink: 1; white-space: normal; margin-right: 8px; }
+.tw-shrink { flex-shrink: 1; white-space: normal; margin-right: 8px; }
+.tw-wrap { white-space: normal; font-size: 12px; }
+.tw-dim { color: var(--gl-text-dim); }
+
+.tw-status {
+    flex-shrink: 0; font-size: 11px; -unity-font-style: bold;
+    padding: 3px 9px; border-radius: 10px;
+    color: var(--gl-accent); background-color: rgba(84, 160, 255, 0.16);
+}
+.tw-status--playing { color: var(--gl-normal); background-color: rgba(64, 190, 120, 0.16); }
+.tw-status--paused { color: var(--gl-warning); background-color: rgba(240, 190, 60, 0.16); }
+.tw-status--muted { color: var(--gl-text-dim); background-color: rgba(255, 255, 255, 0.06); }
+
+Button.tw-icon-button {
+    width: 28px; height: 28px; padding: 0; margin: 0; flex-shrink: 0;
+    align-items: center; justify-content: center;
+    border-radius: 7px; border-width: 1px; border-color: var(--gl-border);
+    background-color: var(--gl-surface);
+}
+Button.tw-icon-button:hover { background-color: rgb(42, 49, 64); }
+.tw-icon-sm { width: 14px; height: 14px; color: var(--gl-text-dim); }
+Button.tw-icon-button:hover .tw-icon-sm { color: var(--gl-text); }
+
+.tw-controls { margin: 12px 0 4px 0; }
+.tw-controls > Button { height: 32px; margin: 0 0 0 6px; }
+.tw-controls > Button.tw-primary { margin-left: 0; }
+Button.tw-primary {
+    border-width: 0; border-radius: 6px;
+    background-color: var(--gl-accent); color: rgb(8, 20, 38); -unity-font-style: bold;
+}
+Button.tw-primary:hover { background-color: rgb(120, 182, 255); }
+Button.tw-secondary {
+    border-width: 0; border-radius: 6px; padding: 0 12px;
+    background-color: rgb(51, 65, 85); color: rgb(241, 245, 249);
+}
+Button.tw-secondary:hover { background-color: rgb(71, 85, 105); }
+Button.tw-danger {
+    border-width: 0; border-radius: 6px; padding: 0 14px;
+    background-color: rgb(185, 55, 50); color: rgb(255, 240, 238); -unity-font-style: bold;
+}
+Button.tw-danger:hover { background-color: rgb(215, 70, 62); }
+
+/* ---------- exit (top right) ---------- */
+Button.tw-exit {
+    position: absolute; top: 16px; right: 16px; height: 36px; margin: 0;
+    padding: 0 14px 0 11px; flex-direction: row; align-items: center;
+    border-radius: 10px; border-width: 1px; border-color: rgba(235, 80, 70, 0.45);
+    background-color: rgba(16, 19, 26, 0.92);
+    transition-property: background-color; transition-duration: 0.15s;
+}
+Button.tw-exit:hover { background-color: rgba(120, 34, 34, 0.95); }
+Button.tw-exit:focus { border-color: rgb(255, 150, 140); }
+.tw-exit-icon { width: 16px; height: 16px; margin-right: 6px; color: rgb(255, 178, 170); }
+.tw-exit-label { padding: 0; margin: 0; color: rgb(255, 205, 200); -unity-font-style: bold; }
+
+/* ---------- depth legend ---------- */
+.tw-legend {
+    position: absolute; right: 16px; bottom: 16px; width: 280px; border-radius: 10px;
+    display: none;
+}
+.tw-legend--show { display: flex; }
+.tw-legend-title { font-size: 13px; -unity-font-style: bold; margin-bottom: 6px; }
+.tw-scale { flex-direction: row; margin: 4px 0 8px 0; }
+.tw-scale-band { flex-grow: 1; flex-basis: 0; }
+.tw-scale-swatch { height: 10px; border-color: rgba(255, 255, 255, 0.35); border-right-width: 1px; }
+.tw-scale-label { font-size: 10px; color: var(--gl-text-dim); padding: 2px 0 0 0; margin: 0; -unity-text-align: upper-left; }
+.tw-scale-unit { font-size: 10px; color: var(--gl-text-dim); padding: 0 0 0 4px; margin: 0; -unity-text-align: middle-left; }
+
+/* ---------- exit confirmation ---------- */
+.tw-backdrop {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+    align-items: center; justify-content: center;
+    background-color: rgba(6, 10, 16, 0.6);
+    display: none;
+}
+.tw-backdrop--show { display: flex; }
+.tw-dialog { width: 320px; max-width: 90%; border-radius: 12px; padding: 18px; }
+.tw-dialog-buttons { justify-content: flex-end; margin-top: 4px; }
+.tw-dialog-buttons > Button { height: 32px; margin: 0 0 0 8px; }
+
+/* ---------- hover tooltip ---------- */
+.tw-tip {
+    position: absolute; left: 0; top: 0; display: none; max-width: 300px;
+    padding: 6px 10px; border-radius: 8px; border-width: 1px; border-color: var(--gl-border);
+    background-color: rgba(16, 19, 26, 0.94);
+}
+.tw-tip-header { flex-direction: row; align-items: center; }
+.tw-tip-kind {
+    font-size: 10px; -unity-font-style: bold; padding: 1px 6px; margin: 0 6px 0 0; border-radius: 8px;
+    color: var(--gl-accent); background-color: rgba(84, 160, 255, 0.16);
+}
+.tw-tip-title { font-size: 13px; -unity-font-style: bold; padding: 0; margin: 0; color: var(--gl-text); }
+.tw-tip-detail { font-size: 11px; padding: 0; margin: 3px 0 0 0; color: var(--gl-text-dim); white-space: normal; }
+
+/* ---------- erection drawer: data status, hull chips ---------- */
+.tw-data-status { font-size: 11px; color: var(--gl-text-dim); white-space: normal; margin: 2px 0 6px 0; padding: 4px 8px;
+    border-radius: 6px; background-color: rgba(255, 255, 255, 0.04); }
+.tw-data-status--erp { color: var(--gl-normal); background-color: rgba(64, 190, 120, 0.10); }
+.tw-data-status--loading { color: var(--gl-accent); background-color: rgba(84, 160, 255, 0.10); }
+.tw-data-status--failed { color: var(--gl-warning); background-color: rgba(240, 190, 60, 0.10); }
+.tw-scroll { margin-right: -8px; }
+.tw-scroll > .unity-scroll-view__content-viewport > .unity-scroll-view__content-container { padding-right: 8px; }
+.tw-chips { flex-direction: row; flex-wrap: wrap; margin-bottom: 6px; }
+Button.tw-chip {
+    margin: 0 6px 6px 0; padding: 5px 10px; border-radius: 8px; border-width: 1px;
+    border-color: var(--gl-border); background-color: var(--gl-surface); align-items: flex-start;
+}
+Button.tw-chip:hover { background-color: rgb(42, 49, 64); }
+Button.tw-chip--active, Button.tw-chip--active:hover { border-color: rgba(84, 160, 255, 0.6); background-color: rgba(84, 160, 255, 0.16); }
+.tw-chip-title { font-size: 12px; -unity-font-style: bold; padding: 0; margin: 0; color: var(--gl-text); }
+.tw-chip-sub { font-size: 10px; padding: 0; margin: 1px 0 0 0; color: var(--gl-text-dim); }
+Button.tw-chip--active .tw-chip-title { color: var(--gl-accent); }
+.tw-summary { margin-bottom: 4px; }
+.tw-sim { margin-top: 4px; }
+.tw-events { min-height: 160px; }
+Button.tw-primary:disabled { opacity: 0.45; }

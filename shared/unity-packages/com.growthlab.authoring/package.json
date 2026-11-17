@@ -1,0 +1,11 @@
+{
+  "name": "com.growthlab.authoring",
+  "version": "0.1.0",
+  "displayName": "GrowthLab Authoring",
+  "description": "Editor-only generator: a short JSON spec plus a CSV placement table become prefabs, a scene and UI Toolkit documents. Keeps hand-edited .prefab/.unity YAML out of the workflow.",
+  "unity": "6000.3",
+  "keywords": ["authoring", "prefab", "scene", "generator", "ui toolkit"],
+  "dependencies": {
+    "com.unity.modules.uielements": "1.0.0"
+  }
+}

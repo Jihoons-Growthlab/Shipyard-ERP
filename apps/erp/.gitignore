@@ -1,0 +1,33 @@
+# Secrets / local env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.crt
+
+# Local databases (demo/fixture data, DB dumps)
+*.sqlite3
+*.sqlite3-*
+*.db
+*.sql.gz
+*.dump
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp

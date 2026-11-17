@@ -1,0 +1,2163 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hoon Heavy Industries | 생산관리 ERP</title>
+<link rel="icon" type="image/png" href="/brand/hoon-icon.png">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f1f5f8;color:#142a38;font:15px/1.55 system-ui,sans-serif}
+header{background:#102d40;color:#fff;padding:24px max(24px,calc((100vw - 1200px)/2))}
+h1,h2,h3{margin:0 0 12px}main{max-width:1248px;margin:auto;padding:22px 24px}
+nav,.actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}button,input,select{font:inherit;border:1px solid #9eafba;border-radius:5px;padding:8px;background:white;color:inherit}
+button{cursor:pointer}button[aria-pressed="true"],button[type="submit"]{background:#14646a;border-color:#14646a;color:#fff}
+section{padding:20px;background:white;border:1px solid #d5e0e7;border-radius:9px;margin:14px 0}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end}label{display:grid;gap:4px}input,select{width:100%;min-width:0}
+.scroll{overflow:auto}table{border-collapse:collapse;width:100%;text-align:left}th,td{padding:9px 10px;border-bottom:1px solid #dde6eb;white-space:nowrap}th{background:#edf4f6}td:last-child{white-space:normal}td:empty::after{content:'—';color:#627682}
+#status{min-height:1.6em;font-weight:600}#status[data-error="true"]{color:#982e27}
+
+header{background:#101e36;padding-top:13px;padding-bottom:13px}header h1{font-size:20px;margin:0}
+main{max-width:1440px}nav{border-bottom:1px solid #c6d4e1;gap:4px}
+nav button{border:0;background:none;border-bottom:3px solid transparent;border-radius:0;padding:12px}
+nav button[aria-pressed="true"]{background:transparent;color:#075ab5;border-color:#076dcf}
+button[type="submit"],.actions button[aria-pressed="true"]{background:#0764c5;border-color:#0764c5}
+#context{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#context select{width:auto;max-width:100%}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.cards button{text-align:left;padding:16px;border-color:#c6d4e1}
+.cards button strong{display:block;font-size:29px;color:#075ab5}
+.cards button[data-alert="true"] strong{color:#a33126}
+details{padding:8px 0}summary{cursor:pointer;color:#075ab5}
+
+nav{align-items:center;background:#fff;padding:0 12px;border:1px solid #d5e0e7;border-radius:8px}
+.workflow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.workflow button{color:#075ab5;background:#f0f6fc;border-color:#bed3e7}
+td .trace-link{border:0;padding:0;color:#075ab5;text-decoration:underline;background:transparent;font-weight:600}
+#trace-dialog{width:min(1100px,95vw);max-height:85vh;border:1px solid #aabed0;border-radius:10px;padding:24px}
+#trace-dialog::backdrop{background:#102d4099}
+#trace-dialog>button{float:right}
+#next-actions:empty{display:none}
+.record-action{margin-right:8px}h3 small{font-weight:400;color:#536978}
+
+:root{--ink:#152b44;--blue:#085bb5;--muted:#53677b}
+header{padding:14px 26px}main{max-width:1600px;display:grid;gap:20px;grid-template-columns:195px minmax(0,1fr)}
+#workspace{min-width:0}nav{display:block;padding:10px;align-self:start;margin:0;position:sticky;top:16px}
+nav h2{font-size:12px;color:var(--muted);margin:10px 10px 4px}nav button{display:block;width:100%;text-align:left;border:0;border-radius:5px;padding:8px 10px}
+nav button[aria-pressed="true"]{background:#e6f0fb;color:var(--blue);font-weight:700}
+#context{margin:0 0 14px;padding:10px 16px}#work{margin:0 0 14px;padding:16px}
+#work .actions{margin:8px 0 0}#status:empty,#entry-status:empty{display:none}
+#entry-dialog{width:min(680px,95vw);max-height:90vh;border:1px solid #aabed0;border-radius:12px;padding:24px;color:var(--ink)}
+#entry-dialog::backdrop{background:#102d4099}#entry-close{float:right}
+#entry-dialog form{margin-top:16px}#entry-dialog form button{align-self:end}
+#entry-status[data-error="true"]{color:#982e27}.primary{background:#075bb5;color:white;border-color:#075bb5}
+.list-header{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.list-header h3{margin:0}.list-tools{display:flex;flex-wrap:wrap;gap:8px}.list-tools input,.list-tools select{width:auto;max-width:100%}
+.pill{display:inline-block;padding:2px 8px;border-radius:14px;background:#edf3fa;color:#284e73;font-size:13px}
+.pill[data-tone="warn"]{background:#fff1d4;color:#784800}.pill[data-tone="done"]{background:#e5f5e9;color:#275f39}
+.process-map{display:grid;grid-template-columns:1fr 1fr;gap:12px}.process-map article{padding:12px;border:1px solid #d5e0e7;border-radius:8px}
+.process-map .join{grid-column:1/-1;background:#eef5fc}.process-map h3{margin-bottom:4px}
+.process-map p{margin:0 0 8px;color:var(--muted)}.process-map .workflow{margin:6px 0 0}
+.queue{display:grid;gap:6px;padding:0;list-style:none}.queue li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #dde6eb}
+.queue li span{display:block;color:var(--muted);font-size:14px}.queue li button{flex-shrink:0}
+@media(max-width:800px){main{display:block;padding:14px}nav{position:static;display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+nav h2{display:none}nav button{display:inline-block;width:auto}.process-map{display:block}.process-map article{margin-bottom:8px}}
+
+body{background:#f5f7fa;color:#203349;font-family:Inter,"Apple SD Gothic Neo",system-ui,sans-serif}
+header{background:#fff;color:#163752;border-bottom:1px solid #dce5ed;padding:18px 28px}
+header h1{font-size:21px;letter-spacing:-.6px}
+main{gap:26px;padding-top:24px;grid-template-columns:205px minmax(0,1fr)}
+nav{background:transparent;border:0;padding:0 8px 0 0}
+nav h2{letter-spacing:.04em;margin:22px 12px 8px;color:#708295}
+nav button{padding:11px 14px;margin-bottom:3px;color:#4e6176;border-radius:9px;font-size:14px}
+nav button[aria-pressed="true"]{background:#e1eef0;color:#00616f;box-shadow:inset 3px 0 #087e8b}
+section{border:1px solid #e0e7ee;border-radius:14px;box-shadow:0 3px 15px #20334903;padding:22px}
+#context{background:transparent;border:0;box-shadow:none;padding:0 0 10px}
+#context label{font-size:13px;color:#5b6e81}
+input,select{border-color:#cdd8e2;border-radius:7px;min-height:40px}
+button{border-radius:7px;transition:background .15s,box-shadow .15s}
+button:hover{background:#eef4f8}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #78bec9;outline-offset:2px}
+button:disabled{cursor:not-allowed;opacity:.45}
+.primary,button[type="submit"]{background:#087e8b;border-color:#087e8b;color:#fff}
+.primary:hover,button[type="submit"]:hover{background:#056772}
+#work{border:0;box-shadow:none;background:transparent;padding:6px 0 0}
+#work h2{font-size:26px;letter-spacing:-.8px}
+#actions{border-bottom:1px solid #d9e2eb;padding-bottom:12px}
+#actions button{border:0;background:transparent;color:#52677b;padding:9px 14px}
+#actions button[aria-pressed="true"]{background:#e0edf0;color:#00616f}
+.list-header{padding-bottom:16px;border-bottom:1px solid #e6ecf1;margin-bottom:0}
+.list-tools label{font-size:12px;color:#52677b}
+th{background:#f7f9fb;font-weight:600;color:#5d6e80;font-size:12px;padding:13px 12px}
+td{font-size:13px;padding:14px 12px}tbody tr:hover{background:#f8fbfc}
+td .trace-link{color:#087e8b;text-decoration:none}
+.queue li{padding:15px 0}.queue li:last-child{border:0}
+.queue strong{font-size:15px}.queue li button{color:#08717d;border-color:#b7d5d9;padding:8px 14px}
+.process-map{gap:18px;margin-top:22px}.process-map article{padding:22px;border:1px solid #dbe6ee;background:#f8fafc;border-radius:12px}
+.process-map .join{background:#eef7f5;border-color:#cce3dd}
+.process-map h3{font-size:18px}.process-map p{font-size:14px;line-height:1.75;max-width:650px}
+.process-map .workflow button{background:#fff;color:#24637b;border-color:#d4e0e7}
+.stage-picture{font-size:30px;width:60px;height:60px;display:grid;place-items:center;background:white;border:1px solid #e1e8ee;border-radius:16px;margin-bottom:14px}
+.visual-path{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+.visual-path span{font-size:12px;padding:6px 10px;background:#fff;border:1px solid #dae5eb;border-radius:6px}
+.visual-path i{font-style:normal;color:#839bab}
+.home-intro{margin:8px 0 22px}.home-intro h2{font-size:28px;letter-spacing:-1px;margin:0 0 5px}
+.home-intro p{margin:0;color:#64788c}
+.home-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.home-metrics button{text-align:left;border:1px solid #dce6ec;background:#fff;padding:18px 22px;border-radius:12px}
+.home-metrics strong{display:block;font-size:29px;color:#087987;margin-top:5px}
+.home-metrics span{color:#61768a;font-size:13px}
+#entry-dialog,#trace-dialog{border:0;border-radius:16px;box-shadow:0 20px 90px #102d4040}
+#entry-dialog form{gap:18px}#entry-dialog label{font-size:13px;color:#53667a}
+#entry-dialog form button{grid-column:1/-1;margin-top:8px}#entry-help{color:#62788c;font-size:14px}
+@media(max-width:800px){main{display:block;padding:16px}nav{display:flex;padding:0;position:static}
+nav button{padding:8px}nav h2{display:none}.home-metrics{gap:8px}.home-metrics button{padding:12px}
+.home-intro h2{font-size:24px}.process-map article{padding:16px}.list-tools{width:100%}}
+
+#actions{display:flex;flex-wrap:nowrap;overflow-x:auto;border-bottom:1px solid #ccdce5;padding:4px 0 0;gap:5px}
+#actions button{flex-shrink:0;border-radius:8px 8px 0 0;border-bottom:3px solid transparent;padding:12px 17px}
+#actions button[aria-selected="true"]{background:white;color:#086b77;border-bottom-color:#087e8b;font-weight:700}
+.filter-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:end;padding:18px 0;background:#fff}
+.filter-bar label{font-size:12px;color:#587084;flex:1 1 145px;max-width:230px}
+.filter-bar label:first-child{flex-basis:230px}
+.filter-bar label[hidden]{display:none}
+.filter-bar select,.filter-bar input{font-size:13px;width:100%;background:#f8fafc}
+.pagination{display:flex;justify-content:flex-end;gap:14px;align-items:center;padding-top:16px;font-size:12px;color:#60798c}
+.scroll{max-height:65vh}th{position:sticky;top:0;z-index:1}
+@media(max-width:800px){.filter-bar label{max-width:none}.pagination{justify-content:center}}
+
+.quality-summary{margin:16px 0 0}
+.quality-summary>div{border:1px solid #dce6ec;background:#f7fafb;padding:14px;border-radius:10px}
+.quality-summary p{grid-column:1/-1;margin:0;color:#52677b;font-size:13px}
+
+/* Shared layout for document lists and entry forms. */
+.list-header{align-items:center;min-height:54px;gap:14px}
+.list-tools{margin-left:auto;justify-content:flex-end}
+.list-tools button,#entry-dialog form button{min-height:42px;padding:9px 16px;font-weight:650}
+.filter-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:12px;align-items:end;padding:16px;margin:16px 0;background:#f6f8fb;border:1px solid #e2e9ef;border-radius:10px}
+.filter-bar label,.filter-bar label:first-child{max-width:none;min-width:0}
+.filter-bar input,.filter-bar select{background:white}
+.filter-bar button{min-height:40px;background:white;color:#486274;border-color:#cdd8e2}
+.scroll{border:1px solid #e1e8ef;border-radius:9px}
+thead th{background:#eff4f8;border-bottom:1px solid #dbe5ed}
+tbody tr:nth-child(even){background:#fafcfd}
+tbody tr:hover{background:#eff7f8}
+tbody tr:last-child td{border-bottom:0}
+.number-cell{text-align:right;font-variant-numeric:tabular-nums}
+td button{min-height:30px}
+.pagination button{padding:5px 11px}
+#entry-dialog h2{padding-right:68px;letter-spacing:-.5px}
+#entry-dialog form{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
+#entry-dialog .wide-field{grid-column:1/-1}
+@media(max-width:540px){.list-tools{margin-left:0;justify-content:flex-start}
+.filter-bar{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px}
+.filter-bar label:first-child{grid-column:1/-1}
+#entry-dialog form{grid-template-columns:1fr}}
+[hidden]{display:none !important}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#session-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:#3f566a}
+#session-bar button{padding:6px 12px}
+/* Login: brand panel + sign-in card. */
+body.signed-out header{display:none}
+#login-screen{word-break:keep-all}#login-screen input[type=checkbox]{accent-color:#087e8b}
+#login-screen{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:#f5f7fa}
+.login-brand{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:32px;padding:48px 56px;color:#e8f3f5;
+  background:radial-gradient(circle at 85% 10%,#1d6f7d 0,transparent 45%),linear-gradient(160deg,#0b2a3f 0%,#0d3b4f 55%,#0a5a66 100%)}
+.login-logo{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:700;letter-spacing:-.4px;color:#fff}
+.login-logo span{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;background:#ffffff1f;border:1px solid #ffffff33;font-size:20px}
+.login-copy h2{margin:0 0 12px;font-size:34px;line-height:1.3;letter-spacing:-1.2px;color:#fff}
+.login-copy p{margin:0;max-width:440px;color:#b9d3da;font-size:15px;line-height:1.7}
+.login-points{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:12px}
+.login-points li{display:flex;align-items:center;gap:12px;font-size:14px;color:#d6e8ec}
+.login-points b{display:grid;place-items:center;flex-shrink:0;width:28px;height:28px;border-radius:8px;background:#ffffff1a;border:1px solid #ffffff26;font-size:12px;color:#8fe0e6}
+.login-art{width:100%;max-width:560px;height:auto;align-self:center;opacity:.95}
+.login-foot{font-size:12px;color:#86a9b3}
+.login-panel{display:grid;place-items:center;padding:40px 24px}
+#login-form{display:grid;gap:18px;width:min(400px,100%);background:#fff;border:1px solid #e0e7ee;border-radius:18px;padding:40px 36px;box-shadow:0 18px 60px #20334914}
+#login-form h2{margin:0;font-size:26px;letter-spacing:-.8px}
+.login-sub{margin:-10px 0 4px;color:#61768a;font-size:14px}
+#login-form label{display:grid;gap:6px;font-size:13px;font-weight:600;color:#3e566a}
+.login-field{position:relative;display:flex;align-items:center}
+.login-field svg{position:absolute;left:13px;color:#8aa0b1;pointer-events:none}
+.login-field input{min-height:48px;padding:10px 14px 10px 42px;border-radius:10px;font-size:15px;background:#f8fafc}
+.login-field input:focus{background:#fff;border-color:#087e8b}
+.login-field .reveal{position:absolute;right:6px;min-height:0;padding:6px 10px;border:0;background:none;color:#52677b;font-size:12px;font-weight:600}
+.login-field .reveal:hover{background:#eef4f8}
+#login-form .login-field input[name=password]{padding-right:64px}
+.login-options{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:#52677b}
+#login-form .login-options label{display:flex;align-items:center;gap:8px;font-weight:400;color:#52677b;cursor:pointer}
+.login-options input{width:16px;height:16px;min-height:0;margin:0}
+#caps-warning{margin:-8px 0 0;font-size:12px;color:#8a5a00}
+#login-submit{min-height:50px;border-radius:10px;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px}
+#login-submit .spinner{width:16px;height:16px;border:2px solid #ffffff66;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#login-status{margin:0;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#fde8e6;color:#982e27}
+#login-status[data-tone="info"]{background:#e9f6ee;color:#1d6b3a}
+#login-status:empty{display:none}
+.login-help{margin:0;padding-top:16px;border-top:1px solid #e6ecf1;font-size:13px;color:#6a7f91;text-align:center}
+@media(max-width:900px){#login-screen{grid-template-columns:1fr}
+.login-brand{padding:28px 24px 32px;gap:20px}.login-art,.login-foot,.login-points{display:none}
+.login-copy h2{font-size:24px}.login-panel{padding:24px 16px 40px;align-items:start}
+#login-form{padding:28px 22px}}
+@media(prefers-reduced-motion:reduce){#login-submit .spinner{animation:none}}
+.perm-table td,.perm-table th{text-align:center}.perm-table td:first-child,.perm-table th:first-child{text-align:left}
+.perm-table input{width:18px;height:18px}
+.perm-tools{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:12px 0}
+.perm-tools label{display:grid;gap:4px}
+/* Sortable headers with a filter field under each column name. */
+th{vertical-align:top}
+th .sort-btn{display:flex;align-items:center;gap:6px;width:100%;border:0;background:none;padding:0;font:inherit;font-weight:600;color:inherit;text-align:left;cursor:pointer;white-space:nowrap}
+th .sort-btn:hover{background:none;color:#00616f}
+th .sort-mark{font-size:10px;color:#a6b6c3}th .sort-mark.on{color:#087e8b;font-size:11px}
+th[aria-sort]{color:#00616f}
+th .th-inner{display:flex;align-items:center;gap:4px}
+td button{white-space:nowrap}
+th .filter-btn{display:inline-grid;place-items:center;flex-shrink:0;width:22px;height:22px;min-height:0;padding:0;border:0;border-radius:5px;background:none;color:#a6b6c3}
+th .filter-btn:hover{background:#dfe9ef;color:#4b6274}
+th .filter-btn.on{background:#087e8b;color:#fff}
+.filter-pop{position:fixed;z-index:1000;background:#fff;border:1px solid #cbd8e2;border-radius:10px;box-shadow:0 12px 40px #102d4033;padding:12px;display:grid;gap:10px;font-size:13px;color:#203349}
+.filter-pop-head strong{font-size:14px}
+.filter-pop-sort{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.filter-pop-sort button{font-size:12px;padding:6px;min-height:0}.filter-pop-sort button.on{background:#e0edf0;border-color:#087e8b;color:#00616f;font-weight:700}
+.filter-pop-body{display:grid;gap:8px;border-top:1px solid #e6ecf1;padding-top:10px}
+.filter-pop-body input[type=search],.filter-pop-body input[type=number],.filter-pop-body input[type=date],.filter-pop-body select{min-height:34px;padding:5px 8px;font-size:13px}
+.filter-all{font-weight:600;display:flex!important;align-items:center;gap:6px}
+.filter-list{max-height:220px;overflow:auto;display:grid;gap:2px;border:1px solid #e6ecf1;border-radius:6px;padding:6px}
+.filter-list label{display:flex;align-items:center;gap:6px;padding:3px 2px;cursor:pointer}
+.filter-pop input[type=checkbox]{width:15px;height:15px;min-height:0;margin:0}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}.filter-row label{font-size:12px;color:#5b6f82;gap:2px}
+.filter-pop-foot{display:flex;justify-content:flex-end;gap:6px}.filter-pop-foot button{min-height:32px;padding:5px 14px;font-size:13px}
+.table-tip{margin:0 0 8px;font-size:12px;color:#6a7f91}
+
+/* Newcomer guidance: workflow stepper, page guide, field hints, next-step banner. */
+.flow-bar{position:relative;margin:0 0 14px;overflow-x:auto}
+.flow-bar ol{display:flex;gap:4px;list-style:none;margin:0;padding:2px 0 6px;min-width:max-content}
+.flow-bar li{display:flex;align-items:center;gap:4px}
+.flow-bar li+li::before{content:"›";color:#9db0bf}
+.flow-bar button{display:flex;align-items:center;gap:6px;border:1px solid #dbe5ec;background:#fff;color:#5b6f82;font-size:12px;padding:5px 10px;border-radius:20px;white-space:nowrap}
+.flow-bar button b{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#e5edf3;color:#4b6274;font-size:11px}
+.flow-bar button[aria-current="step"]{background:#087e8b;border-color:#087e8b;color:#fff;font-weight:700}
+.flow-bar button[aria-current="step"] b{background:#fff;color:#087e8b}
+.flow-note{font-size:13px;color:#5b6f82;margin:-6px 0 12px}
+.page-guide{border:1px solid #cfe3e6;background:#f3fafa;border-radius:12px;padding:0 18px;margin:0 0 16px}
+.page-guide summary{padding:12px 0;font-weight:700;color:#00616f}
+.page-guide p{margin:0 0 8px;color:#2e4b5c}
+.page-guide ol{margin:0 0 10px;padding-left:22px;color:#2e4b5c}.page-guide li{margin:3px 0}
+.page-guide .tip{background:#fff8e6;border:1px solid #f1dfb0;border-radius:8px;padding:8px 12px;font-size:14px;color:#6c4a00}
+.guide-nav{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 0 14px}
+.guide-nav button{font-size:13px;background:#fff;border-color:#bfd8dc;color:#00616f}
+#step-help{margin:12px 0 0;padding:10px 14px;background:#f6f8fb;border-left:4px solid #087e8b;border-radius:6px;font-size:14px;color:#3e566a}
+#next-actions{align-items:center;padding:12px 16px;background:#e9f6ee;border:1px solid #bfe0cb;border-radius:10px}
+#next-actions span{font-weight:700;color:#1d6b3a}
+#next-actions button.primary{background:#087e8b;border-color:#087e8b;color:#fff;font-weight:700}
+#status[data-error="false"]{color:#1d6b3a}
+.pill[data-tone="danger"]{background:#fde8e6;color:#9b2c22}.pill[data-tone="info"]{background:#edf3fa;color:#284e73}
+th[title]{text-decoration:underline dotted #9db0bf;text-underline-offset:3px;cursor:help}
+td .next-btn{background:#e6f4f5;border-color:#a9d3d8;color:#00616f;font-weight:650}
+td .next-btn:disabled{background:#f2f4f6;color:#8a99a6;border-color:#dbe3ea}
+.field-hint{font-size:12px;color:#6a7f91;font-weight:400}
+label.prefilled>input,label.prefilled>select{background:#eef8f6;border-color:#8cc7c0}
+.form-legend{grid-column:1/-1;margin:0;font-size:12px;color:#6a7f91}
+.welcome{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.onboard{border:1px solid #cfe3e6;background:#f3fafa}
+.onboard ol{margin:8px 0 0;padding-left:22px;line-height:1.9}.onboard h2{font-size:18px}
+.onboard .dismiss{float:right;font-size:13px}
+.hull-hint{margin:0 0 16px;padding:10px 14px;border-radius:8px;background:#fff8e6;border:1px solid #f1dfb0;color:#6c4a00;font-size:14px}
+.flow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;counter-reset:none}
+.flow-grid button{position:relative;text-align:left;display:grid;gap:4px;padding:16px;border:1px solid #dbe6ee;background:#f8fafc;border-radius:12px;min-height:118px}
+.flow-grid button:hover{background:#eef7f8;border-color:#a9d3d8}
+.flow-grid .no{font-size:12px;font-weight:700;color:#087e8b}
+.flow-grid strong{font-size:16px}.flow-grid small{color:#61768a;font-size:13px;line-height:1.5}
+.flow-grid .count{position:absolute;top:12px;right:12px;background:#fde8e6;color:#9b2c22;font-size:12px;font-weight:700;padding:2px 8px;border-radius:12px}
+.queue .step-tag{display:inline-block;margin-right:6px;font-size:12px;font-weight:700;color:#087e8b}
+.nav-step{display:inline-block;min-width:20px;margin-right:6px;padding:0 5px;border-radius:9px;background:#e5edf3;color:#4b6274;font-size:11px;font-weight:700;text-align:center}
+nav button[aria-pressed="true"] .nav-step{background:#087e8b;color:#fff}
+#help-dialog{width:min(860px,95vw);max-height:88vh;border:0;border-radius:16px;box-shadow:0 20px 90px #102d4040;padding:24px;color:var(--ink)}
+#help-dialog::backdrop{background:#102d4099}#help-close{float:right}
+#help-dialog h3{margin-top:20px}
+.help-flow{padding-left:22px;line-height:1.8}.help-flow b{color:#00616f}
+.glossary td{white-space:normal}.glossary td:first-child{font-weight:700;white-space:nowrap}
+
+header h1,.erp-brand,.erp-wordmark{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.erp-wordmark img{display:block;border-radius:6px;object-fit:contain}
+.erp-wordmark b{font:italic 700 38px/.9 "Snell Roundhand","Apple Chancery",cursive;letter-spacing:-.05em}
+.erp-company{font-size:11px;letter-spacing:.09em;font-weight:750;padding-left:8px;border-left:1px solid #93aab8}
+.erp-product{font-size:13px;margin-left:8px}
+#login-screen .login-brand{background:linear-gradient(180deg,#081b2cd9 0%,#0a2139ac 55%,#081b2cda),url('/brand/yard-hero.jpg') 64% center/cover no-repeat}
+#login-screen .login-logo .erp-brand,#login-screen .login-logo .erp-wordmark,#login-screen .login-logo .erp-company{display:inline-flex;align-items:center;width:auto;height:auto;padding:0;background:none;border:0;border-radius:0}
+#login-screen .login-logo .erp-company{font-size:13px;padding-left:9px;border-left:1px solid #93aab8}
+@media(max-width:650px){.erp-product{display:none}.erp-company{font-size:8px}}
+
+.hoon-lockup{display:inline-flex;align-items:center;gap:12px;color:#18374c;white-space:nowrap}
+.hoon-word{display:inline-flex;align-items:center;gap:0;line-height:1}
+.hoon-word img{display:block;width:42px;height:42px;object-fit:contain;mix-blend-mode:multiply;filter:grayscale(1) invert(1) contrast(2) url(#hoon-ink)}
+.hoon-word b{font:italic 700 48px/.86 "Snell Roundhand","Apple Chancery","Brush Script MT",cursive;letter-spacing:-.05em;padding:0 3px 4px 0}
+.hoon-industry{font-weight:750;font-size:13px;letter-spacing:.11em;border-left:1px solid #9eb2c0;padding-left:12px}
+.hoon-lockup.hoon-on-dark{color:#fff}
+.hoon-on-dark .hoon-word img{mix-blend-mode:lighten;filter:none}
+.hoon-on-dark .hoon-industry{color:#d6e7ee}
+.hoon-account{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;color:#3f566a;font-size:14px}
+.hoon-account button{padding:6px 12px;min-height:32px;font-weight:400;color:#3f566a;background:#fff;border:1px solid #cdd8e2;border-radius:7px}
+.hoon-account[hidden]{display:none}
+@media(max-width:570px){.hoon-lockup{gap:6px}.hoon-word img{width:32px;height:32px}.hoon-word b{font-size:37px}.hoon-industry{font-size:9px;padding-left:6px}.hoon-account{font-size:12px}}
+
+#login-screen .login-logo .hoon-lockup,#login-screen .login-logo .hoon-word,#login-screen .login-logo .hoon-industry{display:inline-flex;align-items:center;width:auto;height:auto;background:none;border:0;border-radius:0}
+#login-screen .login-logo .hoon-industry{font-size:13px;border-left:1px solid #9eb2c0;padding-left:12px}
+</style>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="hoon-ink" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values=".973 0 0 0 .027  0 .639 0 0 .361  0 0 .596 0 .404  0 0 0 1 0"/>
+  </filter>
+</svg>
+<header><h1><span class="hoon-lockup" role="img" aria-label="Hoon Heavy Industries"><span class="hoon-word" aria-hidden="true"><img src="/brand/hoon-icon.png" alt="" width="42" height="42"><b>oon</b></span><span class="hoon-industry" aria-hidden="true">HEAVY INDUSTRIES</span></span><span class="erp-product">생산관리 ERP</span></h1><div id="session-bar" hidden><span id="session-user"></span>
+<button id="help-button" type="button">업무 안내·용어</button>
+<button type="button" onclick="window.open('/guide', '_blank', 'noopener')">화면별 매뉴얼</button>
+<button id="password-button" type="button">비밀번호 변경</button><button id="logout-button" type="button">로그아웃</button></div></header>
+<div id="login-screen" hidden>
+<aside class="login-brand">
+  <div class="login-logo"><span class="hoon-lockup hoon-on-dark" role="img" aria-label="Hoon Heavy Industries"><span class="hoon-word" aria-hidden="true"><img src="/brand/hoon-icon.png" alt="" width="42" height="42"><b>oon</b></span><span class="hoon-industry" aria-hidden="true">HEAVY INDUSTRIES</span></span></div>
+  <div class="login-copy">
+    <h2>생산관리 ERP</h2>
+    <p>12주 계획, 자재 소요, 구매·입고, 작업지시와 실적, 품질 검사, 블록 이동까지 업무 순서대로 이어서 처리합니다.</p>
+    <ul class="login-points">
+      <li><b>1</b>처리할 업무가 홈 화면에 모여 바로 시작할 수 있습니다</li>
+      <li><b>2</b>저장하면 다음 단계가 값이 채워진 채로 열립니다</li>
+      <li><b>3</b>문서 번호로 원천 문서를 끝까지 추적합니다</li>
+    </ul>
+  </div>
+
+  <p class="login-foot">사내 업무 시스템 · 승인된 사용자만 접속할 수 있습니다.</p>
+</aside>
+<div class="login-panel">
+<form id="login-form" novalidate>
+  <h2>로그인</h2>
+  <p class="login-sub">관리자에게 받은 아이디와 비밀번호를 입력하세요.</p>
+  <label>아이디
+    <span class="login-field"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg>
+    <input name="id" autocomplete="username" required maxlength="100" placeholder="아이디" autocapitalize="off" spellcheck="false"></span>
+  </label>
+  <label>비밀번호
+    <span class="login-field"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2ZM9 7a3 3 0 0 1 6 0v2H9V7Zm4 10.7V19h-2v-1.3a2 2 0 1 1 2 0Z"/></svg>
+    <input name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="비밀번호">
+    <button class="reveal" id="password-reveal" type="button" aria-pressed="false">보기</button></span>
+  </label>
+  <p id="caps-warning" hidden>⚠ Caps Lock이 켜져 있습니다.</p>
+  <div class="login-options"><label><input type="checkbox" id="remember-id"> 아이디 저장</label></div>
+  <p id="login-status" role="alert"></p>
+  <button id="login-submit" type="submit">로그인</button>
+  <p class="login-help">계정이 없거나 비밀번호를 잊었다면 시스템 관리자에게 문의하세요.</p>
+</form>
+</div>
+</div>
+<main id="app" hidden>
+<nav id="tabs" aria-label="생산관리 메뉴"></nav>
+<div id="workspace"><section id="context"><label for="hull-filter">조회 호선</label><select id="hull-filter"></select></section>
+<section id="work"><div class="flow-bar" id="flow-bar" role="navigation" aria-label="업무 순서"></div><p class="flow-note" id="flow-note" hidden></p>
+<h2 id="heading"></h2><div id="page-guide"></div><div class="actions" id="actions"></div><p id="step-help"></p><p id="status" role="status"></p><div id="next-actions" class="workflow"></div></section>
+<div id="records"></div></div>
+<dialog id="entry-dialog" aria-labelledby="entry-title"><button id="entry-close" type="button">닫기</button>
+<h2 id="entry-title"></h2><p id="entry-help"></p><form id="entry"></form><p id="entry-status" role="status"></p></dialog>
+<dialog id="trace-dialog" aria-labelledby="trace-title"><button id="trace-close" type="button">닫기</button><h2 id="trace-title"></h2><div id="trace-content"></div></dialog>
+<dialog id="help-dialog" aria-labelledby="help-title"><button id="help-close" type="button">닫기</button><h2 id="help-title">업무 안내·용어</h2><div id="help-content"></div></dialog>
+</main>
+<script>
+const overview = '처리할 업무';
+const names = {activities:'공정 등록',forecast:'예정일 갱신',plans:'12주 계획 발행',orders:'작업지시 등록',
+  results:'실적·검사 등록',moves:'이동 시작',confirm:'이동 확정',telemetry:'텔레메트리 입력',
+  hulls:'호선 등록',locations:'시설 등록',blocks:'블록 등록',equipment:'장비 등록'};
+const titles = {activities:'기준계획과 최신 예정',plans:'발행된 12주 계획',orders:'주간·일일 작업지시',
+  blocks:'블록과 마지막 확인 위치',moves:'블록 이동 이력',telemetry:'크레인 텔레메트리',
+  hulls:'호선',locations:'작업장·도크·안벽',equipment:'장비'};
+Object.assign(names,{center_locations:'작업장과 시설 연결',warehouse_stock:'기존 재고 창고 배정',suppliers:'공급업체 등록',purchase_requests:'구매요청 등록',purchase_orders:'발주 등록',
+  goods_receipts:'입고·검수 등록',issues:'작업지시 자재 출고',
+vessel_details:'호선 상세 저장',block_details:'블록 상세 저장',materials:'자재 등록',
+  receipts:'입고 예정 등록',requirements:'공정 소요 등록',centers:'작업장 능력 등록',operations:'제약 작업 등록'});
+Object.assign(titles,{production_results:'번호별 생산 실적·검사 이력',inventory_ledger:'창고 재고 수불부',center_locations:'워크센터별 생산 시설',warehouse_stock:'창고별 가용 재고',suppliers:'공급업체',purchase_requests:'공정 소요와 연결된 구매요청',
+  purchase_orders:'구매 발주와 미입고 잔량',goods_receipts:'입고·검수 이력',issues:'작업지시별 출고 이력',
+vessel_details:'호선 상세',block_details:'블록 상세',materials:'자재·현재고',
+  receipts:'입고 예정',requirements:'공정별 자재 소요',centers:'작업장 가용시간',operations:'공정별 제약',
+  mrp:'일자별 자재 소요 계산',aps:'제약을 적용한 일정 제안'});
+Object.assign(names,{hull_milestones:'주요 일정 등록',milestone_update:'일정 변경·실적',block_structure:'구성 블록 연결',
+  erection_links:'탑재 선후행 연결',erection_plans:'탑재 계획 등록',block_gate_checks:'준비 항목 확인'});
+Object.assign(titles,{hull_milestones:'호선 주요 일정',milestone_history:'주요 일정 변경 이력',block_structure:'블록 구성',
+  erection_links:'탑재 선후행',erection_plans:'블록 탑재 계획',block_readiness:'블록 준비 현황',block_gate_checks:'준비 확인 이력'});
+Object.assign(names,{contractors:'협력사 등록',block_stages:'조립 단계 등록',work_logs:'공수·진척 실적 등록',
+  outfitting_items:'의장품 등록',outfitting_events:'의장품 진행 등록',drawing_revisions:'도면 출도·설계 변경',
+  erection_records:'탑재 검사 기록',equipment_specs:'장비 능력 저장',dock_bookings:'도크 점유 예약',holidays:'휴일 등록',
+  operation_links:'추가 선행 공정 연결',receipt_lots:'입고 로트 등록',issue_lots:'출고 로트 배정',material_returns:'반납·잔재·폐기 등록',
+  inspection_points:'검사 항목(ITP) 등록',inspection_records:'입회 검사 결과 등록',ncrs:'NCR 발행',ncr_close:'NCR 종결',
+  punch_items:'펀치 등록',punch_close:'펀치 종결',users:'사용자 등록',hull_geometry:'호선 형상 기준 저장',
+  block_geometry:'블록 형상·위치 저장',location_geometry:'시설 좌표·크기 저장',yard_sites:'조선소 부지 저장',hull_placements:'도크 선체 배치 저장'});
+Object.assign(titles,{contractors:'사내협력사',block_stages:'블록 조립 단계',work_logs:'공수·진척 실적',
+  outfitting_items:'의장품 현황',outfitting_events:'의장품 진행 이력',drawing_revisions:'도면 리비전·설계 변경',
+  hull_geometry:'호선 형상 기준',block_geometry:'블록 형상·위치',location_geometry:'시설 좌표·크기(야드)',yard_sites:'조선소 부지(위경도 기준점)',location_geo:'시설 위경도',
+  hull_placements:'도크 선체 배치',erection_timeline:'탑재 순서(트윈 재생)',erection_records:'탑재 검사 실적',block_progress:'블록별 물량·공수 진척',hull_progress:'호선별 물량 진척',
+  contractor_summary:'협력사별 투입 공수',equipment_specs:'장비 정격하중·배치',dock_bookings:'도크 점유 예약',
+  holidays:'휴일 달력',operation_links:'추가 선행 공정',erection_schedule:'크레인·도크 제약 탑재 일정',
+  receipt_lots:'입고 로트·히트번호',issue_lots:'출고 로트 배정',material_returns:'반납·잔재·폐기',
+  block_traceability:'블록별 강재 추적',material_rollup:'블록 트리 자재 소요',inspection_points:'검사 계획(ITP)',
+  inspection_records:'입회 검사 실적',ncrs:'부적합 보고서(NCR)',punch_items:'펀치리스트',users:'사용자 권한',audit_log:'감사 이력'});
+Object.assign(names,{accounts:'사용자 등록',user_groups:'그룹 등록',account_update:'사용자 정보 변경',
+  account_password_reset:'비밀번호 초기화',group_permissions_bulk:'메뉴 권한 저장'});
+Object.assign(titles,{accounts:'사용자 계정',user_groups:'사용자 그룹',group_permissions:'그룹별 메뉴 조회·등록 권한',
+  login_events:'로그인 이력'});
+const labels = {first_inspection:'최초 판정',first_actual:'최초 검사 실제일',attempts:'기록된 검사 횟수',latest_result:'최근 실적 번호',id:'ID',name:'이름',kind:'유형',hull:'호선',location:'마지막 확인 위치',block:'블록',stage:'공정',
+  baseline:'기준일',forecast:'최신 예정일',actual:'실제일',reason:'지연 원인',actual_reason:'실적 지연 원인',inspection:'검사',start:'시작 월요일',
+  end_exclusive:'종료 경계일(제외)',issued_at:'발행 시각',snapshot:'발행 내역',activity:'공정 ID',cadence:'구분',
+  day:'작업 예정일',instruction:'작업 내용',parent:'상위 주간 지시',result:'실적 내용',equipment:'장비',
+  origin:'출발지',destination:'목적지',started_at:'이동 시작',confirmed_at:'이동 확정',move:'이동 작업 ID',
+  x:'X 좌표(m)',y:'Y 좌표(m)',load:'하중(t)',status:'장비 상태',recorded_at:'수신 시각',
+  active_move:'진행 중 이동 ID',position_status:'위치 상태',forecast_variance_days:'예정 차이(일)',actual_variance_days:'실적 차이(일)'};
+Object.assign(labels,{milestone:'주요 일정',milestone_id:'원천 일정',parent_block:'상위 블록',child_block:'구성 블록',
+ predecessor_block:'선행 블록',successor_block:'후행 블록',gate:'준비 항목',verdict:'확인 결과',
+ evidence:'확인 근거·문서 번호',erection_plan:'탑재 계획 번호',blockers:'미완료·미확인 항목',checks:'준비 근거',document_no:'계획 번호',plan_id:'발행 계획',movement:'수불 유형',source_document:'원천 문서',
+  qty_delta:'수불 수량',balance:'처리 후 잔량',source:'출발 창고',requirement:'자재 소요 ID',request:'구매요청',supplier:'공급업체',purchase_order:'발주',
+  promised_day:'납기 예정일',open_qty:'미입고량',work_order:'주간 작업지시',issued_qty:'누계 출고량',remaining_qty:'미출고 소요량',
+vessel_type:'선종',vessel_name:'선명',customer:'선주',length_m:'전장(m)',beam_m:'폭(m)',
+  delivery:'인도 예정일',zone:'구역',assembly:'조립 단계',weight_t:'중량(t)',drawing:'도면·리비전',unit:'단위',
+  stock:'현재고',lead_days:'조달기간(일)',material:'자재',qty:'수량',receipt_day:'입고 예정일',need_day:'소요일',
+  available:'소요 직전 가용량',shortage:'부족량',release_day:'발주 권고일',hours:'일 가용시간(h)',center:'작업장',
+  duration:'작업시간(h)',predecessor:'선행 공정',earliest:'최초 착수 가능일',scheduled_start:'제안 착수일',
+  scheduled_end:'제안 완료일',planning_status:'제약 상태'});
+Object.assign(labels,{trade:'공종',assembly_stage:'조립 단계',planned_mh:'계획 공수(M/H)',actual_mh:'투입 공수(M/H)',
+  earned_mh:'기성 공수(M/H)',progress_pct:'누적 진척률(%)',block_stage:'조립 단계 ID',work_day:'실적일',manhours:'투입 공수(M/H)',
+  contractor:'협력사',note:'비고',stages:'등록 단계 수',completed_stages:'완료 단계 수',current_stage:'진행 단계',
+  earned_t:'기성 물량(t)',productivity:'생산성(기성/투입)',blocks:'블록 수',weight_progress_pct:'물량 진척률(%)',
+  mh_progress_pct:'공수 진척률(%)',logs:'실적 건수',item_type:'의장품 유형',outfit_stage:'의장 구분',required_day:'소요일',
+  item:'대상',event:'진행 단계',event_day:'진행일',drawing_no:'도면 번호',revision:'리비전',issued_day:'출도일',
+  change_type:'변경 구분',description:'내용',dock:'탑재 시설',erect_day:'탑재일',erected_day:'탑재 합격일',
+  equipment_type:'장비 유형',capacity_t:'정격하중(t)',station:'배치 시설',start_day:'시작일',end_day:'종료일',
+  holiday:'휴일',predecessor_blocks:'선행 블록',crane:'배정 크레인',scheduled_day:'제안 탑재일',delay_days:'계획 대비(일)',
+  receipt:'입고 번호',heat_no:'히트번호',cert_no:'밀시트 번호',warehouse:'창고',lot:'로트',issue:'출고 번호',
+  return_type:'반납 유형',return_day:'반납일',own_qty:'자체 소요',tree_qty:'하위 포함 소요',levels:'블록 단계 수',
+  activity_ref:'관련 공정',witness:'입회',planned_day:'검사 예정일',point:'검사 항목',inspect_day:'검사일',
+  inspector:'검사자',remarks:'비고·결함 내용',cause:'원인',disposition:'처리 방안',raised_day:'발행일',
+  closed_day:'종결일',close_evidence:'종결 근거',category:'등급',raised_by:'제기 주체',last_record:'최근 검사 번호',
+  role:'권한',user_id:'사용자',action:'작업',document:'문서',payload:'입력값',group_id:'그룹',status:'사용 여부',
+  password:'비밀번호',active:'사용',created_at:'등록 시각',password_changed_at:'비밀번호 변경 시각',success:'성공',
+  client:'접속 주소',menu:'메뉴',can_read:'조회',can_write:'등록'});
+Object.assign(labels,{depth_m:'형심(m)',draft_m:'흘수(m)',frame_spacing_m:'프레임 간격(m)',x_min:'선미측 x(m)',x_max:'선수측 x(m)',
+  y_min:'우현측 y(m)',y_max:'좌현측 y(m)',z_min:'하단 z(m)',z_max:'상단 z(m)',cog_x:'무게중심 x(m)',cog_y:'무게중심 y(m)',
+  cog_z:'무게중심 z(m)',geometry_source:'형상 출처',size_x_m:'크기 x(m)',size_y_m:'크기 y(m)',size_z_m:'크기 z·높이(m)',lat:'위도',lon:'경도',x_axis_bearing_deg:'야드 x축 방위각(도)',corners:'모서리 위경도',site:'부지',
+  frame_from:'시작 프레임',frame_to:'끝 프레임',model_asset:'모델 키',z:'Z 좌표(m)',heading_deg:'방향(도)',
+  origin_x:'기준점 X(m)',origin_y:'기준점 Y(m)',origin_z:'기준점 Z(m)',step:'탑재 단계',predecessors:'선행 블록'});
+Object.assign(names,{crane_assignments:'크레인 작업 배정',berths:'선석 등록',berth_assignments:'선석 배정',quay_shifts:'안벽 이동 등록',
+  outfit_works:'의장 작업 등록',outfit_links:'작업 선후행 연결'});
+Object.assign(titles,{crane_assignments:'크레인별 작업 배정 (일자·시간)',crane_load:'크레인·주별 예약 시간과 가동률 (2교대 16시간 × 5일 기준)',
+  berths:'안벽·피어 선석',berth_assignments:'호선별 선석 배정',berth_occupancy:'선석 점유와 적합성 점검',quay_shifts:'진수·선석 이동·시운전·인도 이동',
+  outfit_works:'호선·구역·공종별 의장 작업',outfit_links:'의장 작업 선후행',outfit_progress:'구역별 계획 대비 실적 공수',
+  hull_overview:'호선별 도크·선석 배치 점검과 중일정·소일정에서 올라온 위험',plans:'12주 롤링 계획 발행본 (주간 계획의 기준)'});
+Object.assign(labels,{crane_work:'작업 유형',work_area:'작업 위치',work_day:'작업일',start_hour:'시작 시각(시)',lift_t:'인양 중량(t)',
+  week:'주 시작일',jobs:'작업 수',work_days:'작업 일수',booked_hours:'예약 시간(h)',available_hours:'가용 시간(h)',utilization_pct:'가동률(%)',
+  peak_lift_t:'최대 인양(t)',hulls_served:'작업 호선',load_status:'부하',
+  quay:'안벽·피어',berth_side:'선석 위치',start_m:'시작 위치(m)',berth_length_m:'선석 길이(m)',water_depth_m:'수심(m)',berth:'선석',berth_name:'선석 이름',
+  berth_purpose:'배정 목적',days:'일수',vessel_length_m:'선박 길이(m)',spare_m:'길이 여유(m)',launch_day:'진수 예정일',
+  occupancy_status:'점유 상태',check:'점검',from_point:'출발',to_point:'도착',plan_day:'계획일',actual_day:'실제 이동일',tugs:'예인선(척)',
+  shift_purpose:'이동 목적',outfit_zone:'구역',outfit_trade:'공종',work_phase:'의장 단계',crew:'투입 인원',work_status:'작업 상태',
+  predecessor_works:'선행 작업',schedule_check:'일정 점검',work:'작업',predecessor_work:'선행 작업',
+  works:'작업 수',works_done:'완료 작업',works_held:'보류 작업',planned_to_date_mh:'현재까지 계획 공수',spi:'공정 지수(SPI)',
+  progress_status:'진척 상태',erection_forecast:'탑재 예정일',crane_check:'점검',
+  keel_day:'기공',trial_day:'시운전',delivery_day:'인도',docks:'도크',berth_sequence:'선석(순서)',next_milestone:'다음 마일스톤',
+  days_to_next:'남은 일수',outfit_spi:'의장 SPI',overdue_works:'지연 의장 작업',works_outside_window:'대일정 밖 의장 작업',
+  late_crane_lifts:'늦은 탑재 인양',allocation_check:'배치 점검',risk:'위험도'});
+Object.assign(names,{ebom_revisions:'EBOM 리비전 작성',ebom_items:'EBOM 품목 등록·수정',ebom_publish:'EBOM 발행',
+  mbom_revisions:'MBOM 리비전 작성',mbom_ops:'공정 편성',mbom_items:'설계품목 공정 배정',mbom_inputs:'제조 투입품 등록',
+  mbom_links:'설계품목↔투입품 연결',mbom_publish:'MBOM 발행·소요 반영',bom_adjustment_close:'조정 정리'});
+Object.assign(titles,{ebom_revisions:'도면 리비전별 설계 BOM (발행본은 수정 불가)',ebom_items:'EBOM 품목 구조 (호선 › 블록 › 조립품 › 부품)',
+  mbom_revisions:'블록별 제조 BOM 리비전과 발행 점검',mbom_ops:'MBOM 공정 편성 (블록마다 순서가 다를 수 있음)',
+  mbom_items:'설계품목을 어느 공정에서 만들고 붙이는지',mbom_inputs:'제조에 실제로 투입되는 품목 (자재 단위)',
+  mbom_links:'설계품목과 제조 투입품의 연결',mbom_changes:'MBOM 발행 시 공정 자재 소요 변화 (발행 전 비교)',
+  order_boms:'작업지시에 적용한 MBOM 리비전',bom_trace:'자재 소요의 근거: 설계품목 → MBOM 투입품 → 소요 → 구매·출고',
+  bom_adjustments:'설계 변경 후 기존 문서를 고치지 않고 남긴 조정 필요 항목'});
+Object.assign(labels,{drawing_revision:'도면 리비전',base_ebom:'복사할 이전 EBOM',base_mbom:'복사할 이전 MBOM',ebom:'적용 EBOM',
+  mbom:'MBOM',item_no:'품목 번호',parent_no:'상위 조립품 번호',item_level:'구분',spec:'규격',design_qty:'설계 수량',
+  supply:'조달 구분',net_weight_kg:'개당 순중량(kg)',drawing_check:'도면 상태',items:'품목 수',mboms:'MBOM 수',
+  structure:'구조 경로',material_unit:'자재 단위',created_at:'작성 시각',ebom_revision:'EBOM 리비전',ops:'공정 수',inputs:'투입품 수',
+  publish_check:'발행 점검',seq:'공정 순서',process:'공정',activity_status:'공정 상태',op:'MBOM 공정',ebom_item:'설계품목',
+  item_name:'설계품목명',input_type:'투입 구분',material_name:'자재명',basis:'소요량 산정 근거',design_items:'연결 설계품목',
+  design_net_kg:'설계 순중량 합계(kg)',design_link:'설계 대응',input:'제조 투입품',design_unit:'설계 단위',
+  mbom_status:'MBOM 상태',previous_qty:'이전 리비전 수량',current_qty:'현재 소요',target_qty:'발행 후 소요',delta:'증감',
+  requested_qty:'구매요청 수량',requirements:'자재 소요',change:'반영 방식',adjustment:'조정 구분',
+  link_type:'연결 구분',linked_at:'연결 시각',mbom_revision:'MBOM 리비전',input_qty:'투입 수량',trace_status:'진행 상태',
+  source:'소요 출처',missing_units:'미출고 (단위별)'});
+const measures = ['length_m','beam_m','weight_t'];
+const signedMeasures = new Set();
+const integerFields = ['stock','lead_days','qty','hours','duration'];
+const positions = {confirmed:'확인',unknown:'미확인',in_transit:'이동 중'};
+const optional = new Set(['block','location','parent','reason','predecessor','plan_id']);
+const dateFields = new Set(['baseline','forecast','actual','start','day','delivery','receipt_day','need_day','earliest','promised_day']);
+let refs = {};
+// ---- Newcomer guidance: the main business flow, per-page how-to, per-tab help, field hints, glossary. ----
+const flowSteps = [
+  {page:'기준정보', view:'hulls', label:'기준 준비', desc:'호선·블록·창고·자재 등 선택 목록을 등록합니다.'},
+  {page:'대일정', view:'hull_milestones', label:'대일정', desc:'착공·기공·진수·시운전·인도와 도크·선석 배치를 정합니다.'},
+  {page:'설계 도면', view:'ebom_revisions', label:'설계 BOM (EBOM)', desc:'출도된 도면 리비전에 블록의 조립품·부품·설계 수량을 등록하고 발행합니다.'},
+  {page:'제조 BOM (MBOM)', view:'mbom_revisions', label:'MBOM 편성·발행', desc:'설계품목을 공정에 배정하고 원판·구매품·용접재를 정해 발행하면 공정 자재 소요가 생깁니다.'},
+  {page:'소일정 (주간·일일)', view:'plans', label:'12주 계획 발행', desc:'중일정 공정을 12주 롤링으로 정리해 주간 계획을 발행합니다.'},
+  {page:'자재 소요계획 (MRP)', view:'mrp', label:'자재 부족 확인', desc:'공정에 필요한 자재가 모자란지 계산합니다.'},
+  {page:'구매·입고', view:'purchase_requests', label:'구매·입고', desc:'구매요청 → 발주 → 입고·검수 순으로 처리합니다.'},
+  {page:'작업지시·실적', view:'orders', label:'작업지시', desc:'발행 계획의 공정으로 주간·일일 작업지시를 만듭니다.'},
+  {page:'자재 출고', view:'issues', label:'자재 출고', desc:'작업지시에 필요한 자재를 창고에서 내보냅니다.'},
+  {page:'작업지시·실적', view:'production_results', label:'실적·검사', desc:'작업이 끝나면 실제일과 검사 결과를 기록합니다.'},
+  {page:'품질 검사', view:'quality_orders', label:'품질 확인', desc:'재검사·ITP 입회 검사·NCR·펀치를 처리합니다.'},
+  {page:'블록 이동', view:'moves', label:'블록 이동·탑재', desc:'블록을 옮기고 도착을 확정한 뒤 탑재합니다.'}
+];
+// Supporting pages: which main step they help with.
+const stepOf = (page, view) => flowSteps.findIndex(step => step.page === page && (!view || step.view === view)) + 1;
+const supportOf = {'중일정 · 선체':2,'중일정 · 의장·안벽':2,'강재 추적':stepOf('자재 출고'),'블록 조립·공수':stepOf('작업지시·실적','production_results'),'의장품':stepOf('작업지시·실적','production_results'),
+  '생산 진척':0,'물량·공수 진척':0,'설계 도면':2,'형상·배치':2,'사용자·권한':-1};
+const pageGuides = {
+  '기준정보':{purpose:'다른 화면에서 고르는 기본 목록(호선·블록·창고·작업장·자재·공급업체)을 관리합니다.',
+    steps:['[호선]과 [블록과 마지막 확인 위치]에 호선·블록을 먼저 등록합니다.','[작업장·도크·안벽]에 창고·작업장·도크를 등록하고, 작업장 가용시간과 시설을 연결합니다.','[자재·현재고]와 [공급업체]를 등록하면 MRP·구매 화면에서 고를 수 있습니다.'],
+    tip:'보통 기준정보 담당자가 관리합니다. 선택 목록에 원하는 값이 없으면 이 화면에 등록되어 있는지 확인하세요.'},
+  '대일정':{purpose:'호선별 큰 일정(착공·기공·진수·시운전·인도)과 도크·선석 배치를 정합니다. 중일정·소일정은 이 범위 안에서 짭니다.',
+    steps:['[호선 주요 일정]에 마일스톤을 등록하고, 바뀌면 행의 [일정 갱신]으로 예정·실적을 고칩니다.','[도크 점유 예약]으로 기공~진수 도크를, [선석 배정]으로 진수~인도 선석을 잡습니다(겹치면 저장 안 됨).','[배치·위험 점검]에서 예약 누락·선석 공백과, 중일정·소일정에서 올라온 위험(의장 SPI·지연 작업·늦은 크레인 인양)을 봅니다.'],
+    tip:'위험이 "위험"이면 점검 열의 내용부터 해결하세요. 마일스톤을 옮기면 아래 단계 점검도 함께 바뀝니다.'},
+  '중일정 · 선체':{purpose:'블록 구성·탑재 순서와 탑재 일정을 몇 주~몇 달 단위로 계획하고, 크레인 능력이 감당하는지 봅니다.',
+    steps:['[블록 구성]과 [탑재 선후행]으로 블록 관계를 정합니다.','[탑재 계획]에 블록별 탑재 예정일을 넣고, [탑재 일정 제안]에서 도크 예약·크레인·선행 제약을 확인합니다.','[주간 크레인 부하]에서 크레인별 가동률이 높은 주를 찾고, [블록 준비 현황]에서 탑재 준비를 확인합니다.']},
+  '중일정 · 의장·안벽':{purpose:'구역·공종별 의장 작업과 진수 후 안벽 이동을 계획하고 진척을 봅니다.',
+    steps:['[의장 작업]에 구역·공종·단계별 작업과 공수를 등록합니다. 단계별 기간은 대일정(기공·진수·시운전) 안에 있어야 합니다.','[작업 선후행]으로 배관 → 보온·도장 같은 순서를 연결합니다.','[안벽 이동 계획·실적]에 진수 후 이동·선석 이동·시운전·인도 이동을 넣고, 이동한 날 행의 [수정]으로 실제 이동일을 입력합니다.'],
+    tip:'진척률은 행의 [수정]으로 갱신합니다. 100%면 상태를 "완료"로 함께 바꿉니다.'},
+  '소일정 (주간·일일)':{purpose:'중일정 공정을 12주 롤링으로 정리해 주간 계획을 발행하고, 작업장 제약 일정과 크레인 작업을 시간 단위로 배정합니다.',
+    steps:['[공정 목록]에서 [예정일 갱신]으로 최신 예정을 반영하고, [12주 롤링·주간 발행]에서 계획서를 발행합니다.','[작업 제약]·[추가 선행 공정]을 등록하면 [제약 일정 제안]이 착수·완료일을 제안합니다.','[크레인 작업 배정]에 크레인별 날짜·시작 시각·시간·인양 중량을 넣습니다(정격하중 초과·시간 겹침은 저장 안 됨).'],
+    tip:'크레인 작업이 탑재 계획보다 늦으면 점검 열에 표시되고, 대일정의 위험에도 반영됩니다.'},
+  '자재 소요계획 (MRP)':{purpose:'공정에 필요한 자재가 필요한 날(소요일)에 모자라는지 자동으로 계산합니다. MBOM을 발행하면 소요가 자동으로 생기고, 수기 소요도 그대로 함께 계산됩니다.',
+    steps:['[자재 부족] 탭에서 상태가 빨간 "부족"인 행을 찾습니다. "소요 출처"가 MBOM이면 [소요 근거]로 어느 설계품목·투입품에서 나온 수량인지 확인합니다.','그 행의 [구매요청 등록]을 누르면 부족 수량이 채워진 구매요청 창이 열립니다.','BOM이 없는 공정은 [공정 자재 소요]에 직접 등록합니다. 설계 변경으로 남은 [설계 변경 조정] 항목은 발주 취소·반납 여부를 정한 뒤 정리합니다.'],
+    tip:'MBOM 소요 수량은 MRP 화면에서 고치지 않습니다. 수량이 다르면 EBOM·MBOM을 새 리비전으로 고쳐 다시 발행하세요.'},
+  '구매·입고':{purpose:'부족한 자재를 구매요청 → 발주 → 입고·검수 순서로 처리합니다.',
+    steps:['[구매요청]: MRP 부족 행에서 넘어오거나 직접 등록합니다. 상태가 "발주 대기"면 다음 단계로 갑니다.','[발주]: 행의 [발주 등록]을 눌러 공급업체와 납기일을 지정합니다.','[입고·검수]: 자재가 도착하면 실제 입고일·창고·수량·검사 결과를 기록합니다.'],
+    tip:'합격 수량만 창고 재고가 됩니다. 일부만 들어오면 나머지는 "부분 입고"로 남습니다.'},
+  '자재 출고':{purpose:'작업지시에 필요한 자재를 창고에서 현장으로 내보내고, 창고 재고 변화를 확인합니다.',
+    steps:['[작업지시 자재 출고]를 누릅니다.','주간 작업지시를 먼저 고르면 그 공정에 필요한 자재만 보입니다. 출발 창고와 수량을 입력합니다.','[수불부]에서 출고 번호와 처리 후 잔량을 확인합니다.'],
+    tip:'창고의 실제 재고보다 많이 출고할 수 없습니다. 재고가 없으면 구매·입고부터 확인하세요.'},
+  '강재 추적':{purpose:'강재의 히트번호·로트를 입고부터 블록까지 추적합니다.',
+    steps:['합격 입고 건에 [입고 로트 등록]으로 히트번호·밀시트를 기록합니다.','출고 건에 [출고 로트 배정]으로 어떤 로트를 썼는지 연결합니다.','[블록별 강재 추적]에서 블록에 들어간 강재를 확인합니다.']},
+  '작업지시·실적':{purpose:'현장에 내릴 작업지시를 만들고, 작업이 끝나면 실적과 검사 결과를 기록합니다.',
+    steps:['[작업지시 등록]: 주간 지시를 먼저 만들고, 필요하면 같은 주에 일일 지시를 연결합니다.','자재가 필요한 공정이면 행의 [작업지시 자재 출고]를 먼저 처리합니다.','작업이 끝나면 [실적 등록]으로 실제일과 합격/불합격을 저장합니다.'],
+    tip:'불합격이면 같은 작업지시에 [재검사 등록]을 다시 하면 됩니다. 검사마다 RES 번호가 따로 남습니다.'},
+  '블록 조립·공수':{purpose:'블록별 조립 단계와 매일 투입한 공수·진척률을 기록합니다.',
+    steps:['[조립 단계]에 블록의 단계와 계획 공수(M/H)를 등록합니다.','매일 [공수·진척 실적]에 투입 공수와 누적 진척률을 입력합니다.','블록이 탑재되면 [탑재 검사 실적]에 결과를 기록합니다.'],
+    tip:'진척률은 누적값입니다. 어제 40%, 오늘 60%까지 했다면 60을 입력합니다.'},
+  '의장품':{purpose:'배관·장비 같은 의장품의 입고부터 설치·검사까지 진행을 관리합니다.',
+    steps:['[의장품 등록]으로 대상 블록과 소요일을 등록합니다.','진행될 때마다 행의 [의장품 진행 등록]으로 단계를 기록합니다.']},
+  '블록 이동':{purpose:'크레인·트랜스포터로 블록을 옮기고, 도착을 확인해 위치를 확정합니다.',
+    steps:['[이동 시작]으로 블록·장비·목적지를 등록합니다.','현장에서 도착을 확인한 뒤 행의 [이동 확정]을 누릅니다.','[블록 위치]에서 마지막 확인 위치와 이동 중 상태를 봅니다.'],
+    tip:'블록 중량이 장비 정격하중보다 크면 이동을 시작할 수 없습니다.'},
+  '생산 진척':{purpose:'공정별 계획 대비 실적과 작업 착수 준비 상태를 한눈에 봅니다. 조회 전용 화면입니다.',
+    steps:['[공정별 계획·실적]에서 "예정 지연" 공정을 찾습니다.','[작업 착수 준비]에서 "자재 출고 필요" 지시를 확인하고 출고를 요청합니다.']},
+  '물량·공수 진척':{purpose:'호선·블록·협력사별 물량과 공수 진척을 봅니다. 조회 전용 화면입니다.',
+    steps:['[호선 물량 진척]으로 전체 진척률을 봅니다.','[블록 물량·공수]에서 생산성(기성/투입)이 낮은 블록을 찾습니다.']},
+  '품질 검사':{purpose:'작업·입고 검사 결과와 ITP 입회 검사, 부적합(NCR), 펀치를 관리합니다.',
+    steps:['[작업 검사]에서 "재검사 필요" 건을 찾아 재검사를 등록합니다.','[검사 계획(ITP)]의 대기 항목에 [입회 검사 결과 등록]을 합니다.','문제가 있으면 [NCR 발행]·[펀치 등록]을 하고, 조치가 끝나면 종결합니다.']},
+  '형상·배치':{purpose:'조선소 부지 위경도와 시설 좌표, 도크 안 선체 배치, 디지털 트윈 탑재 순서를 관리합니다.',
+    steps:['[조선소 부지(위경도)]에 기준점과 야드 x축 방위각을 저장합니다.','[시설 좌표·크기]에 시설별 야드 좌표를 넣으면 [시설 위경도]와 SIWS 조선소 지도에 반영됩니다.','[도크 선체 배치]·[탑재 순서(트윈)]는 Unity 트윈이 읽습니다.']},
+  '설계 도면':{purpose:'블록별 도면 출도·설계 변경 리비전과 설계 BOM(EBOM), 디지털 트윈이 쓰는 호선·블록 형상을 관리합니다.',
+    steps:['도면이 나오면 [도면 출도·설계 변경]으로 등록하고, 행의 [EBOM 리비전 작성]을 누릅니다. 설계 변경이면 "복사할 이전 EBOM"을 골라 바뀐 품목만 고칩니다.',
+      '[EBOM 품목 구조]에 조립품·부품, 규격, 설계 단위·수량, 조달 구분(제작/구매)을 넣습니다. 구매품은 구매 자재 코드와 단위가 같아야 합니다.',
+      '[설계 BOM (EBOM) 리비전]에서 [EBOM 발행]을 누르면 그 리비전은 고정되고, 다음 단계 [MBOM 리비전 작성]으로 이어집니다.',
+      '리비전이 바뀌면 중일정 · 선체의 블록 준비 현황에서 도면 출도를 다시 확인합니다.',
+      '[호선 형상 기준]에 형심·흘수·프레임 간격을 넣고, [블록 형상·위치]에 블록 범위와 무게중심을 등록합니다. 좌표(m)는 선미 끝 x=0, 중심선 y=0(좌현 +), 기선 z=0입니다.']},
+  '제조 BOM (MBOM)':{purpose:'적용할 EBOM 리비전을 정하고, 설계품목을 실제 공정에 배정하고, 원판·구매 의장품·용접재처럼 제조에 투입되는 품목을 정해 공정 자재 소요를 만듭니다.',
+    steps:['① [MBOM 리비전 작성]: 발행된 EBOM을 고릅니다. 개정이면 이전 MBOM을 복사합니다.','② [공정 편성]: 이 블록의 공정 순서(10, 20 …)와 연결할 ERP 공정을 정합니다. 의장·도장 시점은 블록마다 다르게 둘 수 있습니다.',
+      '③ [설계품목 공정 배정]: 모든 설계품목을 공정에 배정합니다.','④ [제조 투입품]: 원판·구매품·용접재·소모품을 자재 단위로 넣고, 원판·용접재는 산정 근거를 적습니다. ⑤ 원판은 제작 부품과, 구매품은 구매 설계품목과 연결합니다.',
+      '⑥ [발행 전 소요 비교]에서 신규·추가·감소·조정 필요 항목을 확인한 뒤 ① 화면 행의 [MBOM 발행·소요 반영]을 누르면 MRP에 소요가 생깁니다.'],
+    tip:'구매요청·출고가 연결된 소요는 설계가 바뀌어도 고치지 않습니다. 늘어난 양은 추가 소요로, 줄어든 양은 MRP의 [설계 변경 조정]으로 남습니다. 같은 리비전을 다시 발행해도 중복되지 않습니다.'},
+  '사용자·권한':{purpose:'사용자 계정과 그룹별 메뉴 권한을 관리합니다.',
+    steps:['[그룹]을 만들고 [메뉴 권한]에서 메뉴별 조회/등록을 체크해 저장합니다.','[사용자]를 등록하고 그룹을 지정합니다.']}
+};
+const viewHelp = {
+  hulls:'건조 중인 선박(호선) 목록입니다.', blocks:'블록별 마지막으로 확인된 위치입니다.',
+  locations:'창고·작업장·도크·안벽 등 물리적 시설입니다.', materials:'자재와 현재고입니다.',
+  hull_milestones:'호선의 착공·진수·인도 등 주요 일정입니다. 행의 버튼으로 변경·실적을 기록합니다.',
+  block_readiness:'블록을 펼치면 탑재 전에 끝나지 않은 항목과 사유가 보입니다.',
+  activities:'공정별 기준일·예정일·실제일입니다. "예정 차이"가 +이면 늦어지고 있다는 뜻입니다.',
+  plans:'발행된 12주 계획입니다. 펼쳐서 공정별 [작업지시] 버튼을 누르세요.',
+  mrp:'"부족"으로 표시된 행이 구매가 필요한 자재입니다. [구매요청 등록]을 누르세요.',
+  requirements:'공정마다 필요한 자재·수량·소요일입니다.',
+  aps:'작업장 능력과 선행 공정을 반영한 제안 일정입니다.',
+  purchase_requests:'"발주 대기" 요청은 [발주 등록]을 눌러 다음 단계로 진행합니다.',
+  purchase_orders:'미입고량이 남은 발주는 [입고·검수 등록]으로 입고를 기록합니다.',
+  goods_receipts:'입고·검수 이력입니다. 합격 입고는 강재 로트를 등록할 수 있습니다.',
+  orders:'"실적 대기" 지시는 자재 출고 후 [실적 등록]을 합니다.',
+  production_results:'작업지시별 실적·검사 기록입니다. 재검사마다 새 번호가 생깁니다.',
+  issues:'작업지시별 자재 출고 이력입니다.', inventory_ledger:'입고·출고로 바뀐 창고 재고 기록입니다. 문서 번호를 누르면 원천 문서를 봅니다.',
+  warehouse_stock:'창고별 지금 쓸 수 있는 재고입니다.',
+  moves:'"이동 중" 행은 도착 확인 후 [이동 확정]을 누르세요.',
+  readiness:'주간 작업지시별 착수 준비 상태입니다. "자재 출고 필요"면 자재 출고를 먼저 합니다.',
+  progress:'공정별 계획 대비 실적입니다.',
+  quality_orders:'작업지시별 최초·최근 검사 결과입니다. "재검사 필요"면 재검사를 등록합니다.',
+  inspection_points:'검사 계획(ITP)입니다. 대기 항목에 입회 검사 결과를 등록합니다.',
+  ncrs:'부적합 보고서입니다. "미결" 건은 조치 후 [NCR 종결]을 합니다.',
+  punch_items:'준공 전 남은 결함 목록입니다. A·B등급은 꼭 종결해야 합니다.',
+  block_stages:'블록별 조립 단계입니다. 미완료 단계에 공수·진척 실적을 등록합니다.',
+  work_logs:'일자별 투입 공수와 누적 진척률입니다.',
+  erection_schedule:'크레인·도크 제약을 반영한 탑재 일정 제안입니다.',
+  drawing_revisions:'도면 리비전 목록입니다. 행의 [EBOM 리비전 작성]으로 이 도면의 설계 BOM을 만듭니다.',
+  ebom_revisions:'"작성 중"이면 품목을 등록하고 [EBOM 발행]을, "발행"이면 [MBOM 리비전 작성]으로 넘어갑니다. 도면 상태가 "개정 필요"면 새 도면 리비전으로 EBOM을 다시 만드세요.',
+  ebom_items:'구조 경로로 호선 › 블록 › 조립품 › 부품을 확인합니다. 발행된 리비전의 품목은 고칠 수 없습니다.',
+  mbom_revisions:'"발행 점검"에 남은 항목을 해결하고, [발행 전 소요 비교]를 본 뒤 [MBOM 발행·소요 반영]을 누르세요.',
+  mbom_ops:'블록별 공정 순서입니다. 공정 번호는 실제 ERP 공정(작업지시·자재 소요가 붙는 단위)과 연결됩니다.',
+  mbom_inputs:'"설계 대응 없음 (소모품)"은 도면에 없는 용접재·소모품입니다. 설계 순중량 합계와 원판 수량을 비교해 수율을 확인하세요.',
+  mbom_changes:'반영 방식: 신규 소요 / 수량 변경(문서 없는 소요만) / 추가 소요(기존 문서 보존) / 조정 필요(완료 공정·발주 후 감소) / 이력 연결(완료 공정).',
+  order_boms:'작업지시마다 어떤 MBOM 리비전으로 일했는지 남습니다. 완료된 작업은 이전 리비전 기록이 그대로 유지됩니다.',
+  bom_trace:'MRP 부족이 어느 설계품목·투입품에서 나왔는지와 구매요청·출고 진행을 함께 봅니다.',
+  bom_adjustments:'발주·출고가 끝난 뒤 설계가 바뀌어 자동으로 고치지 않은 수량입니다. 반납·발주 취소 등 조치 후 [조정 정리]를 합니다.'
+};
+const fieldHints = {
+  baseline:'처음 계획한 날짜(비교 기준, 바꾸지 않음)', forecast:'현재 예상하는 날짜', actual:'실제로 수행한 날짜',
+  reason:'일정이 바뀐 이유를 적어 주세요', shortage:'소요일까지 모자라는 수량', need_day:'자재가 현장에 있어야 하는 날',
+  open_qty:'발주했지만 아직 입고되지 않은 수량', promised_day:'공급업체가 약속한 도착일', inspection:'검사 결과(불합격이면 나중에 재검사 등록)',
+  cadence:'주간 지시를 먼저 만들고 일일 지시는 주간 지시에 연결', parent:'일일 지시일 때만 상위 주간 지시를 선택',
+  day:'작업 예정일 또는 실제 처리일', source:'자재를 꺼낼 창고', plan_id:'발행된 12주 계획 번호',
+  progress_pct:'오늘까지의 누적 진척률(0~100)', manhours:'오늘 투입한 공수(사람×시간)', planned_mh:'계획 공수(사람×시간)',
+  heat_no:'강재 제조 로트 번호(밀시트에 표기)', cert_no:'제조사 품질 증명서 번호', witness:'선주·선급 입회 여부',
+  disposition:'수정·재작업·사용 승인 등 처리 방안', evidence:'확인한 문서 번호나 근거', start:'계획 시작 월요일',
+  weight_t:'블록 중량(t) — 크레인 정격하중과 비교', capacity_t:'장비가 들 수 있는 최대 하중(t)', lead_days:'발주부터 입고까지 걸리는 일수',
+  earned_mh:'계획 공수 × 진척률', productivity:'기성 공수 ÷ 투입 공수 (1보다 작으면 비효율)', category:'A: 인도 전 필수, B: 조속 조치, C: 경미'
+};
+const glossary = [
+  ['호선','건조할 선박 한 척을 관리하는 단위(예: H101).'],['블록','선체를 나눠 만든 큰 구조물. 조립 후 도크에서 탑재합니다.'],
+  ['탑재','블록을 도크에서 선체에 올려 결합하는 작업.'],['의장','배관·전선·장비 등 선체 외 설비를 설치하는 작업.'],
+  ['PE(선행탑재)','도크에 올리기 전에 블록 여러 개를 미리 합치는 단계.'],['MRP','자재 소요계획. 필요한 자재가 언제 얼마나 부족한지 계산.'],
+  ['APS','제약 기반 일정. 작업장 능력·선행 공정을 고려한 일정 제안.'],['ITP','검사·시험 계획. 어떤 검사를 언제 누가 입회할지 정한 표.'],
+  ['NCR','부적합 보고서. 기준에 맞지 않는 결과를 기록하고 조치까지 관리.'],
+  ['EBOM','설계 BOM. 도면 리비전 기준의 조립품·부품 구조와 설계 수량.'],['MBOM','제조 BOM. 설계품목을 공정에 배정하고 실제 투입 자재(원판·구매품·용접재)와 수량을 정한 것.'],
+  ['네스팅·수율','원판에 부재를 배치한 결과. 부재 순중량 ÷ 원판 중량이 수율이며 원판 소요량의 근거.'],['펀치','인도 전 남은 결함 목록. A/B/C 등급으로 관리.'],
+  ['M/H','맨아워(공수). 사람 수 × 작업 시간.'],['기성','실제로 완료된 것으로 인정된 물량·공수.'],
+  ['기준일/예정일/실제일','처음 계획일 / 현재 예상일 / 실제 수행일.'],['수불부','입고·출고로 바뀐 재고 기록 장부.'],
+  ['히트번호·밀시트','강재 제조 로트 번호와 제조사 품질 증명서.'],['입회','선주·선급 검사관이 현장 검사에 참석하는 것.']
+];
+Object.assign(fieldHints,{design_qty:'도면 기준 수량 (설계 단위)',qty:'자재 단위 기준 수량',
+  basis:'원판은 네스팅·수율, 용접재는 용접장×단위소요 같은 계산 근거',input_type:'원판·구매품은 설계품목과 연결, 용접재·소모품은 설계 대응 없음',
+  supply:'제작: 원판에서 가공 / 구매: 완제품 구매',seq:'블록마다 정하는 공정 순서 (10, 20, …)',parent_no:'조립품 번호 (최상위면 비움)'});
+const stepNumbers = page => flowSteps.map((step,index) => step.page === page ? index + 1 : 0).filter(Boolean);
+function currentStepIndex(page, route) {
+  const exact = flowSteps.findIndex(step => step.page === page && step.view === route);
+  return exact >= 0 ? exact : flowSteps.findIndex(step => step.page === page);
+}
+const openView = (page, route) => { if (route) lastViews[page] = route; openGroup(page); };
+function pillTone(state) {
+  if (/부족|불합격|재검사|미결|실패|지연|중지|과부하|경과|미완료|길이|위험|늦음|범위 밖|공백|없음|미배정/.test(state)) return 'danger';
+  if (/필요|대기|부분|이동 중|진행 중|착수 전|미연결|보류|높음|흘수|진수 예정일 전|점유 중|진행|주의|이후/.test(state)) return 'warn';
+  if (/완료|충족|확정|합격|종결|성공|사용|확인/.test(state)) return 'done';
+  return 'info';
+}
+function readPref(key) { try { return localStorage.getItem('shipyard-' + key); } catch (error) { return null; } }
+function writePref(key, value) { try { localStorage.setItem('shipyard-' + key, value); } catch (error) { /* per-viewer only */ } }
+function renderFlowBar(page, route) {
+  const bar = byId('flow-bar');
+  bar.replaceChildren();
+  const list = add(bar,'ol');
+  const current = currentStepIndex(page, route);
+  flowSteps.forEach((step,index) => {
+    if (!canOpen(step.page)) return;
+    const button = add(add(list,'li'),'button');
+    add(button,'b',String(index + 1));
+    button.append(step.label);
+    button.title = step.desc;
+    if (index === current) button.setAttribute('aria-current','step');
+    button.onclick = () => openView(step.page, step.view);
+  });
+  const active = bar.querySelector('[aria-current="step"]');
+  if (active) bar.scrollLeft = active.offsetLeft - (bar.clientWidth - active.offsetWidth) / 2;
+  const note = byId('flow-note');
+  const support = supportOf[page];
+  note.hidden = current >= 0 || support == null || support < 0;
+  if (!note.hidden) note.textContent = support ? `이 화면은 ${support}단계 "${flowSteps[support - 1].label}"를 돕는 보조 화면입니다.`
+    : '진척 확인용 조회 화면입니다. 전체 단계의 결과를 모아서 보여줍니다.';
+}
+function renderPageGuide(page, route) {
+  const holder = byId('page-guide');
+  holder.replaceChildren();
+  const guide = pageGuides[page];
+  if (!guide) return;
+  const box = add(holder,'details');
+  box.className = 'page-guide';
+  box.open = readPref('guide-closed') !== '1';
+  box.ontoggle = () => writePref('guide-closed', box.open ? '0' : '1');
+  add(box,'summary','이 화면 사용법');
+  add(box,'p',guide.purpose);
+  const steps = add(box,'ol');
+  for (const text of guide.steps) add(steps,'li',text);
+  if (guide.tip) add(box,'p','💡 ' + guide.tip).className = 'tip';
+  const index = currentStepIndex(page, route);
+  if (index < 0) return;
+  const navRow = add(box,'div');
+  navRow.className = 'guide-nav';
+  const previous = flowSteps.slice(0,index).reverse().find(step => canOpen(step.page) && step.page !== page);
+  const next = flowSteps.slice(index + 1).find(step => canOpen(step.page) && !(step.page === page && step.view === route));
+  if (previous) add(navRow,'button','← 이전 단계: ' + previous.label).onclick = () => openView(previous.page, previous.view);
+  else add(navRow,'span');
+  if (next) add(navRow,'button','다음 단계: ' + next.label + ' →').onclick = () => openView(next.page, next.view);
+}
+function showHelp() {
+  const content = byId('help-content');
+  content.replaceChildren();
+  add(content,'p','업무는 아래 순서로 이어집니다. 각 화면 위쪽의 단계 표시줄에서 지금 위치를 확인하고, 목록 행의 "다음 작업" 버튼을 누르면 필요한 값이 미리 채워진 다음 단계가 열립니다.');
+  const list = add(content,'ol');
+  list.className = 'help-flow';
+  for (const step of flowSteps) {
+    const item = add(list,'li');
+    add(item,'b',step.label);
+    item.append(` — ${step.desc} (메뉴: ${step.page})`);
+  }
+  add(content,'h3','용어');
+  const holder = add(content,'div');
+  holder.className = 'scroll';
+  const grid = add(holder,'table');
+  grid.className = 'glossary';
+  const head = add(add(grid,'thead'),'tr');
+  add(head,'th','용어').scope = 'col'; add(head,'th','뜻').scope = 'col';
+  const body = add(grid,'tbody');
+  for (const [term,meaning] of glossary) { const row = add(body,'tr'); add(row,'td',term); add(row,'td',meaning); }
+  add(content,'h3','상태 색상');
+  add(content,'p','빨강은 바로 조치가 필요한 상태(부족·불합격·미결), 주황은 다음 단계를 기다리는 상태(대기·필요), 초록은 끝난 상태(완료·합격·종결)입니다.');
+  byId('help-dialog').showModal();
+}
+const byId = id => document.getElementById(id);
+const add = (parent, tag, value) => {
+  const node = document.createElement(tag);
+  if (value != null) node.textContent = value;
+  parent.append(node);
+  return node;
+};
+let token = '';
+try { token = sessionStorage.getItem('shipyard-token') || ''; } catch (error) { token = ''; }
+let me = null;
+async function api(route, data) {
+  const headers = {'Content-Type':'application/json'};
+  if (token && meta?.login_required !== false) headers.Authorization = 'Bearer ' + token;
+  const response = await fetch('/api/' + route, data ? {method:'POST',headers,body:JSON.stringify(data)} : {headers});
+  const payload = await response.json();
+  if (response.status === 401 && route !== 'login') {
+    showLogin(payload.error);
+    throw new Error(payload.error);
+  }
+  if (!response.ok) throw new Error(payload.error);
+  return payload;
+}
+function saveToken(value) {
+  token = value;
+  try { value ? sessionStorage.setItem('shipyard-token', value) : sessionStorage.removeItem('shipyard-token'); }
+  catch (error) { /* the token then lives only in this page */ }
+}
+function status(message, error = false) {
+  byId('status').textContent = message;
+  byId('status').dataset.error = error;
+}
+const traceKinds = new Set(['activities','requirements','mrp','orders','production_results','purchase_requests',
+  'purchase_orders','goods_receipts','issues','inventory_ledger','materials','blocks','moves','plans']);
+const workflowHelp = {
+  plans:'발행본에서 공정을 골라 해당 계획 번호가 연결된 작업지시를 만듭니다.',
+  requirements:'공정별 자재와 소요일을 등록합니다. MRP 부족 행에서 구매요청으로 이어집니다.',
+  purchase_requests:'자재 소요를 선택한 뒤 구매 수량을 등록합니다.',
+  purchase_orders:'미발주 구매요청과 공급업체를 선택해 납기일을 정합니다.',
+  goods_receipts:'발주·입고 창고·검사 결과를 기록합니다. 합격 수량이 창고 재고에 반영됩니다.',
+  orders:'주간 지시를 먼저 만들고, 필요한 경우 같은 주에 일일 지시를 연결합니다.',
+  issues:'주간 작업지시와 소요 자재를 선택해 창고에서 출고합니다.',
+  results:'작업지시별 실제일과 검사 결과를 저장합니다. 재검사마다 별도 실적 번호가 발행됩니다.'
+};
+let modules = {}, views = {};
+function targetView(page, step) {
+  const target = meta.id_sources[step];
+  return (views[page] || []).find(([route, action]) => action === step || route === target)?.[0];
+}
+const derivedRoutes = {progress:'activities',readiness:'orders',quality_orders:'orders',quality_receipts:'goods_receipts'};
+Object.assign(labels,{readiness:'착수 준비',missing_qty:'미출고 수량',center_location:'작업 시설',linked_plan:'계획 연결'});
+function viewRows(route) {
+  if (route === 'progress') return scoped('activities');
+  if (route === 'readiness') return scoped('orders').filter(row => row.cadence === '주간').map(row => {
+    const requirements = data.requirements.filter(req => req.activity === row.activity);
+    // Quantities are summed per unit only (plates in sheets, wire in kg, outfitting in EA).
+    const byUnit = {};
+    for (const req of requirements) {
+      const open = Math.max(0,req.qty - data.issues.filter(issue => issue.requirement === req.id).reduce((sum,issue) => sum + issue.qty,0));
+      const unit = req.unit || data.materials.find(item => item.id === req.material)?.unit || '';
+      if (open) byUnit[unit] = (byUnit[unit] || 0) + open;
+    }
+    const missing = Object.keys(byUnit).length;
+    const operation = data.operations.find(item => item.activity === row.activity);
+    const facility = data.center_locations.find(item => item.center === operation?.center);
+    return {...row, center_location:facility?.location ?? '', missing_units:Object.entries(byUnit).map(([unit,qty]) => qty + unit).join(' · '),
+      linked_plan:row.plan_id ? '발행본 연결' : '계획 미연결',
+      readiness:row.inspection === '합격' ? '완료' : missing ? '자재 출고 필요' :
+        requirements.length ? '실적 등록 가능' : '자재 소요 확인 필요'};
+  });
+  if (route === 'quality_orders') {
+    const histories = new Map();
+    for (const result of scoped('production_results')) {
+      if (!histories.has(result.work_order)) histories.set(result.work_order, []);
+      histories.get(result.work_order).push(result);
+    }
+    return scoped('orders').map(order => {
+      const history = histories.get(order.id) || [];
+      const legacy = history.some(result => !result.recorded_at);
+      const first = [...history].sort((a,b) => (a.recorded_at || '').localeCompare(b.recorded_at || '') ||
+        a.id.localeCompare(b.id, 'en', {numeric:true}))[0];
+      return {id:order.id, activity:order.activity, actual:order.actual,
+        first_inspection:legacy ? '이전 이력 미확인' : first?.inspection,
+        first_actual:legacy ? null : first?.actual,
+        inspection:order.inspection, result:order.result,
+        attempts:history.length, latest_result:history.at(-1)?.id};
+    });
+  }
+  if (route === 'quality_receipts') return scoped('goods_receipts');
+  return scoped(route);
+}
+function rowState(route, row) {
+  if (route === 'block_readiness' || route === 'readiness') return row.readiness;
+  if (route === 'progress') return row.actual ? '완료' : row.forecast_variance_days > 0 ? '예정 지연' : '계획 진행';
+  if (route === 'quality_receipts') return row.inspection;
+  if (route === 'quality_orders') return row.inspection || '검사 대기';
+  if (route === 'mrp') return row.shortage ? '부족' : '충족';
+  if (route === 'purchase_requests') {
+    return data.purchase_orders.some(order => order.request === row.id) ? '발주 완료' : '발주 대기';
+  }
+  if (route === 'purchase_orders') {
+    if (!row.open_qty) return '입고 완료';
+    return row.open_qty === row.qty ? '입고 대기' : '부분 입고';
+  }
+  if (route === 'orders') return row.inspection === '합격' ? '완료' : row.inspection === '불합격' ? '재검사 필요' : '실적 대기';
+  if (route === 'moves') return row.confirmed_at ? '이동 확정' : '이동 중';
+  if (route === 'ncrs' || route === 'punch_items') return row.closed_day ? '종결' : '미결';
+  if (route === 'accounts') return row.active ? '사용' : '중지';
+  if (route === 'login_events') return row.success ? '성공' : '실패';
+  if (route === 'inspection_points') return row.inspection || '검사 대기';
+  if (route === 'outfitting_items') return row.status;
+  if (route === 'block_stages') return row.actual ? '완료' : row.progress_pct ? '진행 중' : '착수 전';
+  if (route === 'crane_load') return row.load_status;
+  if (route === 'hull_overview') return row.allocation_check !== '정상' ? row.risk + ' · ' + row.allocation_check : row.risk;
+  if (route === 'crane_assignments') return row.crane_check;
+  if (route === 'berth_occupancy') return row.check !== '정상' ? row.check : row.occupancy_status;
+  if (route === 'quay_shifts') return row.actual_day ? '이동 완료' : row.plan_day < new Date().toISOString().slice(0,10) ? '실적 미입력(지연)' : '예정';
+  if (route === 'outfit_works') return row.schedule_check !== '정상' ? row.schedule_check : row.work_status;
+  if (route === 'outfit_progress') return row.progress_status;
+  if (route === 'ebom_revisions') return row.status === '발행' && row.drawing_check !== '최신 도면' ? '도면 개정됨' : row.status;
+  if (route === 'mbom_revisions') return row.status === '작성 중' ? (row.publish_check.startsWith('발행 가능') ? '발행 대기' : '작성 중 · 점검 필요')
+    : row.publish_check === '최신 발행본' ? '발행' : row.publish_check.includes('대체됨') ? '대체됨' : '발행 · 점검 필요';
+  if (route === 'mbom_changes') return row.change;
+  if (route === 'mbom_inputs') return row.design_link;
+  if (route === 'bom_trace') return row.trace_status;
+  if (route === 'bom_adjustments') return row.closed_day ? '정리 완료' : '조정 필요';
+  if (route === 'order_boms') return row.link_type;
+  return '';
+}
+function follow(route, row) {
+  const next = nextStep(route,row);
+  if (next && next[1] === '__mrp') return null;
+  return next && canWrite(next[1]) && canOpen(next[0]) ? next : null;
+}
+function openViewSearch(page, route, term) {
+  listPreferences[page + '/' + route] = {search:term};
+  lastViews[page] = route;
+  openGroup(page);
+}
+function nextStep(route, row) {
+  const pick = (keys, extra = {}) => Object.fromEntries(keys.map(key => [key,row[key] ?? '']).concat(Object.entries(extra)));
+  if (route === 'crane_assignments') return ['소일정 (주간·일일)','crane_assignments',pick(meta.fields.crane_assignments)];
+  if (route === 'berth_assignments') return ['대일정','berth_assignments',pick(meta.fields.berth_assignments)];
+  if (route === 'berth_occupancy') return ['대일정','berth_assignments',
+    pick(meta.fields.berth_assignments,{note:data.berth_assignments?.find(item => item.id === row.id)?.note ?? ''})];
+  if (route === 'quay_shifts') return ['중일정 · 의장·안벽','quay_shifts',pick(meta.fields.quay_shifts)];
+  if (route === 'outfit_works') return ['중일정 · 의장·안벽','outfit_works',pick(meta.fields.outfit_works)];
+  if (route === 'hull_overview') {
+    const next = data.hull_milestones?.find(item => item.hull === row.hull && row.next_milestone?.startsWith(item.milestone + ' '));
+    return next ? ['대일정','milestone_update',{id:next.id,forecast:next.forecast,actual:next.actual ?? '',reason:next.reason}] : null;
+  }
+  if (route === 'accounts') return [meta.admin_menu,'account_update',{id:row.id,name:row.name,group_id:row.group_id,status:row.active ? '사용' : '중지'}];
+  if (route === 'block_readiness') return ['중일정 · 선체','block_gate_checks',{block:row.id}];
+  if (route === 'hull_milestones') return ['대일정','milestone_update',{id:row.id,forecast:row.forecast,actual:row.actual ?? '',reason:row.reason}];
+  if (route === 'quality_orders') return ['작업지시·실적','results',{id:row.id}];
+  if (route === 'ncrs') return !row.closed_day && ['품질 검사','ncr_close',{id:row.id}];
+  if (route === 'punch_items') return !row.closed_day && ['품질 검사','punch_close',{id:row.id}];
+  if (route === 'inspection_points') return row.inspection !== '합격' && ['품질 검사','inspection_records',{point:row.id}];
+  if (route === 'outfitting_items') return row.status !== '검사 완료' && ['의장품','outfitting_events',{item:row.id}];
+  if (route === 'block_stages') return !row.actual && ['블록 조립·공수','work_logs',{block_stage:row.id}];
+  if (route === 'goods_receipts' && row.inspection === '합격') return ['강재 추적','receipt_lots',{receipt:row.id}];
+  if (route === 'drawing_revisions') return !data.ebom_revisions.some(item => item.drawing_revision === row.id) &&
+    !data.drawing_revisions.some(item => item.drawing_no === row.drawing_no && item.recorded_at > row.recorded_at) &&
+    ['설계 도면','ebom_revisions',{drawing_revision:row.id,base_ebom:[...data.ebom_revisions].reverse().find(item =>
+      item.drawing_no === row.drawing_no && item.status === '발행')?.id ?? ''}];
+  if (route === 'ebom_revisions') return row.status === '작성 중' ? ['설계 도면','ebom_items',{ebom:row.id}]
+    : row.drawing_check === '최신 도면' && ['제조 BOM (MBOM)','mbom_revisions',{ebom:row.id,base_mbom:[...data.mbom_revisions]
+      .reverse().find(item => item.block === row.block && item.status === '발행')?.id ?? ''}];
+  if (route === 'ebom_items') return row.status === '작성 중' && ['설계 도면','ebom_items',pick(meta.fields.ebom_items)];
+  if (route === 'mbom_revisions') return row.status === '작성 중' ? ['제조 BOM (MBOM)','mbom_ops',{mbom:row.id}]
+    : ['자재 소요계획 (MRP)','__mrp',{}];
+  if (route === 'mbom_ops') return row.status === '작성 중' && ['제조 BOM (MBOM)','mbom_inputs',{op:row.id}];
+  if (route === 'mbom_inputs') return row.status === '작성 중' && ['원판','구매품'].includes(row.input_type) &&
+    ['제조 BOM (MBOM)','mbom_links',{input:row.id}];
+  if (route === 'bom_adjustments') return !row.closed_day && ['자재 소요계획 (MRP)','bom_adjustment_close',{id:row.id}];
+  if (route === 'bom_trace') return row.shortage > 0 && ['구매·입고','purchase_requests',{requirement:row.requirement?.split(', ').at(-1),qty:row.shortage}];
+  if (route === 'issues') return ['강재 추적','issue_lots',{issue:row.id}];
+  route = derivedRoutes[route] || route;
+  const actions = {
+    moves: !row.confirmed_at && ['블록 이동','confirm',{id:row.id}],
+    activities: ['자재 소요계획 (MRP)','requirements',{activity:row.id}],
+    requirements: ['구매·입고','purchase_requests',{requirement:row.id}],
+    mrp: ['구매·입고','purchase_requests',{requirement:row.id,qty:row.shortage}],
+    purchase_requests: ['구매·입고','purchase_orders',{request:row.id}],
+    purchase_orders: ['구매·입고','goods_receipts',{purchase_order:row.id,qty:row.open_qty}],
+    orders: row.cadence === '주간' && !row.actual
+      ? ['자재 출고','issues',{work_order:row.id}] : ['작업지시·실적','results',{id:row.id}]
+  };
+  return actions[route];
+}
+function actionAllowed(route,row) {
+  route = derivedRoutes[route] || route;
+  return !((route === 'mrp' && !row.shortage) || (route === 'purchase_orders' && !row.open_qty) ||
+    (route === 'purchase_requests' && data.purchase_orders.some(order => order.request === row.id)) ||
+    (route === 'orders' && row.inspection === '합격') || (route === 'activities' && Boolean(row.actual)));
+}
+// ---- Column sorting (click a header) and per-column filters (funnel icon → filter popover). ----
+const STATE_KEY = '__state';
+const hiddenColumns = ['snapshot','checks','label'];
+const DATE_RANGE = /^(\d{4}-\d{2}-\d{2})?~(\d{4}-\d{2}-\d{2})?$/;
+const filterActive = term => Array.isArray(term) ? term.length > 0 : Boolean(term && String(term).trim());
+const tableColumns = rows => rows.length ? Object.keys(rows[0]).filter(key => !hiddenColumns.includes(key)) : [];
+function cellText(route, key, row) {
+  if (key === STATE_KEY) return rowState(route,row) || '';
+  const value = key === 'position_status' ? positions[row[key]] : row[key];
+  if (value == null) return '';
+  if (key === 'qty_delta' && value > 0) return '+' + value;
+  if (key === 'location' && route === 'inventory_ledger') return data.locations.find(item => item.id === value)?.name ?? String(value);
+  if (key === 'plan_id') return data.plans.find(plan => plan.id === value)?.document_no ?? String(value);
+  if (key.endsWith('_at')) return new Date(value).toLocaleString('ko-KR');
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+}
+function columnMatch(route, key, row, term) {
+  if (!filterActive(term)) return true;
+  const text = cellText(route,key,row);
+  if (Array.isArray(term)) return term.includes(text);
+  const range = DATE_RANGE.exec(term.trim());
+  if (range) {
+    const day = String(row[key] ?? '').slice(0,10);
+    return Boolean(day) && (!range[1] || day >= range[1]) && (!range[2] || day <= range[2]);
+  }
+  const compare = /^(>=|<=|>|<|=)\s*(-?\d+(?:\.\d+)?)$/.exec(term.trim());
+  const raw = row[key];
+  if (compare && typeof raw === 'number') {
+    const number = Number(compare[2]);
+    return {'>=':raw >= number,'<=':raw <= number,'>':raw > number,'<':raw < number,'=':raw === number}[compare[1]];
+  }
+  return text.toLowerCase().includes(term.trim().toLowerCase());
+}
+function sortRows(route, rows, key, dir) {
+  if (!key) return rows;
+  const get = row => key === STATE_KEY ? rowState(route,row) : row[key];
+  return [...rows].sort((a,b) => {
+    const left = get(a), right = get(b);
+    const emptyLeft = left == null || left === '', emptyRight = right == null || right === '';
+    if (emptyLeft || emptyRight) return emptyLeft === emptyRight ? 0 : emptyLeft ? 1 : -1; // blanks always last
+    const order = typeof left === 'number' && typeof right === 'number' ? left - right :
+      String(left).localeCompare(String(right),'ko',{numeric:true});
+    return dir === 'desc' ? -order : order;
+  });
+}
+// Filter popover type per column: number (comparison), date (range), choice (value checklist) or text (contains).
+function columnKind(route, rows, key, withChoices) {
+  if (key !== STATE_KEY && rows.some(row => typeof row[key] === 'number')) return {type:'number'};
+  if (key !== STATE_KEY && (dateFields.has(key) || key.endsWith('_at') || rows.some(row => /^\d{4}-\d{2}-\d{2}/.test(row[key] ?? '')))) return {type:'date'};
+  if (withChoices && key !== 'id') {
+    const values = [...new Set(rows.map(row => cellText(route,key,row)).filter(Boolean))];
+    if (values.length && values.length <= 50) return {type:'choice', values:values.sort((a,b) => a.localeCompare(b,'ko',{numeric:true}))};
+  }
+  return {type:'text'};
+}
+function filterKinds(route, rows, columns, withChoices = true) {
+  return Object.fromEntries(columns.map(key => [key, columnKind(route,rows,key,withChoices)]));
+}
+function queryRows(route, rows, query) {
+  const filters = Object.entries(query.filters || {}).filter(([,term]) => filterActive(term));
+  const hits = filters.length ? rows.filter(row => filters.every(([key,term]) => columnMatch(route,key,row,term))) : rows;
+  return sortRows(route,hits,query.key,query.dir);
+}
+const nextSort = (query, key, dir) => dir ? {key, dir} : query.key === key ? {key, dir: query.dir === 'asc' ? 'desc' : 'asc'} : {key, dir:'asc'};
+const FUNNEL_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M1.5 2h13l-5 6v5.2l-3 1.3V8z" fill="currentColor"/></svg>';
+let filterPopover = null;
+function closeFilterPopover() {
+  if (!filterPopover) return;
+  filterPopover.pop.remove();
+  document.removeEventListener('mousedown', filterPopover.outside, true);
+  document.removeEventListener('keydown', filterPopover.escape, true);
+  window.removeEventListener('scroll', filterPopover.scroll, true);
+  const anchor = filterPopover.anchor;
+  filterPopover = null;
+  if (anchor.isConnected) anchor.focus();
+}
+function openFilterPopover(anchor, {label, kind, term, query, key, onSort, onApply}) {
+  const reopen = filterPopover?.anchor === anchor;
+  closeFilterPopover();
+  if (reopen) return;
+  const pop = document.createElement('div');
+  pop.className = 'filter-pop';
+  pop.setAttribute('role','dialog');
+  pop.setAttribute('aria-label',label + ' 필터');
+  (anchor.closest('dialog[open]') || document.body).append(pop);
+  const head = add(pop,'div');
+  head.className = 'filter-pop-head';
+  add(head,'strong',label);
+  const sorts = add(pop,'div');
+  sorts.className = 'filter-pop-sort';
+  for (const [dir,text] of [['asc','▲ 오름차순'],['desc','▼ 내림차순']]) {
+    const button = add(sorts,'button',text);
+    button.type = 'button';
+    if (query.key === key && query.dir === dir) button.className = 'on';
+    button.onclick = () => { closeFilterPopover(); onSort(dir); };
+  }
+  const bodyBox = add(pop,'div');
+  bodyBox.className = 'filter-pop-body';
+  let read, first;
+  if (kind.type === 'choice') {
+    const selected = new Set(Array.isArray(term) ? term : []);
+    const find = add(bodyBox,'input');
+    find.type = 'search'; find.placeholder = '값 찾기';
+    const all = add(add(bodyBox,'label'),'input');
+    all.type = 'checkbox';
+    all.parentElement.className = 'filter-all';
+    all.parentElement.append(' 전체 선택');
+    const list = add(bodyBox,'div');
+    list.className = 'filter-list';
+    const boxes = kind.values.map(value => {
+      const row = add(list,'label');
+      const box = add(row,'input');
+      box.type = 'checkbox'; box.value = value; box.checked = !selected.size || selected.has(value);
+      row.append(' ' + value);
+      return box;
+    });
+    const sync = () => { const shown = boxes.filter(box => !box.parentElement.hidden);
+      all.checked = shown.length > 0 && shown.every(box => box.checked); };
+    for (const box of boxes) box.onchange = sync;
+    all.onchange = () => { for (const box of boxes) if (!box.parentElement.hidden) box.checked = all.checked; };
+    find.oninput = () => { const text = find.value.trim().toLowerCase();
+      for (const box of boxes) box.parentElement.hidden = Boolean(text) && !box.value.toLowerCase().includes(text); sync(); };
+    sync();
+    read = () => { const checked = boxes.filter(box => box.checked).map(box => box.value);
+      return checked.length === boxes.length ? [] : checked.length ? checked : ['\u0000']; };
+    first = find;
+  } else if (kind.type === 'number') {
+    const current = /^(>=|<=|>|<|=)\s*(-?\d+(?:\.\d+)?)$/.exec(String(term || '').trim());
+    const row = add(bodyBox,'div');
+    row.className = 'filter-row';
+    const op = add(row,'select');
+    for (const [value,text] of [['=','같음 (=)'],['>=','이상 (≥)'],['<=','이하 (≤)'],['>','초과 (>)'],['<','미만 (<)']]) add(op,'option',text).value = value;
+    op.value = current?.[1] || '>=';
+    const number = add(row,'input');
+    number.type = 'number'; number.step = 'any'; number.placeholder = '숫자';
+    number.value = current?.[2] ?? '';
+    read = () => number.value === '' ? '' : op.value + number.value;
+    first = number;
+  } else if (kind.type === 'date') {
+    const current = DATE_RANGE.exec(String(term || '').trim());
+    const row = add(bodyBox,'div');
+    row.className = 'filter-row';
+    const from = add(add(row,'label','부터'),'input');
+    const until = add(add(row,'label','까지'),'input');
+    from.type = until.type = 'date';
+    from.value = current?.[1] || ''; until.value = current?.[2] || '';
+    read = () => from.value || until.value ? (from.value || '') + '~' + (until.value || '') : '';
+    first = from;
+  } else {
+    const input = add(bodyBox,'input');
+    input.type = 'search'; input.placeholder = '포함할 글자';
+    input.value = Array.isArray(term) ? '' : term || '';
+    read = () => input.value.trim();
+    first = input;
+  }
+  const foot = add(pop,'div');
+  foot.className = 'filter-pop-foot';
+  const clear = add(foot,'button','초기화');
+  clear.type = 'button';
+  clear.onclick = () => { closeFilterPopover(); onApply(kind.type === 'choice' ? [] : ''); };
+  const apply = add(foot,'button','적용');
+  apply.type = 'button'; apply.className = 'primary';
+  apply.onclick = () => { const value = read(); closeFilterPopover(); onApply(value); };
+  pop.addEventListener('keydown', event => { if (event.key === 'Enter' && event.target.tagName === 'INPUT' && event.target.type !== 'checkbox') { event.preventDefault(); apply.click(); } });
+  const rect = anchor.getBoundingClientRect();
+  const width = Math.min(280, window.innerWidth - 16);
+  pop.style.width = width + 'px';
+  pop.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)) + 'px';
+  const below = rect.bottom + 6, above = rect.top - pop.offsetHeight - 6;
+  pop.style.top = (below + pop.offsetHeight <= window.innerHeight - 8 || above < 8 ? Math.max(8, Math.min(below, window.innerHeight - pop.offsetHeight - 8)) : above) + 'px';
+  const outside = event => { if (!pop.contains(event.target) && event.target !== anchor && !anchor.contains(event.target)) closeFilterPopover(); };
+  const escape = event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeFilterPopover(); } };
+  const scroll = event => { if (!pop.contains(event.target)) closeFilterPopover(); };
+  document.addEventListener('mousedown', outside, true);
+  document.addEventListener('keydown', escape, true);
+  window.addEventListener('scroll', scroll, true);
+  filterPopover = {pop, anchor, outside, escape, scroll};
+  first?.focus();
+}
+function table(parent, rows, route, actions = true, control = null) {
+  if (!rows.length && !control?.columns?.length) { add(parent,'p','아직 등록된 데이터가 없습니다.'); return; }
+  if (control) { drawTable(parent, rows, route, actions, control); return; }
+  // Stand-alone tables (trace dialog, plan snapshots, readiness checks) sort and filter on their own.
+  const holder = add(parent,'div');
+  const columns = tableColumns(rows);
+  const showFilters = rows.length > 3;
+  const kinds = filterKinds(route,rows,[...columns,STATE_KEY]);
+  const query = {key:null, dir:'asc', filters:{}};
+  const draw = () => {
+    holder.replaceChildren();
+    drawTable(holder, queryRows(route,rows,query), route, actions, {columns, sample:rows[0], query, kinds, showFilters,
+      onSort: (key,dir) => { Object.assign(query,nextSort(query,key,dir)); draw(); },
+      onFilter: (key,value) => { query.filters[key] = value; draw(); }});
+  };
+  draw();
+}
+function drawTable(parent, rows, route, actions, control) {
+  const {columns, query = {}, kinds = {}, showFilters = true} = control;
+  const grid = add(add(parent,'div'),'table');
+  grid.parentNode.className = 'scroll';
+  const traceRoute = derivedRoutes[route] || route;
+  const showState = Boolean(rowState(route,control.sample || rows[0] || {}));
+  const header = add(add(grid,'thead'),'tr');
+  const heading = (key, text) => {
+    const th = add(header,'th');
+    th.scope = 'col';
+    const fixed = key === STATE_KEY && control.stateFixed;
+    const active = query.key === key;
+    if (active) th.setAttribute('aria-sort',query.dir === 'desc' ? 'descending' : 'ascending');
+    const inner = add(th,'div');
+    inner.className = 'th-inner';
+    if (fixed) { add(inner,'span',text); return; }
+    const button = add(inner,'button');
+    button.type = 'button';
+    button.className = 'sort-btn';
+    add(button,'span',text);
+    add(button,'span',active ? (query.dir === 'desc' ? '▼' : '▲') : '↕').className = 'sort-mark' + (active ? ' on' : '');
+    button.title = (fieldHints[key] ? fieldHints[key] + ' · ' : '') + '누르면 ' +
+      (active && query.dir === 'asc' ? '내림차순' : '오름차순') + '으로 정렬합니다.';
+    button.onclick = () => control.onSort(key);
+    if (!showFilters) return;
+    const term = query.filters?.[key];
+    const icon = add(inner,'button');
+    icon.type = 'button';
+    icon.className = 'filter-btn' + (filterActive(term) ? ' on' : '');
+    icon.innerHTML = FUNNEL_ICON;
+    icon.title = filterActive(term) ? text + ' 필터 적용 중 · 눌러서 변경' : text + ' 필터';
+    icon.setAttribute('aria-label',icon.title);
+    icon.setAttribute('aria-haspopup','dialog');
+    if (filterActive(term)) th.classList.add('filtered');
+    const kind = kinds[key] || columnKind(route,rows.length ? rows : [control.sample || {}],key,false);
+    icon.onclick = event => { event.stopPropagation(); openFilterPopover(icon,{label:text,kind,term,query,key,
+      onSort: dir => control.onSort(key,dir), onApply: value => control.onFilter(key,value)}); };
+  };
+  for (const key of columns) heading(key, key === 'day' && route === 'inventory_ledger' ? '수불일' :
+    key === 'location' && route === 'inventory_ledger' ? '창고' : key === 'status' && route === 'telemetry' ? '장비 상태' : key === 'status' && /^(ebom|mbom)_/.test(route) ? '리비전 상태' : labels[key] || key);
+  if (showState) heading(STATE_KEY,'처리 상태');
+  const extraButtons = ['ebom_revisions','mbom_revisions','mrp'].includes(route);
+  const hasActions = actions && (extraButtons || rows.some(row => follow(route,row)));
+  if (hasActions) add(header,'th','다음 작업').scope = 'col';
+  const body = add(grid,'tbody');
+  if (!rows.length) {
+    const cell = add(add(body,'tr'),'td','조건에 맞는 문서가 없습니다. 열 필터나 검색 조건을 지워 보세요.');
+    cell.colSpan = columns.length + (showState ? 1 : 0) + (hasActions ? 1 : 0);
+  }
+  for (const row of rows) {
+    const tr = add(body,'tr');
+    for (const key of columns) {
+      const value = row[key];
+      const display = cellText(route,key,row);
+      const cell = add(tr,'td');
+      if (typeof value === 'number' && !['id','plan_id'].includes(key)) cell.className = 'number-cell';
+      if (key === 'id' && traceKinds.has(traceRoute)) {
+        const link = add(cell,'button',route === 'plans' ? row.document_no : display);
+        link.className = 'trace-link';
+        link.onclick = () => showTrace(traceRoute,route === 'plans' ? data.plans.find(plan => plan.id === row.id) : row);
+      } else if (key === 'source_document' && route === 'inventory_ledger') {
+        const original = row.movement === '입고' ? 'goods_receipts' : row.movement === '출고' ? 'issues' : null;
+        const document = original && data[original].find(item => item.id === value);
+        if (document) {
+          const source = add(cell,'button',value);
+          source.className = 'trace-link';
+          source.onclick = () => showTrace(original,document);
+        } else cell.textContent = value ?? '';
+      } else if (key === 'plan_id' && value) {
+        cell.textContent = data.plans.find(plan => plan.id === value)?.document_no ?? value;
+      } else cell.textContent = display ?? '';
+    }
+    if (showState) {
+      const state = rowState(route,row);
+      const pill = add(add(tr,'td'),'span',state);
+      pill.className = 'pill';
+      pill.dataset.tone = pillTone(state);
+    }
+    const next = actions ? follow(route,row) : null;
+    const cell = hasActions ? add(tr,'td') : null;
+    if (cell && (next || extraButtons)) {
+      if (next) {
+        const button = add(cell,'button',route === 'quality_orders' && row.inspection === '불합격' ? '재검사 등록' : next[1] === route || (route === 'berth_occupancy' && next[1] === 'berth_assignments') ? '수정' : names[next[1]]);
+        button.onclick = () => openGroup(...next);
+        button.className = 'next-btn';
+        button.disabled = !actionAllowed(route,row);
+        if (button.disabled) button.title = '이미 다음 단계까지 처리된 문서입니다.';
+      }
+      if (route === 'accounts' && canWrite('account_password_reset')) {
+        add(cell,'button','비밀번호 초기화').onclick = () => openGroup(meta.admin_menu,'account_password_reset',{id:row.id});
+      }
+      if (route === 'ebom_revisions' && row.status === '작성 중' && canWrite('ebom_publish')) {
+        add(cell,'button',names.ebom_publish).onclick = () => openGroup('설계 도면','ebom_publish',{id:row.id});
+      }
+      if (route === 'mbom_revisions' && (row.status === '작성 중' || row.publish_check === '최신 발행본')) {
+        add(cell,'button','발행 전 소요 비교').onclick = () => openViewSearch('제조 BOM (MBOM)','mbom_changes',row.id);
+        if (canWrite('mbom_publish')) add(cell,'button',row.status === '작성 중' ? names.mbom_publish : '재처리(중복 없음)').onclick =
+          () => openGroup('제조 BOM (MBOM)','mbom_publish',{id:row.id});
+      }
+      if (route === 'mrp' && row.mbom) add(cell,'button','소요 근거').onclick = () => openViewSearch('자재 소요계획 (MRP)','bom_trace',row.id);
+      if (['orders','readiness'].includes(route) && row.cadence === '주간' && !row.actual && canWrite('results')) {
+        add(cell,'button','실적 등록').onclick = () => openGroup('작업지시·실적','results',{id:row.id});
+      }
+    }
+  }
+}
+let meta, group = overview, action, view, hull = '', preset = {};
+const loaded = {};
+// Routes are loaded on demand; anything not loaded (or not permitted) reads as an empty list.
+const data = new Proxy(loaded, {get: (target, key) => typeof key === 'string' && key in target ? target[key] : []});
+const canRead = route => Boolean(me && me.routes.includes(route));
+const canWrite = step => Boolean(me && me.actions.includes(step));
+const canOpen = page => page === overview || Boolean(me?.menus[page]?.read || me?.menus[page]?.write);
+async function ensure(routes) {
+  const wanted = [...new Set(routes)].filter(route => canRead(route) && !(route in loaded));
+  const rows = await Promise.all(wanted.map(route => api(route)));
+  wanted.forEach((route, index) => { loaded[route] = rows[index]; });
+}
+function pageRoutes(page) {
+  if (page === overview) return [...meta.common, ...meta.home_routes];
+  const needed = new Set((views[page] || []).flatMap(([route]) => meta.derived[route] || []));
+  // Long histories shown in server-paged lists are not downloaded whole unless a derived view needs them.
+  return (meta.menu_routes[page] || meta.common).filter(route => !(route in meta.server_paged) || needed.has(route));
+}
+const listPreferences = {};
+const lastViews = {};
+const entryDialog = byId('entry-dialog');
+byId('entry-close').onclick = () => entryDialog.close();
+async function refresh() {
+  for (const route of Object.keys(loaded)) delete loaded[route];
+  await ensure(pageRoutes(group));
+}
+function selectOptions(key) {
+  const fixed = {milestone:meta.milestones,gate:meta.gates,verdict:['확인','보류','해당 없음'],stage:meta.stages,kind:['야드','작업장','도크','안벽','창고'],cadence:['주간','일일'],inspection:['합격','불합격'],...meta.choices};
+  if (fixed[key]) return fixed[key].map(value => [value,value]);
+  let source = refs[key];
+  if (key === 'id') source = meta.id_sources[action];
+  if (!source) return null;
+  const bomRows = bomOptions(key, source);
+  if (bomRows) return bomRows.map(row => [row.id, [row.id, row.label || row.name].filter(Boolean).join(' · ')]);
+  let rows = ['locations','equipment','materials','centers','suppliers','plans'].includes(source) ? data[source] : scoped(source);
+  if (key === 'plan_id' && preset.activity) rows = rows.filter(plan => plan.snapshot.some(row => row.id === preset.activity));
+  if (key === 'requirement' && preset.work_order) {
+    const activity = data.orders.find(row => row.id === preset.work_order)?.activity;
+    rows = rows.filter(row => row.activity === activity);
+  }
+  if (key === 'source' || (key === 'location' && ['goods_receipts','warehouse_stock'].includes(action))) {
+    rows = rows.filter(row => row.kind === '창고');
+  }
+  if (key === 'location' && action === 'center_locations') rows = rows.filter(row => row.kind !== '창고');
+  if (key === 'warehouse') rows = rows.filter(row => row.kind === '창고');
+  if (key === 'station') rows = rows.filter(row => row.kind !== '창고');
+  if (key === 'quay') rows = rows.filter(row => row.kind === '안벽');
+  if (key === 'dock') rows = rows.filter(row => action === 'dock_bookings' ? row.kind === '도크' : ['도크','야드'].includes(row.kind));
+  if (['ncr_close','punch_close'].includes(action) && key === 'id') rows = rows.filter(row => !row.closed_day);
+  if (key === 'receipt') rows = rows.filter(row => row.inspection === '합격');
+  if (key === 'block_stage') rows = rows.filter(row => !row.actual);
+  if (key === 'point') rows = rows.filter(row => row.inspection !== '합격');
+  if (key === 'item') rows = rows.filter(row => row.status !== '검사 완료');
+  if (key === 'work_order') rows = rows.filter(row => row.cadence === '주간' && !row.actual);
+  if (key === 'request') rows = rows.filter(row => !data.purchase_orders.some(order => order.request === row.id));
+  if (key === 'purchase_order') rows = rows.filter(row => row.open_qty > 0);
+  if (key === 'parent') rows = rows.filter(row => row.cadence === '주간' && !row.actual);
+  if (action === 'confirm') rows = rows.filter(row => !row.confirmed_at);
+  if (action === 'forecast' && key === 'id') rows = rows.filter(row => !row.actual);
+  if (action === 'results' && key === 'id') rows = rows.filter(row => !row.actual || row.inspection === '불합격');
+  return rows.map(row => [row.id ?? row.activity, [row.document_no ?? row.id ?? row.activity,row.label || row.name ||
+    (row.stage && (row.block ? row.block + ' ' : '') + row.stage) || row.instruction || (row.drawing_no && row.drawing_no + ' ' + row.revision) ||
+    row.item || row.heat_no || row.description || (row.assembly_stage && row.block + ' ' + row.assembly_stage)].filter(Boolean).join(' · ')]);
+}
+// Option lists of the EBOM/MBOM forms: only drafts can change, only issued revisions can be applied.
+function bomOptions(key, source) {
+  const mbomOf = id => data.mbom_revisions.find(row => row.id === id);
+  const presetMbom = preset.mbom || data.mbom_ops.find(row => row.id === preset.op)?.mbom ||
+    data.mbom_inputs.find(row => row.id === preset.input)?.mbom;
+  if (key === 'drawing_revision') return scoped('drawing_revisions').filter(row => !data.ebom_revisions.some(item => item.drawing_revision === row.id))
+    .map(row => ({id:row.id, label:row.drawing_no + ' ' + row.revision + ' · ' + row.block}));
+  if (key === 'ebom') return scoped('ebom_revisions').filter(row => row.status === (action === 'ebom_items' ? '작성 중' : '발행'));
+  if (key === 'base_ebom' || key === 'base_mbom') return scoped(source).filter(row => row.status === '발행');
+  if (key === 'mbom') return scoped('mbom_revisions').filter(row => row.status === '작성 중');
+  if (key === 'op') return scoped('mbom_ops').filter(row => row.status === '작성 중' && (!presetMbom || row.mbom === presetMbom));
+  if (key === 'input') return scoped('mbom_inputs').filter(row => row.status === '작성 중' && ['원판','구매품'].includes(row.input_type) &&
+    (!presetMbom || row.mbom === presetMbom));
+  if (key === 'ebom_item') {
+    const ebom = mbomOf(presetMbom)?.ebom;
+    return scoped('ebom_items').filter(row => ebom ? row.ebom === ebom : row.status === '발행');
+  }
+  if (key === 'activity' && action === 'mbom_ops') {
+    const block = mbomOf(presetMbom)?.block;
+    return scoped('activities').filter(row => (!block || row.block === block)).map(row => ({id:row.id,
+      label:row.block + ' ' + row.stage + (row.actual ? ' (완료 ' + row.actual + ')' : '')}));
+  }
+  if (key === 'id' && action === 'ebom_publish') return scoped('ebom_revisions').filter(row => row.status === '작성 중');
+  if (key === 'id' && action === 'mbom_publish') return scoped('mbom_revisions').filter(row => row.status === '작성 중' || row.publish_check === '최신 발행본');
+  if (key === 'id' && action === 'bom_adjustment_close') return scoped('bom_adjustments').filter(row => !row.closed_day)
+    .map(row => ({id:row.id, label:row.block + ' ' + row.material + ' ' + row.qty_delta + row.unit}));
+  return null;
+}
+function buttons(parent, keys, active, text, onClick) {
+  parent.replaceChildren();
+  for (const key of keys) {
+    const button = add(parent,'button',text(key));
+    button.setAttribute('aria-pressed',String(key === active));
+    button.onclick = () => onClick(key);
+  }
+}
+function scoped(route) {
+  const activities = new Set(data.activities.filter(row => row.hull === hull).map(row => row.id));
+  const blocks = new Set(data.blocks.filter(row => row.hull === hull).map(row => row.id));
+  const moves = new Set(data.moves.filter(row => blocks.has(row.block)).map(row => row.id));
+  const requirements = new Set(data.requirements.filter(row => activities.has(row.activity)).map(row => row.id));
+  const purchaseOrders = new Set(data.purchase_orders.filter(row => requirements.has(row.requirement)).map(row => row.id));
+  const predicates = {
+    purchase_requests: row => requirements.has(row.requirement),
+    purchase_orders: row => purchaseOrders.has(row.id),
+    goods_receipts: row => purchaseOrders.has(row.purchase_order),
+    issues: row => requirements.has(row.requirement),
+    production_results: row => data.orders.some(order => order.id === row.work_order && activities.has(order.activity)),
+    block_stages: row => blocks.has(row.block),
+    work_logs: row => data.block_stages.some(stage => stage.id === row.block_stage && blocks.has(stage.block)),
+    erection_records: row => blocks.has(row.block),
+    block_progress: row => row.hull === hull,
+    hull_progress: row => row.hull === hull,
+    contractor_summary: row => row.hull === hull,
+    outfitting_items: row => row.hull === hull,
+    outfitting_events: row => data.outfitting_items.some(item => item.id === row.item && item.hull === hull),
+    drawing_revisions: row => blocks.has(row.block),
+    dock_bookings: row => row.hull === hull,
+    erection_schedule: row => row.hull === hull,
+    block_traceability: row => blocks.has(row.block),
+    material_rollup: row => row.hull === hull,
+    inspection_points: row => row.hull === hull,
+    inspection_records: row => data.inspection_points.some(point => point.id === row.point && point.hull === hull),
+    ncrs: row => row.hull === hull,
+    punch_items: row => row.hull === hull,
+    hulls: row => row.id === hull,
+    hull_milestones: row => row.hull === hull,
+    milestone_history: row => data.hull_milestones.some(item => item.id === row.milestone_id && item.hull === hull),
+    block_structure: row => blocks.has(row.parent_block),
+    erection_links: row => blocks.has(row.successor_block),
+    erection_plans: row => blocks.has(row.block),
+    block_gate_checks: row => blocks.has(row.block),
+    block_readiness: row => row.hull === hull,
+    activities: row => row.hull === hull,
+    crane_assignments: row => row.hull === hull,
+    crane_load: row => (row.hulls_served || '').split(', ').includes(hull),
+    berth_assignments: row => row.hull === hull,
+    berth_occupancy: row => row.hull === hull,
+    quay_shifts: row => row.hull === hull,
+    outfit_works: row => row.hull === hull,
+    outfit_progress: row => row.hull === hull,
+    outfit_links: row => data.outfit_works.some(work => work.id === row.work && work.hull === hull),
+    vessel_details: row => row.hull === hull,
+    block_details: row => blocks.has(row.block),
+    hull_geometry: row => row.hull === hull,
+    block_geometry: row => blocks.has(row.block),
+    hull_placements: row => row.hull === hull,
+    erection_timeline: row => row.hull === hull,
+    mrp: row => activities.has(row.activity),
+    ...Object.fromEntries(['ebom_revisions','ebom_items','mbom_revisions','mbom_ops','mbom_items','mbom_inputs','mbom_links',
+      'mbom_changes','order_boms','bom_trace','bom_adjustments'].map(name => [name, row => row.hull === hull])),
+    aps: row => activities.has(row.activity),
+    operations: row => activities.has(row.activity),
+    requirements: row => activities.has(row.activity),
+    blocks: row => row.hull === hull,
+    orders: row => activities.has(row.activity),
+    moves: row => moves.has(row.id),
+    telemetry: row => moves.has(row.move)
+  };
+  return hull && predicates[route] ? data[route].filter(predicates[route]) : data[route];
+}
+byId('trace-close').onclick = () => byId('trace-dialog').close();
+byId('help-close').onclick = () => byId('help-dialog').close();
+byId('help-button').onclick = showHelp;
+
+async function showTrace(route, row) {
+  try { await ensure(meta.trace_routes); } catch (error) { status(error.message,true); return; }
+  const dialog = byId('trace-dialog');
+  const content = byId('trace-content');
+  content.replaceChildren();
+  byId('trace-title').textContent = (row.document_no ?? row.id) + ' · 원천 문서 추적';
+  const summary = add(content,'section');
+  add(summary,'h3',titles[route] ?? '문서 상세');
+  const detail = {...row};
+  delete detail.snapshot;
+  table(summary,[detail],route,false);
+  const next = follow(route,row);
+  if (next && actionAllowed(route,row)) {
+    const button = add(summary,'button',names[next[1]]);
+    button.className = 'primary';
+    button.onclick = () => { dialog.close(); openGroup(...next); };
+  }
+  const purchase = route === 'purchase_orders' ? row :
+    data.purchase_orders.find(order => order.id === row.purchase_order);
+  const request = route === 'purchase_requests' ? row :
+    data.purchase_requests.find(item => item.id === purchase?.request);
+  const requirementId = ['requirements','mrp'].includes(route) ? row.id :
+    row.requirement ?? request?.requirement;
+  const requirement = data.requirements.find(item => item.id === requirementId);
+  const orderId = route === 'orders' ? row.id : row.work_order;
+  const order = data.orders.find(item => item.id === orderId);
+  const activityIds = new Set();
+  const material = route === 'materials' ? row.id : route === 'inventory_ledger' ? row.material : null;
+  const block = route === 'blocks' ? row.id : route === 'moves' ? row.block : null;
+  const activity = route === 'activities' ? row.id : row.activity ?? requirement?.activity ?? order?.activity;
+  if (activity) activityIds.add(activity);
+  if (route === 'plans') for (const item of row.snapshot) activityIds.add(item.id);
+  if (block) for (const item of data.activities.filter(item => item.block === block)) activityIds.add(item.id);
+  const reqs = data.requirements.filter(item => material ? item.material === material : activityIds.has(item.activity));
+  if (material) for (const item of reqs) activityIds.add(item.activity);
+  const reqIds = new Set(reqs.map(item => item.id));
+  const orders = data.orders.filter(item => activityIds.has(item.activity) &&
+    (route !== 'plans' || item.plan_id === row.id));
+  const orderIds = new Set(orders.map(item => item.id));
+  const plans = route === 'plans' ? [row] : data.plans.filter(plan => plan.snapshot.some(item => activityIds.has(item.id)));
+  const requests = data.purchase_requests.filter(item => reqIds.has(item.requirement));
+  const requestIds = new Set(requests.map(item => item.id));
+  const purchases = data.purchase_orders.filter(item => requestIds.has(item.request));
+  const purchaseIds = new Set(purchases.map(item => item.id));
+  const receipts = data.goods_receipts.filter(item => purchaseIds.has(item.purchase_order));
+  const issues = data.issues.filter(item => reqIds.has(item.requirement));
+  const transactionIds = new Set([...receipts,...issues].map(item => item.id));
+  const blocks = new Set(data.activities.filter(item => activityIds.has(item.id)).map(item => item.block));
+  if (block) blocks.add(block);
+  const chain = [
+    ['plans',plans.map(({id,document_no,start,end_exclusive}) => ({id,document_no,start,end_exclusive}))],
+    ['activities',data.activities.filter(item => activityIds.has(item.id))],
+    ['requirements',reqs], ['purchase_requests',requests], ['purchase_orders',purchases],
+    ['goods_receipts',receipts], ['orders',orders], ['issues',issues],
+    ['production_results',data.production_results.filter(item => orderIds.has(item.work_order))],
+    ['inventory_ledger',data.inventory_ledger.filter(item => material ? item.material === material : transactionIds.has(item.source_document))],
+    ['moves',data.moves.filter(item => blocks.has(item.block))],
+    ['bom_trace',data.bom_trace.filter(item => (item.requirement || '').split(', ').some(id => reqIds.has(id)))],
+    ['order_boms',data.order_boms.filter(item => orderIds.has(item.work_order))]
+  ];
+  for (const [kind, rows] of chain) {
+    if (!rows.length) continue;
+    const section = add(content,'section');
+    add(section,'h3',titles[kind]);
+    table(section,rows,kind, false);
+  }
+  if (content.childElementCount === 1) add(content,'p','연결된 원천 문서가 없습니다.');
+  if (!dialog.open) dialog.showModal();
+  dialog.scrollTop = 0;
+}
+
+async function openGroup(key, nextAction, initial = {}) {
+  if (!canOpen(key)) key = overview;
+  group = key;
+  view = nextAction ? targetView(key,nextAction) : lastViews[key] || views[key]?.[0][0];
+  try { await ensure(pageRoutes(key)); } catch (error) { status(error.message,true); }
+  render();
+  if (nextAction && Object.keys(initial).length) openEntry(nextAction,initial);
+}
+function renderOverview(records) {
+  const intro = add(records,'div');
+  intro.className = 'home-intro welcome';
+  const hello = add(intro,'div');
+  add(hello,'h2',(me?.name ? me.name + '님, ' : '') + '오늘 처리할 업무를 확인하세요');
+  add(hello,'p','아래 "처리할 업무"의 버튼을 누르면 필요한 값이 채워진 입력 창이 바로 열립니다.');
+  add(intro,'button','업무 안내·용어 보기').onclick = showHelp;
+  if (readPref('onboard-done') !== '1') {
+    const onboard = add(records,'section');
+    onboard.className = 'onboard';
+    const dismiss = add(onboard,'button','다시 보지 않기');
+    dismiss.className = 'dismiss';
+    dismiss.onclick = () => { writePref('onboard-done','1'); onboard.remove(); };
+    add(onboard,'h2','처음 사용하시나요? 이렇게 시작하세요');
+    const steps = add(onboard,'ol');
+    for (const text of ['위쪽 "조회 호선"에서 담당 호선을 고릅니다. (BOM 실습은 DT-DEMO-01)',
+      '"처리할 업무" 목록에서 항목 오른쪽 버튼을 누릅니다. 필요한 번호와 수량이 미리 채워져 있습니다.',
+      '저장하면 화면 위에 "다음 단계" 버튼이 나타납니다. 그 버튼을 따라가면 업무가 순서대로 이어집니다.',
+      '각 화면 위쪽의 단계 표시줄(1~' + flowSteps.length + '단계)로 지금 어느 단계인지 확인하고, "이 화면 사용법"을 펼쳐 순서를 읽으세요.',
+      '모르는 용어(MRP, NCR, M/H 등)는 표 머리글에 마우스를 올리거나 "업무 안내·용어"를 누르세요.']) add(steps,'li',text);
+  }
+  if (!hull && data.hulls.length > 1) {
+    add(records,'p','지금은 전체 호선의 업무가 함께 보입니다. 위쪽 "조회 호선"에서 담당 호선을 고르면 내 업무만 볼 수 있습니다.').className = 'hull-hint';
+  }
+  const metrics = add(records,'div');
+  metrics.className = 'home-metrics';
+  for (const [label,count,page,step,route] of [
+    ['자재 부족',scoped('mrp').filter(row => row.shortage > 0).length,'자재 소요계획 (MRP)',undefined,'mrp'],
+    ['MBOM 발행 대기',scoped('mbom_revisions').filter(row => row.status === '작성 중').length,'제조 BOM (MBOM)',undefined,'mbom_revisions'],
+    ['설계 변경 조정',scoped('bom_adjustments').filter(row => !row.closed_day).length,'자재 소요계획 (MRP)',undefined,'bom_adjustments'],
+    ['미입고 발주',scoped('purchase_orders').filter(row => row.open_qty > 0).length,'구매·입고','purchase_orders','purchase_orders'],
+    ['미완료 작업',scoped('orders').filter(row => row.inspection !== '합격').length,'작업지시·실적','orders','orders'],
+    ['미결 NCR',scoped('ncrs').filter(row => !row.closed_day).length,'품질 검사','ncrs','ncrs'],
+    ['미결 펀치',scoped('punch_items').filter(row => !row.closed_day).length,'품질 검사','punch_items','punch_items'],
+    ['탑재 일정 제약',scoped('erection_schedule').filter(row => !['일정 제안','탑재 완료','크레인 배정'].includes(row.planning_status)).length,'중일정 · 선체',undefined,'erection_schedule'],
+    ['대일정 위험 호선',scoped('hull_overview').filter(row => row.risk === '위험').length,'대일정',undefined,'hull_overview'],
+    ['의장 일정 점검',scoped('outfit_works').filter(row => row.schedule_check !== '정상').length,'중일정 · 의장·안벽',undefined,'outfit_works']
+  ].filter(([,,page,,route]) => canRead(route) && canOpen(page))) {
+    const card = add(metrics,'button');
+    add(card,'span',label);
+    add(card,'strong',count + '건');
+    card.onclick = () => { if (!step) lastViews[page] = route; openGroup(page,step); };
+  }
+  const queue = add(records,'section');
+  const currentOrders = scoped('orders');
+  // [title, hint, next action, workflow step number] — sorted in business-flow order.
+  const [EBOM, MBOM, MRP, BUY, RESULT, QUALITY, MOVE] = [stepOf('설계 도면','ebom_revisions'), stepOf('제조 BOM (MBOM)'),
+    stepOf('자재 소요계획 (MRP)'), stepOf('구매·입고'), stepOf('작업지시·실적','production_results'), stepOf('품질 검사'), stepOf('블록 이동')];
+  const designed = new Set(data.ebom_revisions.map(row => row.drawing_no));
+  const pending = [
+    ...scoped('drawing_revisions').filter(row => designed.has(row.drawing_no)).map(row =>
+      [row.drawing_no + ' ' + row.revision, '설계 변경 도면이 출도되었습니다 → 이전 EBOM을 복사해 새 EBOM 리비전을 만드세요', follow('drawing_revisions',row), EBOM]),
+    ...scoped('ebom_revisions').filter(row => row.status === '작성 중').map(row =>
+      [row.id + ' · ' + row.drawing_no + ' ' + row.revision, 'EBOM 작성 중 → 품목을 확인하고 [EBOM 발행]을 누르세요',
+        canWrite('ebom_publish') ? ['설계 도면','ebom_publish',{id:row.id}] : null, EBOM]),
+    ...scoped('ebom_revisions').filter(row => row.status === '발행' && !row.mboms && row.drawing_check === '최신 도면').map(row =>
+      [row.id + ' · ' + row.block, 'EBOM이 발행되었습니다 → 공정에 배정할 MBOM 리비전을 만드세요', follow('ebom_revisions',row), MBOM]),
+    ...scoped('mbom_revisions').filter(row => row.status === '작성 중').map(row =>
+      [row.id + ' · ' + row.block + ' ' + row.revision, rowState('mbom_revisions',row) === '발행 대기'
+        ? '발행 준비 완료 → [발행 전 소요 비교]를 확인하고 발행하세요' : '발행 점검: ' + row.publish_check,
+        rowState('mbom_revisions',row) === '발행 대기' && canWrite('mbom_publish') ? ['제조 BOM (MBOM)','mbom_publish',{id:row.id}]
+          : follow('mbom_revisions',row), MBOM]),
+    ...scoped('bom_adjustments').filter(row => !row.closed_day).map(row =>
+      [row.id + ' · ' + row.material, row.block + ' ' + row.qty_delta + row.unit + ' · ' + row.adjustment + ' → 발주 취소·반납 등 조치 후 정리하세요',
+        follow('bom_adjustments',row), MRP]),
+    ...scoped('mrp').filter(row => row.shortage &&
+      !data.purchase_requests.some(req => req.requirement === row.id &&
+        !data.purchase_orders.some(order => order.request === req.id))).map(row =>
+      [row.id + ' · ' + row.material, '자재 ' + row.shortage + ' 부족 · ' + row.need_day + '까지 필요 → 구매요청을 올리세요', follow('mrp',row), MRP]),
+    ...scoped('purchase_requests').filter(row => rowState('purchase_requests',row) === '발주 대기').map(row =>
+      [row.id,'구매요청이 발주를 기다립니다 → 공급업체·납기일을 정해 발주하세요',follow('purchase_requests',row), BUY]),
+    ...scoped('purchase_orders').filter(row => row.open_qty > 0).map(row =>
+      [row.id,row.open_qty + ' 미입고 · 납기 ' + row.promised_day + ' → 도착하면 입고·검수를 기록하세요',follow('purchase_orders',row), BUY]),
+    ...currentOrders.filter(row => row.inspection === '불합격').map(row =>
+      [row.id,'검사 불합격 → 보수 후 재검사 결과를 등록하세요',canWrite('results') ? ['작업지시·실적','results',{id:row.id}] : null, RESULT]),
+    ...scoped('ncrs').filter(row => !row.closed_day).map(row =>
+      [row.id,(row.block || row.hull) + ' · ' + row.disposition + ' · 미결 NCR → 조치 후 종결하세요',follow('ncrs',row), QUALITY]),
+    ...scoped('punch_items').filter(row => !row.closed_day && row.category !== 'C').map(row =>
+      [row.id,row.category + '등급 펀치 · ' + row.description,follow('punch_items',row), QUALITY]),
+    ...scoped('moves').filter(row => !row.confirmed_at).map(row =>
+      [row.id,row.block + ' 이동 중 → 도착을 확인하면 이동을 확정하세요',follow('moves',row), MOVE])
+  ].filter(([,,next]) => next);
+  add(queue,'h2','처리할 업무 (' + pending.length + '건)');
+  const list = add(queue,'ul');
+  list.className = 'queue';
+  for (const [title,hint,next,stepNo] of pending) {
+    const item = add(list,'li');
+    const label = add(item,'div');
+    const head = add(label,'strong');
+    add(head,'span',stepNo + '단계 ' + flowSteps[stepNo - 1].label).className = 'step-tag';
+    head.append(title);
+    add(label,'span',hint);
+    add(item,'button',names[next[1]] + ' →').onclick = () => openGroup(...next);
+  }
+  if (!pending.length) add(queue,'p','선택한 호선에 급히 처리할 항목이 없습니다. 아래 업무 흐름에서 담당 단계를 골라 진행하세요.');
+  const process = add(records,'section');
+  add(process,'h2','전체 업무 흐름');
+  add(process,'p','왼쪽에서 오른쪽, 위에서 아래 순서로 진행됩니다. 카드를 누르면 해당 화면으로 이동합니다. 빨간 숫자는 처리 대기 건수입니다.').className = 'flow-note';
+  const counts = {
+    [EBOM]: scoped('ebom_revisions').filter(row => row.status === '작성 중' || row.drawing_check !== '최신 도면').length,
+    [MBOM]: scoped('mbom_revisions').filter(row => row.status === '작성 중').length,
+    [MRP]: scoped('mrp').filter(row => row.shortage > 0).length,
+    [BUY]: scoped('purchase_requests').filter(row => rowState('purchase_requests',row) === '발주 대기').length +
+      scoped('purchase_orders').filter(row => row.open_qty > 0).length,
+    [RESULT]: currentOrders.filter(row => row.inspection !== '합격').length,
+    [QUALITY]: scoped('ncrs').filter(row => !row.closed_day).length + scoped('punch_items').filter(row => !row.closed_day).length,
+    [MOVE]: scoped('moves').filter(row => !row.confirmed_at).length
+  };
+  const grid = add(process,'div');
+  grid.className = 'flow-grid';
+  flowSteps.forEach((step,index) => {
+    if (!canOpen(step.page)) return;
+    const card = add(grid,'button');
+    add(card,'span',(index + 1) + '단계').className = 'no';
+    add(card,'strong',step.label);
+    add(card,'small',step.desc);
+    if (counts[index + 1]) add(card,'span',counts[index + 1] + '건').className = 'count';
+    card.onclick = () => openView(step.page, step.view);
+  });
+}
+function renderLedger(section, rows) {
+  const toolbar = add(section,'div');
+  toolbar.className = 'actions';
+  const filter = (caption, items) => {
+    const field = add(add(toolbar,'label',caption),'select');
+    add(field,'option','전체').value = '';
+    for (const item of items) add(field,'option',item.id + ' · ' + item.name).value = item.id;
+    return field;
+  };
+  const material = filter('자재',data.materials);
+  const warehouse = filter('창고',data.locations.filter(item => item.kind === '창고'));
+  const result = add(section,'div');
+  const update = () => {
+    result.replaceChildren();
+    table(result,rows.filter(row => (!material.value || row.material === material.value) &&
+      (!warehouse.value || row.location === warehouse.value)), 'inventory_ledger');
+  };
+  material.onchange = warehouse.onchange = update;
+  update();
+}
+function openEntry(step, initial = {}) {
+  action = step;
+  preset = initial;
+  byId('entry-title').textContent = names[step];
+  byId('entry-help').textContent = workflowHelp[step] ?? '';
+  byId('entry-help').hidden = !workflowHelp[step];
+  byId('entry-status').textContent = '';
+  const form = byId('entry');
+  form.replaceChildren();
+  const legend = add(form,'p','* 표시는 필수 입력입니다.' + (Object.keys(initial).length ? ' 초록색 칸은 앞 단계 문서에서 자동으로 채워진 값입니다.' : ''));
+  legend.className = 'form-legend';
+  for (const key of meta.fields[action]) {
+    if (key === 'id' && meta.numbered.includes(action)) {
+      // Editing a plan document (crane, berth, shift, outfitting): keep its number so saving updates it.
+      if (initial.id && ['crane_assignments','berth_assignments','quay_shifts','outfit_works'].includes(action)) {
+        const hidden = add(form,'input');
+        Object.assign(hidden,{type:'hidden',name:'id',value:initial.id});
+        byId('entry-title').textContent = names[step].replace(/ (등록|배정)$/,'') + ' 수정 · ' + initial.id;
+      }
+      continue;
+    }
+    const required = !(key === 'actual' && action === 'milestone_update') && !(meta.optional[action] || []).includes(key) &&
+      ((key === 'location' && action !== 'blocks') || !optional.has(key) || (key === 'predecessor' && action === 'operation_links') ||
+      (key === 'block' && ['moves','block_details','erection_plans','block_gate_checks','block_stages','drawing_revisions','erection_records','block_geometry'].includes(action)));
+    const fieldLabel = key === 'location' && action !== 'blocks' ? (action === 'center_locations' ? '생산 시설' : '창고') : key === 'day' ? ({goods_receipts:'실제 입고일',issues:'실제 출고일'}[action] || labels[key]) : labels[key];
+    const label = add(form,'label',fieldLabel + (required ? ' *' : ''));
+    if (['instruction','reason','result','evidence','description','remarks','note'].includes(key)) label.className = 'wide-field';
+    const options = selectOptions(key);
+    const field = add(label, options ? 'select' : 'input');
+    field.name = key;
+    if (['vessel_details','block_details','equipment_specs'].includes(action) && key === meta.fields[action][0]) {
+      field.onchange = () => {
+        const existing = data[action].find(row => row[key] === field.value);
+        for (const name of meta.fields[action].slice(1)) form.elements[name].value = existing?.[name] ?? '';
+      };
+    }
+    field.required = required;
+    if (options) {
+      add(field,'option','선택').value = '';
+      for (const [value, text] of options) add(field,'option',text).value = value;
+    } else {
+      field.type = key === 'password' ? 'password' : dateFields.has(key) ? 'date' : ['x','y','load',...measures,...integerFields].includes(key) ? 'number' : 'text';
+      field.maxLength = 1000;
+      if (field.type === 'number') field.step = integerFields.includes(key) ? '1' : 'any';
+      if (integerFields.includes(key)) field.min = ['stock','lead_days','start_hour','start_m','tugs','progress_pct'].includes(key) ? 0 : 1;
+      if (key === 'progress_pct') field.max = 100;
+      if (measures.includes(key)) { if (!signedMeasures.has(key)) field.min = key === 'lift_t' ? 0 : 0.001; field.step = '0.001'; }
+      if (key === 'load') field.min = 0;
+    }
+    if (preset[key] != null) field.value = preset[key];
+    if (preset[key] != null && preset[key] !== '' && field.value !== '') label.classList.add('prefilled');
+    if (fieldHints[key]) add(label,'small',fieldHints[key]).className = 'field-hint';
+    if (action === 'issues' && key === 'work_order') {
+      field.onchange = () => {
+        const selected = data.orders.find(order => order.id === field.value);
+        const requirements = form.elements.requirement;
+        requirements.replaceChildren();
+        add(requirements,'option','선택').value = '';
+        for (const req of scoped('requirements').filter(req => req.activity === selected?.activity)) {
+          add(requirements,'option',req.id + ' · ' + req.material).value = req.id;
+        }
+      };
+    }
+  }
+  const submit = add(form,'button',names[action]);
+  submit.type = 'submit';
+  form.onsubmit = async event => {
+    event.preventDefault();
+    submit.disabled = true;
+    let saved;
+    try {
+      saved = await api(action,Object.fromEntries(new FormData(form)));
+    } catch (error) {
+      byId('entry-status').textContent = error.message;
+      byId('entry-status').dataset.error = 'true';
+      submit.disabled = false;
+      return;
+    }
+    try {
+      await refresh();
+      entryDialog.close();
+      preset = {};
+      render(saved.id ? `${saved.id} 저장 완료` : '저장했습니다.');
+      const next = follow(action,data[action]?.find(row => row.id === saved.id) || {});
+      if (next && next[2] && Object.values(next[2]).every(value => value != null)) {
+        const box = byId('next-actions');
+        add(box,'span','✔ 저장했습니다. 이어서 할 일:');
+        const button = add(box,'button',names[next[1]] + ' →');
+        button.className = 'primary';
+        button.onclick = () => openGroup(...next);
+        box.scrollIntoView({block:'nearest'});
+      }
+    } catch (error) {
+      entryDialog.close();
+      status('저장했습니다. 목록을 새로 고치려면 페이지를 다시 불러오세요.',true);
+    }
+  };
+  entryDialog.showModal();
+}
+function render(message = '') {
+  const nav = byId('tabs');
+  nav.replaceChildren();
+  for (const [label,pages] of Object.entries(modules)) {
+    add(nav,'h2',label);
+    const visible = pages.filter(canOpen);
+    if (!visible.length) { nav.lastChild.remove(); continue; }
+    for (const page of visible) {
+      const button = add(nav,'button');
+      const numbers = stepNumbers(page);
+      if (numbers.length) {
+        const badge = add(button,'span',numbers.join('·'));
+        badge.className = 'nav-step';
+        badge.title = numbers.map(no => no + '단계 ' + flowSteps[no - 1].label).join(', ');
+      }
+      button.append(page);
+      button.setAttribute('aria-pressed',String(group === page));
+      button.onclick = () => openGroup(page);
+    }
+  }
+  const filter = byId('hull-filter');
+  filter.replaceChildren();
+  add(filter,'option','전체 호선').value = '';
+  for (const row of data.hulls) add(filter,'option',row.id + ' · ' + row.name).value = row.id;
+  filter.value = hull;
+  filter.onchange = () => { hull = filter.value; render(); filter.focus(); };
+  byId('work').hidden = group === overview;
+  const records = byId('records');
+  records.replaceChildren();
+  if (group === overview) {
+    renderOverview(records);
+    return;
+  }
+  const choices = views[group];
+  const selected = choices.find(([route]) => route === view) || choices[0];
+  const [route,step,heading] = selected;
+  byId('heading').textContent = group;
+  renderFlowBar(group, route);
+  renderPageGuide(group, route);
+  byId('step-help').textContent = viewHelp[route] ?? '';
+  byId('step-help').hidden = !viewHelp[route];
+  byId('next-actions').replaceChildren();
+  buttons(byId('actions'),choices.map(item => item[0]),route,
+          key => choices.find(item => item[0] === key)[2],key => { view = key; lastViews[group] = key; render(); });
+  byId('actions').setAttribute('role','tablist');
+  byId('actions').setAttribute('aria-label',group + ' 조회 탭');
+  [...byId('actions').children].forEach((button,index,buttons) => {
+    const selected = choices[index][0] === route;
+    button.setAttribute('role','tab');
+    button.setAttribute('aria-selected',String(selected));
+    button.tabIndex = selected ? 0 : -1;
+    button.onkeydown = event => {
+      const offset = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+      if (!offset) return;
+      event.preventDefault();
+      const next = (index + offset + buttons.length) % buttons.length;
+      view = choices[next][0]; lastViews[group] = view; render();
+      byId('actions').children[next].focus();
+    };
+  });
+  const section = add(records,'section');
+  const header = add(section,'div');
+  header.className = 'list-header';
+  const title = add(header,'h3',heading);
+  const tools = add(header,'div');
+  tools.className = 'list-tools';
+  if (step && canWrite(step)) {
+    const create = add(tools,'button',names[step]);
+    create.className = 'primary';
+    create.onclick = () => openEntry(step);
+  }
+  if (route === 'activities' && canWrite('forecast')) add(tools,'button',names.forecast).onclick = () => openEntry('forecast');
+  if (route === 'group_permissions') { renderPermissions(section); status(message); return; }
+  if (route in meta.server_paged) { renderServerList(section,route,heading,title); status(message); return; }
+  const rows = viewRows(route);
+  let qualitySummary;
+  if (route === 'quality_orders') {
+    qualitySummary = add(section,'div');
+    qualitySummary.className = 'home-metrics quality-summary';
+  }
+  const queryKey = group + '/' + route;
+  const saved = listPreferences[queryKey] || {};
+  const filters = add(section,'div');
+  filters.className = 'filter-bar';
+  const search = add(add(filters,'label','검색'),'input');
+  search.type = 'search'; search.placeholder = '문서번호 · 품목명 · 공정'; search.value = saved.search || '';
+  const select = (label,options,value) => {
+    const field = add(add(filters,'label',label),'select');
+    for (const [key,text] of options) add(field,'option',text).value = key;
+    field.value = value;
+    return field;
+  };
+  const material = select('자재',[['','전체 자재'],...data.materials.map(row => [row.id,row.id + ' · ' + row.name])],saved.material || '');
+  material.parentElement.hidden = !rows.some(row => 'material' in row);
+  const location = select('창고·시설',[['','전체 위치'],...data.locations.map(row => [row.id,row.name])],saved.location || '');
+  location.parentElement.hidden = !rows.some(row => 'location' in row || 'source' in row);
+  const dateKeys = ['first_actual','day','need_day','promised_day','actual','forecast','start','recorded_at','issued_at'];
+  const dateKey = route === 'quality_orders' ? 'first_actual' : dateKeys.find(key => rows.some(row => row[key]));
+  const from = add(add(filters,'label',dateKey ? (labels[dateKey] || dateKey) + ' 시작' : '시작일'),'input');
+  const until = add(add(filters,'label','종료일'),'input');
+  from.type = until.type = 'date'; from.value = saved.from || ''; until.value = saved.until || '';
+  from.parentElement.hidden = until.parentElement.hidden = !dateKey;
+  const reset = add(filters,'button','조건 초기화');
+  const columns = tableColumns(rows);
+  // Sorting and column filters live in the table header; card views (plans, readiness) keep the data order.
+  const cardView = ['plans','block_readiness'].includes(route);
+  const kinds = filterKinds(route,rows,[...columns,STATE_KEY]);
+  const query = {key:saved.sort ?? (cardView ? null : columns[0]), dir:saved.direction || 'asc', filters:{...(saved.columns || {})}};
+  if (!cardView && rows.length) add(section,'p','열 이름을 누르면 오름차순 ↔ 내림차순으로 정렬되고, 열 이름 옆 깔때기 아이콘을 누르면 그 열의 필터 창이 열립니다.').className = 'table-tip';
+  const body = add(section,'div');
+  const pagination = add(section,'div'); pagination.className = 'pagination';
+  let page = 0;
+  const pageSize = 20;
+  const update = () => {
+    body.replaceChildren(); pagination.replaceChildren();
+    listPreferences[queryKey] = {search:search.value,material:material.value,location:location.value,
+      from:from.value,until:until.value,sort:query.key,direction:query.dir,columns:{...query.filters}};
+    if (from.value && until.value && from.value > until.value) {
+      add(body,'p','시작일은 종료일 이전으로 선택하세요.'); return;
+    }
+    const term = search.value.trim().toLowerCase();
+    const matched = rows.filter(row => {
+      const names = [data.materials.find(item => item.id === row.material)?.name,
+        data.activities.find(item => item.id === row.activity)?.stage];
+      const searchable = [...Object.values(row),...names].map(value => typeof value === 'object' ? JSON.stringify(value) : String(value ?? '')).join(' ').toLowerCase();
+      const day = String(row[dateKey] || '').slice(0,10);
+      return (!term || searchable.includes(term)) &&
+        (material.parentElement.hidden || !material.value || row.material === material.value) &&
+        (location.parentElement.hidden || !location.value || row.location === location.value || row.source === location.value) &&
+        (!dateKey || ((!from.value || day >= from.value) && (!until.value || (day && day <= until.value))));
+    });
+    const hits = queryRows(route,matched,query);
+    if (qualitySummary) {
+      qualitySummary.replaceChildren();
+      const inspected = hits.filter(row => ['합격','불합격'].includes(row.first_inspection));
+      const failed = inspected.filter(row => row.first_inspection === '불합격').length;
+      const pending = hits.filter(row => row.inspection === '불합격').length;
+      for (const [label,value] of [['최초 불합격률',inspected.length ? (100*failed/inspected.length).toFixed(1)+'%' : '집계 없음'],
+        ['최초 검사 불합격 / 확인 건수',failed+' / '+inspected.length+'건'],['현재 재검사 필요',pending+'건']]) {
+        const card = add(qualitySummary,'div');
+        add(card,'span',label);
+        add(card,'strong',value);
+      }
+      add(qualitySummary,'p','조회 조건에 해당하는 작업지시 기준입니다. 최초 검사 이력이 확인된 지시만 불합격률에 포함합니다.');
+    }
+    title.textContent = heading + ' (' + hits.length + '건)';
+    const pages = Math.max(1,Math.ceil(hits.length/pageSize));
+    page = Math.min(page,pages-1);
+    const slice = hits.slice(page*pageSize,(page+1)*pageSize);
+    if (!rows.length) add(body,'p',step && canWrite(step) ? `아직 등록된 문서가 없습니다. 오른쪽 위 [${names[step]}] 버튼으로 첫 문서를 등록하세요.`
+      : hull ? '선택한 호선에 등록된 문서가 없습니다. 조회 호선을 "전체 호선"으로 바꿔 보세요.' : '아직 등록된 문서가 없습니다.');
+    else if (cardView) {
+      if (!hits.length) add(body,'p','조건에 맞는 문서가 없습니다. [조건 초기화]를 누르거나 검색어를 바꿔 보세요.');
+      else renderList(body,route,slice);
+    } else table(body,slice,route,true,{columns,sample:rows[0],query,kinds,
+      onSort: (key,dir) => { Object.assign(query,nextSort(query,key,dir)); update(); },
+      onFilter: (key,value) => { query.filters[key] = value; page = 0; update(); }});
+    const previous = add(pagination,'button','이전'); previous.disabled = page === 0;
+    previous.onclick = () => { page--; update(); };
+    add(pagination,'span',(page+1) + ' / ' + pages + ' 페이지 · 페이지당 20건');
+    const next = add(pagination,'button','다음'); next.disabled = page+1 >= pages;
+    next.onclick = () => { page++; update(); };
+  };
+  const apply = () => { page = 0; update(); };
+  search.oninput = apply;
+  for (const field of [material,location,from,until]) field.onchange = apply;
+  reset.onclick = () => {
+    search.value = material.value = location.value = from.value = until.value = '';
+    Object.assign(query,{key:cardView ? null : columns[0],dir:'asc',filters:{}}); apply();
+  };
+  update();
+  status(message);
+}
+
+function renderList(section, route, items) {
+    if (route === 'block_readiness') {
+      for (const block of items) {
+        const details = add(section,'details');
+        add(details,'summary',block.id + ' · ' + block.readiness + (block.forecast ? ' · 탑재 예정 ' + block.forecast : ''));
+        add(details,'p',block.blockers || '등록된 준비 조건을 모두 확인했습니다.');
+        table(details,block.checks);
+        add(details,'button','준비 항목 확인').onclick = () => openEntry('block_gate_checks',{block:block.id});
+      }
+    } else if (route === 'plans' && items.length) {
+      for (const plan of items) {
+        const details = add(section,'details');
+        add(details,'summary',`${plan.document_no} · ${plan.start}부터 ${plan.end_exclusive} 전까지 · ${new Date(plan.issued_at).toLocaleString('ko-KR')}`);
+        const trace = add(details,'button','계획 문서 추적');
+        trace.onclick = () => showTrace('plans',plan);
+        const rows = hull ? plan.snapshot.filter(row => row.hull === hull) : plan.snapshot;
+        table(details, rows, 'activities', false);
+        for (const row of rows.filter(row => !data.activities.find(activity => activity.id === row.id)?.actual)) {
+          const create = add(details,'button',row.id + ' 작업지시');
+          create.className = 'record-action';
+          create.onclick = () => {
+            const date = new Date((row.forecast < plan.end_exclusive && row.forecast >= plan.start ? row.forecast : row.baseline) + 'T00:00:00Z');
+            date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7);
+            openGroup('작업지시·실적','orders',{activity:row.id,plan_id:plan.id,cadence:'주간',day:date.toISOString().slice(0,10)});
+          };
+        }
+      }
+    } else table(section,items,route);
+}
+
+function renderServerList(section, route, heading, title) {
+  // Long histories: search, filters, sort and paging run on the server (Redis-cached per query).
+  const queryKey = group + '/' + route;
+  const saved = listPreferences[queryKey] || {};
+  const dateKey = meta.server_paged[route];
+  const filters = add(section,'div');
+  filters.className = 'filter-bar';
+  const search = add(add(filters,'label','검색'),'input');
+  search.type = 'search'; search.placeholder = '서버 검색 (문서번호·내용)'; search.value = saved.q || '';
+  const select = (label,options,value) => {
+    const field = add(add(filters,'label',label),'select');
+    for (const [key,text] of options) add(field,'option',text).value = key;
+    field.value = value;
+    return field;
+  };
+  const ledger = route === 'inventory_ledger';
+  const material = ledger ? select('자재',[['','전체 자재'],...data.materials.map(row => [row.id,row.id + ' · ' + row.name])],saved.material || '') : null;
+  const location = ledger ? select('창고',[['','전체 창고'],...data.locations.filter(row => row.kind === '창고').map(row => [row.id,row.name])],saved.location || '') : null;
+  const from = add(add(filters,'label',(labels[dateKey] || dateKey) + ' 시작'),'input');
+  const until = add(add(filters,'label','종료일'),'input');
+  from.type = until.type = 'date'; from.value = saved.from || ''; until.value = saved.until || '';
+  const reset = add(filters,'button','조건 초기화');
+  // Header clicks sort and header fields filter on the server (f.<column>), so paging stays correct.
+  const query = {key:saved.sort || dateKey, dir:saved.dir || 'desc', filters:{...(saved.columns || {})}};
+  add(section,'p','열 이름을 누르면 오름차순 ↔ 내림차순으로 정렬되고, 열 이름 옆 깔때기 아이콘을 누르면 그 열의 필터 창이 열립니다.').className = 'table-tip';
+  const body = add(section,'div');
+  const pagination = add(section,'div'); pagination.className = 'pagination';
+  let page = saved.page || 0, columns = null, sample = null, timer = null, ticket = 0;
+  const load = async () => {
+    if (from.value && until.value && from.value > until.value) {
+      body.replaceChildren(); add(body,'p','시작일은 종료일 이전으로 선택하세요.'); return;
+    }
+    const params = new URLSearchParams({size:'20',page:String(page),sort:query.key,dir:query.dir});
+    for (const [key,value] of Object.entries(query.filters)) if (filterActive(value) && !Array.isArray(value)) params.set('f.' + key,value.trim());
+    if (search.value.trim()) params.set('q',search.value.trim());
+    if (hull) params.set('hull',hull);
+    if (material?.value) params.set('material',material.value);
+    if (location?.value) params.set('location',location.value);
+    if (from.value || until.value) params.set('date_key',dateKey);
+    if (from.value) params.set('from',from.value);
+    if (until.value) params.set('until',until.value);
+    listPreferences[queryKey] = {q:search.value,from:from.value,until:until.value,sort:query.key,dir:query.dir,
+      page,material:material?.value,location:location?.value,columns:{...query.filters}};
+    const mine = ++ticket;
+    let result;
+    try { result = await api(route + '?' + params); }
+    catch (error) { if (mine === ticket) { body.replaceChildren(); add(body,'p',error.message); } return; }
+    if (mine !== ticket) return;
+    page = result.page;
+    if (!columns && result.rows.length) { columns = tableColumns(result.rows); sample = result.rows[0]; }
+    body.replaceChildren(); pagination.replaceChildren();
+    title.textContent = heading + ' (' + result.total + '건)';
+    if (!columns) add(body,'p','조건에 맞는 문서가 없습니다. 검색 조건을 초기화하세요.');
+    else table(body,result.rows,route,true,{columns,sample,query,stateFixed:true,
+      onSort: (key,dir) => { Object.assign(query,nextSort(query,key,dir)); page = 0; load(); },
+      kinds:filterKinds(route,[sample],columns,false),
+      onFilter: (key,value) => { query.filters[key] = value; page = 0; load(); }});
+    const previous = add(pagination,'button','이전'); previous.disabled = page === 0;
+    previous.onclick = () => { page--; load(); };
+    add(pagination,'span',(page+1) + ' / ' + result.pages + ' 페이지 · 서버 검색');
+    const next = add(pagination,'button','다음'); next.disabled = page+1 >= result.pages;
+    next.onclick = () => { page++; load(); };
+  };
+  search.oninput = () => { clearTimeout(timer); timer = setTimeout(() => { page = 0; load(); },250); };
+  for (const field of [from,until,material,location].filter(Boolean)) field.onchange = () => { page = 0; load(); };
+  reset.onclick = () => {
+    search.value = from.value = until.value = '';
+    if (material) material.value = '';
+    if (location) location.value = '';
+    Object.assign(query,{key:dateKey,dir:'desc',filters:{}}); page = 0; load();
+  };
+  load();
+}
+function renderPermissions(section) {
+  const groupsList = data.user_groups;
+  const tools = add(section,'div'); tools.className = 'perm-tools';
+  const picker = add(add(tools,'label','그룹'),'select');
+  for (const row of groupsList) add(picker,'option',row.id + ' · ' + row.name).value = row.id;
+  picker.value = lastViews.permissionGroup && groupsList.some(row => row.id === lastViews.permissionGroup)
+    ? lastViews.permissionGroup : groupsList.find(row => row.id !== meta.admin_group)?.id ?? groupsList[0]?.id ?? '';
+  const save = add(tools,'button',names.group_permissions_bulk);
+  save.type = 'button'; save.className = 'primary';
+  const note = add(section,'p');
+  const holder = add(section,'div'); holder.className = 'scroll';
+  const draw = () => {
+    lastViews.permissionGroup = picker.value;
+    holder.replaceChildren();
+    const locked = picker.value === meta.admin_group;
+    note.textContent = locked ? '관리자 그룹은 모든 메뉴를 조회·등록할 수 있으며 변경할 수 없습니다.'
+      : '등록 권한을 주면 조회 권한도 함께 부여됩니다. 저장하면 해당 그룹 사용자에게 바로 적용됩니다.';
+    save.hidden = locked || !canWrite('group_permissions_bulk');
+    const granted = Object.fromEntries(data.group_permissions.filter(row => row.group_id === picker.value)
+      .map(row => [row.menu,row]));
+    const grid = add(holder,'table'); grid.className = 'perm-table';
+    const head = add(add(grid,'thead'),'tr');
+    for (const text of ['메뉴','조회','등록']) add(head,'th',text).scope = 'col';
+    const body = add(grid,'tbody');
+    for (const [module,pages] of Object.entries(modules)) {
+      for (const page of pages.filter(page => page !== overview)) {
+        const tr = add(body,'tr'); tr.dataset.menu = page;
+        add(tr,'td',module + ' › ' + page);
+        const box = kind => {
+          const input = add(add(tr,'td'),'input'); input.type = 'checkbox'; input.dataset.kind = kind;
+          input.checked = Boolean(granted[page]?.[kind === 'read' ? 'can_read' : 'can_write']);
+          input.disabled = locked || !canWrite('group_permissions_bulk');
+          input.setAttribute('aria-label',page + ' ' + (kind === 'read' ? '조회' : '등록'));
+          return input;
+        };
+        const read = box('read'), write = box('write');
+        write.onchange = () => { if (write.checked) read.checked = true; };
+        read.onchange = () => { if (!read.checked) write.checked = false; };
+      }
+    }
+  };
+  picker.onchange = draw;
+  save.onclick = async () => {
+    const permissions = {};
+    for (const tr of holder.querySelectorAll('tbody tr')) {
+      const read = tr.querySelector('[data-kind="read"]').checked, write = tr.querySelector('[data-kind="write"]').checked;
+      if (read || write) permissions[tr.dataset.menu] = {read,write};
+    }
+    save.disabled = true;
+    try {
+      await api('group_permissions_bulk',{group_id:picker.value,permissions});
+      if (picker.value === me.group_id) me = await api('me');
+      await refresh();
+      render(picker.value + ' 그룹 권한을 저장했습니다.');
+    } catch (error) { status(error.message,true); save.disabled = false; }
+  };
+  draw();
+}
+function loginMessage(message, tone = 'error') {
+  byId('login-status').textContent = message;
+  byId('login-status').dataset.tone = tone;
+}
+function showLogin(message = '', tone = 'error') {
+  saveToken('');
+  me = null;
+  for (const route of Object.keys(loaded)) delete loaded[route];
+  if (entryDialog.open) entryDialog.close();
+  if (byId('trace-dialog').open) byId('trace-dialog').close();
+  if (byId('help-dialog').open) byId('help-dialog').close();
+  byId('app').hidden = true;
+  byId('session-bar').hidden = true;
+  byId('login-screen').hidden = false;
+  document.body.classList.add('signed-out');
+  loginMessage(message, tone);
+  const form = byId('login-form');
+  form.elements.password.type = 'password';
+  byId('password-reveal').textContent = '보기';
+  byId('password-reveal').setAttribute('aria-pressed','false');
+  byId('caps-warning').hidden = true;
+  const saved = readPref('login-id');
+  byId('remember-id').checked = Boolean(saved);
+  if (saved && !form.elements.id.value) form.elements.id.value = saved;
+  (form.elements.id.value ? form.elements.password : form.elements.id).focus();
+}
+async function showApp() {
+  me = await api('me');
+  byId('login-screen').hidden = true;
+  document.body.classList.remove('signed-out');
+  byId('app').hidden = false;
+  byId('session-bar').hidden = false;
+  byId('session-user').textContent = me.name + ' (' + me.id + ' · ' + me.group_id + ')';
+  await openGroup(overview);
+}
+byId('login-form').onsubmit = async event => {
+  event.preventDefault();
+  const form = event.target;
+  const id = form.elements.id.value.trim(), password = form.elements.password.value;
+  if (!id || !password) {
+    loginMessage(!id ? '아이디를 입력하세요.' : '비밀번호를 입력하세요.');
+    (!id ? form.elements.id : form.elements.password).focus();
+    return;
+  }
+  const button = byId('login-submit');
+  button.disabled = true;
+  button.replaceChildren();
+  add(button,'span').className = 'spinner';
+  button.append('로그인 중…');
+  loginMessage('');
+  try {
+    const result = await api('login',{id,password});
+    saveToken(result.token);
+    if (byId('remember-id').checked) writePref('login-id', id);
+    else { try { localStorage.removeItem('shipyard-login-id'); } catch (error) { /* per-viewer only */ } }
+    form.elements.password.value = '';
+    await showApp();
+  } catch (error) {
+    loginMessage(error.message);
+    form.elements.password.value = '';
+    form.elements.password.focus();
+  } finally { button.disabled = false; button.textContent = '로그인'; }
+};
+byId('password-reveal').onclick = () => {
+  const field = byId('login-form').elements.password;
+  const show = field.type === 'password';
+  field.type = show ? 'text' : 'password';
+  byId('password-reveal').textContent = show ? '숨기기' : '보기';
+  byId('password-reveal').setAttribute('aria-pressed', String(show));
+  field.focus();
+};
+byId('login-form').elements.password.addEventListener('keyup', event => {
+  byId('caps-warning').hidden = !event.getModifierState?.('CapsLock');
+});
+byId('logout-button').onclick = async () => {
+  try { await api('logout',{}); } catch (error) { /* the session is cleared locally either way */ }
+  showLogin('로그아웃했습니다.', 'info');
+};
+byId('password-button').onclick = () => {
+  action = 'change_password';
+  byId('entry-title').textContent = '비밀번호 변경';
+  byId('entry-help').textContent = '8자 이상, 문자와 숫자를 함께 사용하세요. 변경하면 다른 기기의 로그인은 종료됩니다.';
+  byId('entry-help').hidden = false;
+  byId('entry-status').textContent = '';
+  const form = byId('entry');
+  form.replaceChildren();
+  const field = (name,text,autocomplete) => {
+    const input = add(add(form,'label',text + ' *'),'input');
+    input.name = name; input.type = 'password'; input.required = true; input.maxLength = 128;
+    input.autocomplete = autocomplete;
+    return input;
+  };
+  field('current_password','현재 비밀번호','current-password');
+  const next = field('new_password','새 비밀번호','new-password');
+  const confirm = field('confirm_password','새 비밀번호 확인','new-password');
+  const submit = add(form,'button','비밀번호 변경'); submit.type = 'submit';
+  form.onsubmit = async event => {
+    event.preventDefault();
+    if (next.value !== confirm.value) { byId('entry-status').textContent = '새 비밀번호가 서로 다릅니다.'; return; }
+    submit.disabled = true;
+    try {
+      await api('change_password',{current_password:form.elements.current_password.value,new_password:next.value});
+      entryDialog.close();
+      status('비밀번호를 변경했습니다.');
+    } catch (error) {
+      byId('entry-status').textContent = error.message;
+      byId('entry-status').dataset.error = 'true';
+      submit.disabled = false;
+    }
+  };
+  entryDialog.showModal();
+};
+async function start() {
+  meta = await api('meta');
+  ({modules, views, refs} = meta);
+  for (const key of meta.dates) dateFields.add(key);
+  for (const key of meta.integers) if (!integerFields.includes(key)) integerFields.push(key);
+  for (const key of meta.measures) if (!measures.includes(key)) measures.push(key);
+  for (const key of meta.signed || []) signedMeasures.add(key);
+  if (meta.login_required === false) {
+    byId('password-button').hidden = true;
+    byId('logout-button').hidden = true;
+    try { await showApp(); }
+    catch (error) { byId('app').hidden = false; status(error.message, true); }
+    return;
+  }
+  if (!token) { showLogin(); return; }
+  try { await showApp(); } catch (error) { if (!me) showLogin(error.message); }
+}
+start().catch(error => { byId('login-screen').hidden = false; document.body.classList.add('signed-out'); loginMessage(error.message); });
+</script>
+</html>
