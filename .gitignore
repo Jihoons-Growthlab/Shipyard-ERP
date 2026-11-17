@@ -16,3 +16,4 @@ __pycache__/
 .DS_Store
 .claude/settings.local.json
 apps/twin/unity/Assets/**/satellite*.jpg
+apps/portal/map-assets/

@@ -7,7 +7,7 @@ case "${1:-}" in
   db-stop) cd apps/erp; exec docker compose -p shipyard stop ;;
   db-status) cd apps/erp; exec docker compose -p shipyard ps ;;
   erp) exec apps/erp/shipyard-postgres app.py --port 8001 ;;
-  portal) exec python3 -m http.server 8080 --bind 127.0.0.1 --directory apps/portal ;;
+  portal) exec python3 apps/portal/portal.py ;;
   twin-test) exec apps/twin/tools/test.sh "${2:-EditMode}" ;;
   twin-build) exec apps/twin/tools/build.sh ;;
   twin-run) exec apps/twin/Builds/ShipyardTwin.app/Contents/MacOS/ShipyardTwin ;;

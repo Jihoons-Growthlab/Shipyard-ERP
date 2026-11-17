@@ -1,26 +1,552 @@
 <!doctype html>
 <html lang="ko">
-<head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shipyard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIWS | Hoon Heavy Industries</title>
+<link rel="icon" type="image/png" href="/shipyard-icon.png">
 <style>
-body{margin:0;background:#0d1824;color:#eaf4fb;font:16px -apple-system,BlinkMacSystemFont,sans-serif}
-main{max-width:680px;margin:12vh auto;padding:24px}
-h1{font-size:44px;margin:0 0 32px}
-nav{display:grid;gap:12px}
-a,section{padding:18px 20px;border-radius:12px;border:1px solid #32495b;background:#162736;color:inherit}
-a{text-decoration:none}a:hover{border-color:#7ddbd1}section p{margin:8px 0 0;color:#afc0cf}
+*{box-sizing:border-box}
+:root{color-scheme:light;--ink:#132541;--muted:#52647b;--line:#dde5ee;--blue:#1455c0;--pale:#edf4ff}
+body{margin:0;background:#f2f5fa;color:var(--ink);font:15px/1.55 Inter,"Apple SD Gothic Neo",system-ui,sans-serif;min-height:100vh}
+header{height:64px;display:flex;align-items:center;background:#122442;color:#fff;padding:0 max(24px,calc((100vw - 1080px)/2));white-space:nowrap;font-weight:750;font-size:18px;letter-spacing:-.03em}
+.brand-mark{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:7px;background:#8ad5ec;color:#122442;margin-right:9px;font-size:15px}
+main{width:min(100% - 40px,1080px);margin:38px auto 54px}
+h1,h2,p{margin:0}h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.055em;line-height:1.2}h2{font-size:20px;letter-spacing:-.03em}
+p{color:var(--muted)}
+a,button{font:inherit;font-weight:700;display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 15px;border-radius:8px;border:1px solid transparent;background:var(--blue);color:white;text-decoration:none;cursor:pointer}
+a:hover,button:hover{filter:brightness(.93)}button:disabled{opacity:.4;cursor:default}
+.secondary{background:#fff;color:var(--blue);border-color:#c4d5eb}
+:focus-visible{outline:3px solid #75afff;outline-offset:3px}[hidden]{display:none!important}
+#signin{display:grid;grid-template-columns:1.05fr 1fr;max-width:960px;margin:65px auto 0;border-radius:18px;overflow:hidden;background:#fff;border:1px solid var(--line);box-shadow:0 22px 64px #182f5218}
+.login-panel{padding:clamp(24px,5vw,60px);align-self:center}.login-panel h1{font-size:clamp(26px,3.4vw,38px)}.login-panel>p{margin:10px 0 25px}
+form{display:grid;gap:16px}label{display:grid;gap:6px;font-weight:650}
+input{width:100%;padding:11px;border:1px solid #b8c9dd;background:#f8faff;color:var(--ink);border-radius:8px;font:inherit}
+#login-status{color:#943336}#login-status:empty{display:none}
+.yard-art{min-height:480px;background:#102747 url('/yard-hero.jpg') center/cover no-repeat}
+.home-hero{display:flex;align-items:flex-end;min-height:200px;margin-bottom:18px;padding:26px;border-radius:14px;color:white;background:linear-gradient(90deg,#09182ae0,transparent 85%),#122442 url('/yard-hero.jpg') center 57%/cover no-repeat}
+.home-hero h1{font-size:clamp(27px,4vw,42px)}
+.account{display:flex;gap:12px;align-items:center;justify-content:flex-end;font-size:14px}
+.account button{min-height:34px;padding:4px 10px}.home-head{display:flex;align-items:center;justify-content:flex-end;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+article{padding:20px 22px;border:1px solid var(--line);background:white;border-radius:12px}
+article p{margin:6px 0 14px}.monitor,.apps-label{grid-column:1/-1}.apps-label{margin-top:6px}
+.monitor{box-shadow:0 4px 16px #12244206}.monitor>.actions{margin-top:16px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+#metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.metric{background:#f3f7fe;border:1px solid #e5edf9;border-radius:8px;padding:10px 13px;color:var(--muted);font-size:13px}
+.metric strong{display:block;font-size:29px;line-height:1.3;color:#17396b;font-variant-numeric:tabular-nums}
+#status{margin:8px 0 0;font-size:13px}
+@media(max-width:700px){main{margin-top:20px}#signin{grid-template-columns:1fr;margin-top:26px}.yard-art{min-height:180px}.home-head{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}#metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+:root{--blue:#075c67;--ink:#132742}
+body{background:#f1f5f8}
+.brand-mark{display:block;width:34px;height:34px;border-radius:8px;background:none;object-fit:contain}
+.login-mark{display:block;border-radius:11px;margin:0 0 19px}
+#signin{grid-template-columns:1.15fr 1fr;margin-top:46px}
+.login-panel{padding:36px clamp(25px,4.5vw,54px)}
+.login-panel h1{font-size:clamp(25px,3vw,36px)}
+.login-panel>p{margin:7px 0 20px}
+.login-panel form button{margin-top:3px;min-height:46px}
+.home-hero{min-height:210px;background-position:center,center 53%;box-shadow:0 9px 20px #10274220}
+.monitor-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.monitor-head p{margin-bottom:0}.monitor-head a{gap:7px;white-space:nowrap}
+.secondary{color:#075c67;border-color:#b6cfd2}
+.metric{background:#f0f7f7;border-color:#deebed}.metric strong{color:#084b55}
+article:not(.monitor){display:flex;flex-direction:column}
+article:not(.monitor) .actions{margin-top:auto}
+.app-symbol{display:grid;place-items:center;width:36px;height:36px;border-radius:9px;margin-bottom:10px;background:#e0f1f4;color:#075c67;font-size:24px}
+.twin-symbol{background:#e9eefb;color:#284777}
+@media(max-width:700px){#signin{grid-template-columns:1fr;margin-top:20px}.login-panel{padding:25px}.home-hero{min-height:155px}.monitor-head{flex-wrap:wrap}.account{width:100%}}
+
+.apps-section{grid-column:1/-1}
+#apps-title{margin:8px 0 12px}
+#apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:16px}
+.app-card{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;text-align:left;overflow:hidden;padding:0;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 3px 10px #12244209;min-width:0;font:inherit;text-decoration:none}
+.app-card[href]:hover,button.app-card:hover{filter:none;border-color:#7eaab1;box-shadow:0 7px 18px #183b5020;transform:translateY(-2px)}
+.app-cover{display:block;width:100%;height:146px;object-fit:cover;object-position:50% 46%;background:#17334c}
+.app-card:nth-child(2) .app-cover{object-fit:cover;object-position:33% 44%}
+.app-content{padding:14px 16px}
+.app-heading{display:flex;align-items:center;gap:8px}
+.small-symbol{display:grid;place-items:center;width:23px;height:23px;border-radius:5px;background:#e6f1f3;color:#075c67;font-size:15px}
+.app-arrow{margin-left:auto;color:#075c67}
+.app-content p{margin:5px 0 0;font-size:13px}
+.install-link{display:inline;padding:0;min-height:0;color:#075c67;background:none;text-decoration:underline;font-size:13px}
+.company{display:flex;align-items:center;gap:18px;line-height:1.15}
+.wordmark strong{font:italic 700 34px/.84 "Snell Roundhand","Apple Chancery","Brush Script MT",cursive;letter-spacing:-.035em;color:#fff;padding-right:8px}
+.company span{color:#c1d5e8;font-size:8px;font-weight:700;letter-spacing:.23em;margin-top:4px}
+.wordmark{display:flex;align-items:center;gap:0;height:52px}
+.wordmark img{display:block;align-self:center;object-fit:contain;mix-blend-mode:lighten;margin-left:-4px;margin-right:-3px}
+.wordmark strong{font-size:56px;line-height:.9;padding:0 5px 5px 0;letter-spacing:-.045em}
+.company span{margin:0;padding-left:17px;border-left:1px solid #4e6c88;color:#e0f1fb;font-size:15px;font-weight:750;letter-spacing:.14em}
+header{height:82px}
+.login-panel h1{font-size:clamp(44px,7vw,68px);letter-spacing:-.07em}
+@media(max-width:480px){header{height:70px}.company{gap:11px}.company span{font-size:11px;padding-left:11px}.wordmark strong{font-size:45px}.wordmark img{width:44px;height:44px}}
+.company{align-items:flex-end;gap:16px}
+.company span{font-size:18px;letter-spacing:.09em;line-height:1.1;margin-bottom:7px;padding-left:15px}
+.login-panel h1 span{color:#075c67}
+.login-panel .eai-name{font-size:clamp(12px,1.6vw,15px);font-weight:720;color:#075c67;letter-spacing:.025em;margin:6px 0 0}
+.login-panel .login-instruction{font-size:13px;margin:12px 0 23px}
+@media(max-width:480px){.company{gap:10px}.company span{font-size:12px;margin-bottom:9px;padding-left:10px}}
+#signin{grid-template-columns:1.24fr 1fr;margin-top:36px;border:0;border-radius:20px;box-shadow:0 24px 65px #10274721}
+.yard-art{min-height:534px;background-position:57% center}
+.login-panel{padding:36px clamp(26px,4.5vw,54px)}
+.login-wordmark{display:inline-flex;align-items:center;background:#122442;border-radius:9px;padding:4px 13px 4px 8px;margin-bottom:21px}
+.login-wordmark .wordmark{height:42px}
+.login-wordmark .wordmark strong{font-size:45px;padding:0 0 4px}
+.login-panel h1{font-size:clamp(37px,5vw,52px);line-height:1.06}
+.login-panel .eai-name{font-size:12px;letter-spacing:.035em;margin-top:9px}
+.login-panel .login-instruction{margin:9px 0 24px}
+.login-panel form{gap:14px}
+.login-panel label{font-size:13px}
+.login-panel input{min-height:45px;background:#f8fafb;border-color:#cbd7e1}
+.login-panel form button{box-shadow:0 5px 14px #075c6727}
+@media(max-width:700px){#signin{grid-template-columns:1fr;margin-top:18px}.yard-art{min-height:190px}.login-panel{padding:26px}.login-wordmark{margin-bottom:16px}}
+
+/* ERP-aligned surfaces, typography and workspace navigation. */
+:root{--ink:#203349;--line:#dce5ed;--blue:#087e8b;--muted:#587084}
+body{background:#f5f7fa}
+header{height:69px;padding:0 max(20px,calc((100vw - 1230px)/2));background:#102d40}
+.company span{color:#d6e7ee}
+main{width:min(100% - 40px,1230px);margin:24px auto 44px}
+#signin{max-width:1040px;margin-top:48px;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 30px #20334913}
+.yard-art{min-height:500px}
+.login-panel .login-instruction{margin:9px 0 20px}
+.login-panel .login-wordmark{background:#102d40}
+.login-panel form button,.app-card{transition:background .15s,border-color .15s,box-shadow .15s}
+#home{display:grid;grid-template-columns:185px minmax(0,1fr);gap:25px}
+.operations-nav{position:sticky;top:16px;align-self:start;padding:4px 4px 0 0}
+.operations-nav h2{font-size:12px;color:#64798c;margin:0 0 8px 11px}
+.operations-nav a{display:block;text-align:left;color:#40586b;background:transparent;border:0;min-height:0;padding:10px 11px;margin:3px 0;border-radius:8px;font-size:14px}
+.operations-nav a:first-of-type,.operations-nav a:hover{background:#e1eef0;color:#00616f}
+.operations-main{min-width:0}
+.home-head{margin:0 0 10px}
+.home-hero{min-height:156px;border-radius:12px;margin-bottom:14px;box-shadow:none;background-position:center,center 53%}
+.home-hero h1{font-size:clamp(23px,3vw,32px);letter-spacing:-.05em}
+.monitor,.app-card{border-radius:12px;box-shadow:0 3px 15px #20334905}
+.monitor-head .secondary{min-height:35px;font-size:13px}
+#metrics{grid-template-columns:repeat(auto-fit,minmax(115px,1fr))}
+.metric{background:#f7fafb;border-color:#e0e7ee}
+.metric strong{color:#08717d}
+#apps{grid-template-columns:repeat(auto-fill,minmax(min(100%,245px),1fr))}
+@media(max-width:700px){main{width:calc(100% - 28px)}#home{grid-template-columns:1fr;gap:12px}#signin{margin-top:18px}.yard-art{min-height:180px}.operations-nav{position:static;display:flex;gap:4px;flex-wrap:wrap;align-items:center}.operations-nav h2{margin:0 4px 0 0}.home-hero{padding:18px;min-height:138px}}
+
+header{background:#fff;color:#203349;border-bottom:1px solid #dce5ed;height:64px}
+header .wordmark strong{color:#18374c}
+header .company span{color:#385568;border-color:#d5e0e7}
+.workspace-title{font-size:25px;margin:8px 0 11px}
+.monitor-tabs{display:flex;gap:2px;border-bottom:1px solid #d5e0e7;margin:0 0 14px}
+.monitor-tabs button{background:transparent;color:#52677b;border-radius:8px 8px 0 0;border:0;border-bottom:3px solid transparent;padding:10px 15px}
+.monitor-tabs button[aria-pressed=true]{background:#fff;border-bottom-color:#087e8b;color:#00616f}
+.filters{display:grid;grid-template-columns:1fr auto;align-items:end;gap:10px;padding:14px;background:#f5f7fa;border:1px solid #e1e8ef;border-radius:9px}
+.filters input{background:#fff;padding:8px}.filters label{font-size:12px}
+#move-status{margin:10px 0;font-size:13px}#move-status:empty{display:none}
+.table-scroll{overflow:auto;margin-top:12px;border:1px solid #e0e7ee;border-radius:8px}
+table{border-collapse:collapse;width:100%;white-space:nowrap;text-align:left}
+th,td{padding:10px 12px;border-bottom:1px solid #e2e9ef}
+th{background:#edf3f7;color:#4d6579;font-size:13px}td{font-size:13px}
+th button{min-height:0;padding:0;background:none;color:#08717d}
+tbody tr:nth-child(even){background:#f8fafb}
+.move-pagination{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:10px;font-size:13px}
+.move-pagination button{min-height:30px;padding:4px 10px}
+@media(max-width:480px){.filters{grid-template-columns:1fr}.filters button{justify-self:start}}
+
+header{justify-content:space-between;gap:12px;height:auto;min-height:64px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+header .company{min-width:0}
+#header-account{margin:0}
+#viewer{color:#3f566a}
+header .wordmark img,.login-wordmark .wordmark img{mix-blend-mode:normal;background:#122442;border-radius:7px;margin:0 3px 0 0;width:38px;height:38px}
+header .wordmark strong,.login-wordmark .wordmark strong{color:#18374c;font-size:48px;padding:0 4px 4px 0}
+.login-wordmark{background:transparent!important;padding:0;margin-bottom:19px}
+.login-wordmark .wordmark{height:49px}
+.login-wordmark .wordmark img{width:43px;height:43px}
+.login-wordmark .wordmark strong{font-size:52px}
+@media(max-width:560px){header .company{gap:6px}header .company span{font-size:8px;letter-spacing:.04em;padding-left:5px}header .wordmark img{width:27px;height:27px}header .wordmark strong{font-size:34px}}
+.login-panel h1{font-size:clamp(25px,3vw,36px);letter-spacing:-.055em;word-break:keep-all}
+header .wordmark img,.login-wordmark .wordmark img{background:transparent;border-radius:0;mix-blend-mode:multiply;filter:grayscale(1) invert(1) contrast(2) url(#hoon-teal)}
+.login-panel h1 abbr{text-decoration:none}
+.login-panel h1{font-size:clamp(44px,5vw,62px);line-height:.98;font-weight:850;letter-spacing:.09em}
+.login-panel h1 abbr{display:inline-block;color:#123e58}
+@supports (background-clip:text){.login-panel h1 abbr{background:linear-gradient(108deg,#132742 6%,#14536b 63%,#087e8b 100%);background-clip:text;color:transparent}}
+.login-panel .system-name{font-size:clamp(14px,1.6vw,17px);font-weight:750;color:#203349;letter-spacing:-.015em;margin:10px 0 0}
+.login-panel .eai-name{font-size:12px;font-weight:600;color:#587084;margin-top:3px}
+#signin{word-break:keep-all}#signin input[type=checkbox]{accent-color:#087e8b}
+#signin{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:#f5f7fa}
+.login-brand{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:32px;padding:48px 56px;color:#e8f3f5;
+  background:radial-gradient(circle at 85% 10%,#1d6f7d 0,transparent 45%),linear-gradient(160deg,#0b2a3f 0%,#0d3b4f 55%,#0a5a66 100%)}
+.login-logo{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:700;letter-spacing:-.4px;color:#fff}
+.login-logo span{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;background:#ffffff1f;border:1px solid #ffffff33;font-size:20px}
+.login-copy h2{margin:0 0 12px;font-size:34px;line-height:1.3;letter-spacing:-1.2px;color:#fff}
+.login-copy p{margin:0;max-width:440px;color:#b9d3da;font-size:15px;line-height:1.7}
+.login-points{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:12px}
+.login-points li{display:flex;align-items:center;gap:12px;font-size:14px;color:#d6e8ec}
+.login-points b{display:grid;place-items:center;flex-shrink:0;width:28px;height:28px;border-radius:8px;background:#ffffff1a;border:1px solid #ffffff26;font-size:12px;color:#8fe0e6}
+.login-art{width:100%;max-width:560px;height:auto;align-self:center;opacity:.95}
+.login-foot{font-size:12px;color:#86a9b3}
+#signin .login-panel{display:grid;place-items:center;padding:40px 24px}
+#login{display:grid;gap:18px;width:min(400px,100%);background:#fff;border:1px solid #e0e7ee;border-radius:18px;padding:40px 36px;box-shadow:0 18px 60px #20334914}
+#login h2{margin:0;font-size:26px;letter-spacing:-.8px}
+.login-sub{margin:-10px 0 4px;color:#61768a;font-size:14px}
+#login label{display:grid;gap:6px;font-size:13px;font-weight:600;color:#3e566a}
+.login-field{position:relative;display:flex;align-items:center}
+.login-field svg{position:absolute;left:13px;color:#8aa0b1;pointer-events:none}
+.login-field input{min-height:48px;padding:10px 14px 10px 42px;border-radius:10px;font-size:15px;background:#f8fafc}
+.login-field input:focus{background:#fff;border-color:#087e8b}
+.login-field .reveal{position:absolute;right:6px;min-height:0;padding:6px 10px;border:0;background:none;color:#52677b;font-size:12px;font-weight:600}
+.login-field .reveal:hover{background:#eef4f8}
+#login .login-field input[name=password]{padding-right:64px}
+.login-options{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:#52677b}
+#login .login-options label{display:flex;align-items:center;gap:8px;font-weight:400;color:#52677b;cursor:pointer}
+.login-options input{width:16px;height:16px;min-height:0;margin:0}
+#caps-warning{margin:-8px 0 0;font-size:12px;color:#8a5a00}
+#login-submit{min-height:50px;border-radius:10px;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px}
+#login-submit .spinner{width:16px;height:16px;border:2px solid #ffffff66;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#login-status{margin:0;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#fde8e6;color:#982e27}
+#login-status[data-tone="info"]{background:#e9f6ee;color:#1d6b3a}
+#login-status:empty{display:none}
+.login-help{margin:0;padding-top:16px;border-top:1px solid #e6ecf1;font-size:13px;color:#6a7f91;text-align:center}
+@media(max-width:900px){#signin{grid-template-columns:1fr}
+.login-brand{padding:28px 24px 32px;gap:20px}.login-art,.login-foot,.login-points{display:none}
+.login-copy h2{font-size:24px}#signin .login-panel{padding:24px 16px 40px;align-items:start}
+#login{padding:28px 22px}}
+body:has(#signin:not([hidden]))>header{display:none}
+main:has(#signin:not([hidden])){width:100%;max-width:none;margin:0}
+#signin{max-width:none;margin:0;border:0;border-radius:0;box-shadow:none;overflow:visible}
+#signin .login-panel{min-width:0}
+#signin .login-brand{min-width:0}
+.login-company{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+.login-company>span{color:#d6e7ee;font-weight:750;font-size:13px;letter-spacing:.11em}
+.login-company .wordmark img{mix-blend-mode:lighten;margin-right:0}
+.login-company .wordmark strong{color:white;font-size:48px}
+.login-copy h1{color:#fff;font-size:clamp(40px,5vw,64px);font-weight:850;letter-spacing:.09em}
+.login-copy abbr{text-decoration:none}
+.login-copy .system-name{font-weight:700;color:#e8f4f7;margin-top:8px}
+.login-copy .eai-name{color:#b9d3da;font-size:13px;margin-top:2px}
+#signin .login-brand{
+  background:#102747 url('/yard-hero.jpg') 64% center/cover no-repeat;
+  background-image:linear-gradient(180deg,#081b2cd9 0%,#0a2139a6 37%,#0a213933 67%,#081b2cda 100%),url('/yard-hero.jpg');
+}
+#signin .login-copy{margin-bottom:auto;padding-top:clamp(25px,10vh,96px)}
+#signin .login-foot{color:#d3e6ec}
+#signin #login label{font-size:13px}
+#signin #login input:not([type=checkbox]){padding-left:42px}
+#signin #login input[name=password]{padding-right:64px}
+#signin #login-submit:disabled{opacity:.65}
+@media(max-width:900px){#signin{grid-template-columns:1fr}#signin .login-brand{gap:14px;min-height:270px;background-position:center,60% 47%}#signin .login-copy{padding-top:10px}#signin .login-panel{padding:24px 16px 40px}}
+
+.hoon-lockup{display:inline-flex;align-items:center;gap:12px;color:#18374c;white-space:nowrap}
+.hoon-word{display:inline-flex;align-items:center;gap:0;line-height:1}
+.hoon-word img{display:block;width:42px;height:42px;object-fit:contain;mix-blend-mode:multiply;filter:grayscale(1) invert(1) contrast(2) url(#hoon-ink)}
+.hoon-word b{font:italic 700 48px/.86 "Snell Roundhand","Apple Chancery","Brush Script MT",cursive;letter-spacing:-.05em;padding:0 3px 4px 0}
+.hoon-industry{font-weight:750;font-size:13px;letter-spacing:.11em;border-left:1px solid #9eb2c0;padding-left:12px}
+.hoon-lockup.hoon-on-dark{color:#fff}
+.hoon-on-dark .hoon-word img{mix-blend-mode:lighten;filter:none}
+.hoon-on-dark .hoon-industry{color:#d6e7ee}
+.hoon-account{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;font:400 14px/1.55 Inter,"Apple SD Gothic Neo",system-ui,sans-serif;color:#3f566a}
+.hoon-account button,.hoon-account a{font:inherit;padding:6px 12px;min-height:0;color:inherit;background:#fff;border:1px solid #cdd8e2;border-radius:7px;box-shadow:none}
+.hoon-account button:hover,.hoon-account a:hover{background:#eef4f8;filter:none}
+.hoon-account[hidden]{display:none}
+@media(max-width:570px){.hoon-lockup{gap:6px}.hoon-word img{width:32px;height:32px}.hoon-word b{font-size:37px}.hoon-industry{font-size:9px;padding-left:6px}}
 </style>
-</head>
-<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="hoon-teal" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values=".973 0 0 0 .027  0 .639 0 0 .361  0 0 .596 0 .404  0 0 0 1 0"/>
+  </filter>
+</svg>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="hoon-ink" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values=".973 0 0 0 .027  0 .639 0 0 .361  0 0 .596 0 .404  0 0 0 1 0"/>
+  </filter>
+</svg>
+<header><span class="hoon-lockup" role="img" aria-label="Hoon Heavy Industries"><span class="hoon-word" aria-hidden="true"><img src="/shipyard-icon.png" alt="" width="42" height="42"><b>oon</b></span><span class="hoon-industry" aria-hidden="true">HEAVY INDUSTRIES</span></span><div id="header-account" class="hoon-account" hidden><span id="viewer"></span><button id="logout" class="secondary" type="button">로그아웃</button></div></header>
 <main>
-<h1>Shipyard</h1>
-<nav aria-label="서비스">
-<a href="http://127.0.0.1:8001/">ERP · 생산 및 야드 계획</a>
-<a href="http://127.0.0.1:8001/docs">ERP API 문서</a>
-<section><strong>디지털 트윈</strong><p>Unity Hub에서 <code>apps/twin/unity</code> 프로젝트를 열거나 macOS 빌드를 실행하세요.</p></section>
-</nav>
-</main>
-</body>
+  <section id="signin" aria-label="SIWS 로그인">
+    <aside class="login-brand">
+      <span class="hoon-lockup hoon-on-dark" role="img" aria-label="Hoon Heavy Industries"><span class="hoon-word" aria-hidden="true"><img src="/shipyard-icon.png" alt="" width="42" height="42"><b>oon</b></span><span class="hoon-industry" aria-hidden="true">HEAVY INDUSTRIES</span></span>
+      <div class="login-copy">
+        <h1><abbr title="Shipyard Integrated Work System">SIWS</abbr></h1>
+        <p class="system-name" lang="en">Shipyard Integrated Work System</p>
+        <p class="eai-name" lang="en">Enterprise Application Integration</p>
+      </div>
+      <p class="login-foot">사내 업무 시스템 · 승인된 사용자만 접속할 수 있습니다.</p>
+    </aside>
+    <div class="login-panel">
+<form id="login">
+  <h2>로그인</h2>
+  <p class="login-sub">관리자에게 받은 아이디와 비밀번호를 입력하세요.</p>
+  <label>아이디
+    <span class="login-field"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg>
+    <input name="account" autocomplete="username" required maxlength="100" placeholder="아이디" autocapitalize="off" spellcheck="false"></span>
+  </label>
+  <label>비밀번호
+    <span class="login-field"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2ZM9 7a3 3 0 0 1 6 0v2H9V7Zm4 10.7V19h-2v-1.3a2 2 0 1 1 2 0Z"/></svg>
+    <input name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="비밀번호">
+    <button class="reveal" id="password-reveal" type="button" aria-pressed="false">보기</button></span>
+  </label>
+  <p id="caps-warning" hidden>⚠ Caps Lock이 켜져 있습니다.</p>
+  <div class="login-options"><label><input type="checkbox" id="remember-id"> 아이디 저장</label></div>
+  <p id="login-status" role="alert"></p>
+  <button id="login-submit" type="submit">로그인</button>
+  <p class="login-help">계정이 없거나 비밀번호를 잊었다면 시스템 관리자에게 문의하세요.</p>
+</form>
+    </div>
+  </section>
+  <div id="home" hidden>
+  <nav class="operations-nav" aria-label="통합 업무 메뉴">
+    <h2>운영</h2>
+    <a href="#monitoring" aria-current="page">조선소 모니터링</a>
+    <a href="/map">조선소 지도</a>
+    <a href="/docs">ERP API 문서</a>
+    <a href="#apps-title">업무 시스템</a>
+  </nav>
+  <div class="operations-main">
+  <h1 class="workspace-title">조선소 모니터링</h1>
+  <div class="monitor-tabs" aria-label="모니터링 보기">
+    <button id="overview-tab" type="button" aria-pressed="true">운영 요약</button>
+    <button id="moves-tab" type="button" aria-pressed="false">블록 이동</button>
+  </div>
+  <div class="grid">
+    <article class="monitor" id="monitoring">
+      <div id="overview-panel">
+      <div class="monitor-head"><div><h2>조선소 모니터링</h2>
+      <p id="monitor-status" role="status">현황 조회 중</p></div>
+      <a class="secondary" href="/erp/">운영 현황 열기 <span aria-hidden="true">↗</span></a></div>
+      <div id="metrics"></div></div>
+      <div id="moves-panel" hidden>
+        <div class="monitor-head"><h2>블록 이동 <span id="move-count"></span></h2></div>
+        <div class="filters"><label>검색<input id="move-search" type="search" placeholder="이동 번호 · 블록 · 시설"></label>
+        <button id="move-reset" type="button" class="secondary">조건 초기화</button></div>
+        <p id="move-status" role="status"></p>
+        <div class="table-scroll"><table>
+        <thead><tr><th scope="col" aria-sort="ascending"><button id="move-sort" type="button">이동 번호 ▲</button></th><th scope="col">블록</th><th scope="col">출발지</th><th scope="col">목적지</th><th scope="col">상태</th></tr></thead>
+        <tbody id="move-rows"></tbody></table></div>
+        <div class="move-pagination"><button id="move-prev" class="secondary" type="button">이전</button><span id="move-page"></span><button id="move-next" class="secondary" type="button">다음</button></div>
+      </div>
+    </article>
+    <section class="apps-section" aria-labelledby="apps-title">
+      <h2 id="apps-title">업무 시스템</h2>
+      <div id="apps"></div>
+      <p id="status" role="status"></p>
+      <a id="download" class="install-link" hidden>Unity 설치 파일 다운로드</a>
+    </section>
+  </div>
+</div></div></main>
+<script>
+const el = id => document.getElementById(id);
+const login = el('login');
+const remembered = localStorage.getItem('siws-login-id');
+if (remembered) {
+  login.elements.account.value = remembered;
+  el('remember-id').checked = true;
+}
+const password = login.elements.password;
+el('password-reveal').onclick = () => {
+  const show = password.type === 'password';
+  password.type = show ? 'text' : 'password';
+  el('password-reveal').textContent = show ? '숨기기' : '보기';
+  el('password-reveal').setAttribute('aria-pressed', String(show));
+};
+password.addEventListener('keyup', event => {
+  el('caps-warning').hidden = !event.getModifierState('CapsLock');
+});
+password.addEventListener('blur', () => { el('caps-warning').hidden = true; });
+const status = el('status');
+let token = sessionStorage.getItem('shipyard-token') || '';
+
+async function request(path, body) {
+  const headers = token ? {Authorization:'Bearer '+token} : {};
+  if (body) headers['Content-Type'] = 'application/json';
+  const response = await fetch(path,body ? {method:'POST',headers,body:JSON.stringify(body)} : {headers});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || data.message || '요청에 실패했습니다.');
+  return data;
+}
+function signedOut(message = '') {
+  token = '';
+  sessionStorage.removeItem('shipyard-token');
+  el('home').hidden = true;
+  el('header-account').hidden = true;
+  el('signin').hidden = false;
+  el('login-status').textContent = message;
+}
+let moveRows = [], movePage = 0, ascending = true, moveMessage = '';
+function moveFields(row) {
+  return [row.id, row.block, row.origin, row.destination, row.confirmed_at ? '확정' : '이동 중'];
+}
+function renderMoves() {
+  const query = el('move-search').value.trim().toLowerCase();
+  const rows = moveRows.filter(row => moveFields(row).some(value => String(value ?? '').toLowerCase().includes(query)));
+  rows.sort((a,b) => (ascending ? 1 : -1) * String(a.id).localeCompare(String(b.id),'ko',{numeric:true}));
+  const body = el('move-rows');
+  body.replaceChildren();
+  const size = 12;
+  const pages = Math.max(1, Math.ceil(rows.length / size));
+  movePage = Math.min(movePage, pages - 1);
+  for (const row of rows.slice(movePage * size, (movePage + 1) * size)) {
+    const tr = body.insertRow();
+    for (const value of moveFields(row)) tr.insertCell().textContent = value ?? '—';
+  }
+  el('move-count').textContent = moveMessage ? '' : '(' + rows.length + '건)';
+  el('move-status').textContent = moveMessage || (rows.length ? '' : '조건에 맞는 이동 기록이 없습니다.');
+  el('move-page').textContent = (movePage + 1) + ' / ' + pages;
+  el('move-prev').disabled = movePage === 0;
+  el('move-next').disabled = movePage + 1 >= pages;
+}
+for (const [tab, showMoves] of [['overview-tab',false],['moves-tab',true]]) {
+  el(tab).onclick = () => {
+    el('overview-panel').hidden = showMoves;
+    el('moves-panel').hidden = !showMoves;
+    el('overview-tab').setAttribute('aria-pressed',String(!showMoves));
+    el('moves-tab').setAttribute('aria-pressed',String(showMoves));
+  };
+}
+el('move-search').oninput = () => { movePage = 0; renderMoves(); };
+el('move-reset').onclick = () => { el('move-search').value = ''; el('move-search').oninput(); };
+el('move-sort').onclick = () => {
+  ascending = !ascending;
+  el('move-sort').textContent = '이동 번호 ' + (ascending ? '▲' : '▼');
+  el('move-sort').parentElement.setAttribute('aria-sort',ascending ? 'ascending' : 'descending');
+  movePage = 0;
+  renderMoves();
+};
+el('move-prev').onclick = () => { movePage--; renderMoves(); };
+el('move-next').onclick = () => { movePage++; renderMoves(); };
+
+async function enter() {
+  const user = await request('/api/me');
+  el('viewer').textContent = (user.name || user.id) + ' (' + user.id + ' · ' + user.group_id + ')';
+  el('signin').hidden = true;
+  el('home').hidden = false;
+  el('header-account').hidden = false;
+  moveRows = [];
+  movePage = 0;
+  moveMessage = (user.routes || []).includes('moves') ? '이동 기록을 불러오는 중입니다.' : '이동 기록 조회 권한이 없습니다.';
+  renderMoves();
+  const metrics = el('metrics');
+  metrics.replaceChildren();
+  const available = [['hulls','등록 호선',rows=>rows.length],['blocks','등록 블록',rows=>rows.length],
+    ['moves','이동 중',rows=>rows.filter(row=>!row.confirmed_at).length],
+    ['orders','재검사 필요',rows=>rows.filter(row=>row.inspection==='불합격').length]]
+    .filter(([route])=>(user.routes || []).includes(route));
+  const outcomes = await Promise.allSettled(available.map(async ([route,label,count]) => [route,label,count,await request('/api/'+route)]));
+  for (const outcome of outcomes) {
+    if (outcome.status !== 'fulfilled') continue;
+    const [route,label,count,rows] = outcome.value;
+    if (route === 'moves') { moveRows = rows; moveMessage = ''; }
+    const card = document.createElement('div');
+    card.className = 'metric';
+    card.textContent = label;
+    const number = document.createElement('strong');
+    number.textContent = count(rows);
+    card.append(number);
+    metrics.append(card);
+  }
+  if (moveMessage === '이동 기록을 불러오는 중입니다.') moveMessage = '이동 기록을 가져오지 못했습니다.';
+  renderMoves();
+  el('monitor-status').textContent = !available.length ? '이 계정에 허용된 현황 항목이 없습니다.'
+    : outcomes.some(item=>item.status==='rejected') ? '일부 현황을 가져오지 못했습니다.' : '조회 권한이 있는 생산 현황';
+}
+login.addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = login.querySelector('button');
+  button.disabled = true;
+  el('login-status').textContent = '';
+  try {
+    const fields = new FormData(login);
+    const result = await request('/api/login',{id:fields.get('account'),password:fields.get('password')});
+    token = result.token;
+    sessionStorage.setItem('shipyard-token',token);
+    await enter();
+    await configure();
+    if (el('remember-id').checked) localStorage.setItem('siws-login-id',fields.get('account'));
+    else localStorage.removeItem('siws-login-id');
+  } catch(error) {
+    signedOut(error.message);
+  } finally {
+    login.elements.password.value = '';
+    button.disabled = false;
+  }
+});
+el('logout').onclick = async () => {
+  try { await request('/api/logout',{}); signedOut(); }
+  catch(error) { signedOut(error.message); }
+};
+function safeLink(value) {
+  if (typeof value !== 'string' || !value.trim()) return '';
+  try {
+    const url = new URL(value, location.origin);
+    return url.protocol === 'https:' || url.origin === location.origin ? url.href : '';
+  } catch { return ''; }
+}
+function addApp({title, description, icon, image, url, run, unavailable}) {
+  const card = document.createElement(url ? 'a' : run ? 'button' : 'div');
+  card.className = 'app-card';
+  if (url) card.href = url;
+  if (run) { card.type = 'button'; card.onclick = () => run(card); }
+  if (unavailable) card.setAttribute('aria-disabled','true');
+  const picture = document.createElement('img');
+  picture.className = 'app-cover';
+  picture.src = image || '/yard-hero.jpg';
+  picture.alt = '';
+  const content = document.createElement('div');
+  content.className = 'app-content';
+  const heading = document.createElement('div');
+  heading.className = 'app-heading';
+  const symbol = document.createElement('span');
+  symbol.className = 'small-symbol';
+  symbol.setAttribute('aria-hidden','true');
+  symbol.textContent = icon || '◇';
+  const label = document.createElement('strong');
+  label.textContent = title;
+  heading.append(symbol,label);
+  if (url || run) {
+    const arrow = document.createElement('span');
+    arrow.className = 'app-arrow';
+    arrow.setAttribute('aria-hidden','true');
+    arrow.textContent = '↗';
+    heading.append(arrow);
+  }
+  const detail = document.createElement('p');
+  detail.textContent = description;
+  content.append(heading,detail);
+  card.append(picture,content);
+  el('apps').append(card);
+}
+async function launchTwin(card) {
+  card.disabled = true;
+  status.textContent = 'Mac에 실행 요청 중…';
+  try { status.textContent = (await request('/launch',{})).message; }
+  catch(error) { status.textContent = error.message; }
+  finally { card.disabled = false; }
+}
+async function configure() {
+  el('apps').replaceChildren();
+  addApp({title:'생산관리 ERP',description:'호선 일정 · 작업지시 · 구매·재고 · 품질',icon:'▤',
+    image:'/yard-hero.jpg',url:'/erp/'});
+  const results = await Promise.allSettled([request('/config'), request('/apps.json')]);
+  const config = results[0].status === 'fulfilled' ? results[0].value : {};
+  const twin = safeLink(config.twin);
+  addApp({title:'Unity 디지털 트윈',description:twin || (config.installed && token) ? '3D 야드 · 블록 위치 · 장비 이동' : config.installed ? 'macOS 앱 직접 실행 · 포털에서 실행하려면 ERP 로그인 필요' : '실행 가능한 Unity 앱을 찾지 못했습니다.',
+    icon:'◇', image:'/twin-preview.png', url:twin,
+    run:!twin && config.installed && token ? launchTwin : null,unavailable:!twin && (!config.installed || !token)});
+  const download = safeLink(config.download);
+  if (download) { el('download').href = download; el('download').hidden = false; }
+  const list = results[1].status === 'fulfilled' && Array.isArray(results[1].value) ? results[1].value : [];
+  for (const app of list) {
+    if (!app || !app.title || !safeLink(app.url)) continue;
+    addApp({...app,url:safeLink(app.url),image:safeLink(app.image),run:null});
+  }
+}
+async function start() {
+  try {
+    const meta = await request('/api/meta');
+    if (token || meta.login_required === false) await enter();
+    if (meta.login_required === false) el('logout').hidden = true;
+  } catch (error) {
+    signedOut(error.message);
+  }
+  await configure();
+}
+start();
+</script>
 </html>

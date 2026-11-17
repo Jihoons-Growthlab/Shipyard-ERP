@@ -8,15 +8,21 @@
 
 ### SIWS 포털
 
-![SIWS 포털 로그인과 조선소 운영 현황 프리뷰](docs/media/portal/portal-overview.gif)
+![SIWS 로그인, 운영 현황, 조선소 지도와 ERP 진입](docs/media/portal/portal-overview.gif)
 
-포털 프리뷰의 로그인과 운영 현황 화면입니다. 등록 호선·블록, 이동 중, 재검사 필요 건을 요약하고 생산관리 ERP와 Unity 디지털 트윈 진입 카드를 제공합니다. 저장소의 기본 포털은 ERP·Swagger 링크와 Unity 실행 안내를 제공합니다. [포털 시연과 실행 경로](docs/demo.md#siws-포털)
+통합 포털(8080)은 ERP 계정 로그인, 조선소 운영 지표와 블록 이동 현황, 지도, ERP·Swagger 진입과 Unity 앱 실행을 제공합니다.
+
+### 생산관리 ERP
+
+![통합 ERP의 업무 홈, 대일정, 제조 BOM과 MRP](docs/media/erp/planning.gif)
+
+[작업지시·품질·블록 이동 시연](docs/media/erp/execution.gif)
 
 ### Unity 디지털 트윈
 
-![Unity에서 본 SN2040 블록 탑재 진행 시점](docs/media/shipyard-twin.gif)
+![Unity 기본 시점, 야드 전체 시점과 크레인 시점](docs/media/shipyard-twin.gif)
 
-Unity에서 가상 호선 SN2040의 여러 탑재 시점을 캡처했습니다. 탑재 패널의 블록 수·중량 진척과 함께 도크에 선체가 조립되는 과정을 볼 수 있습니다.
+현재 Unity 앱에서 기본 시점 → 야드 전체 → 크레인 시점으로 전환한 화면입니다.
 
 ## 구현 기능
 
@@ -47,7 +53,7 @@ flowchart LR
 
 | 경로 | 구성 |
 | --- | --- |
-| apps/portal | 정적 HTML 진입 화면 |
+| apps/portal | 브랜드 포털 HTML 및 Python ERP 프록시 |
 | apps/erp | Python HTTP API, JavaScript 업무 화면, 생산·BOM·야드 업무 모듈 |
 | apps/twin/unity | Unity 6 · C# · URP · UI Toolkit. 야드 렌더링, 탑재 재생과 패널 |
 | apps/twin/pipeline | 예시 시설·블록·운영계획 생성, OBJ 모델 생성, 스냅샷 내보내기 |
