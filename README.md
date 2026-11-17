@@ -1,52 +1,71 @@
-# Shipyard
+# SIWS · 조선소 생산관리 ERP와 디지털 트윈
 
-조선소 생산 계획을 ERP에서 관리하고, 야드 적치와 블록 탑재를 Unity에서 재생하는 프로젝트입니다. Portal에서 ERP 화면과 API 문서로 이동할 수 있습니다.
+호선별 생산계획, 설계·제조 BOM, 작업지시·실적, 블록 이동을 ERP에서 관리합니다. Unity에서는 야드 배치와 도크의 블록 탑재를 3D로 재생합니다. Portal에서 ERP와 Swagger에 접근할 수 있습니다.
 
-## 데모
+## 화면별 시연
+
+[화면별 GIF와 시연 순서](docs/demo.md) · [기능 명세](docs/spec.md)
+
+### SIWS 포털
+
+![SIWS 포털 로그인과 조선소 운영 현황 프리뷰](docs/media/portal/portal-overview.gif)
+
+포털 프리뷰의 로그인과 운영 현황 화면입니다. 등록 호선·블록, 이동 중, 재검사 필요 건을 요약하고 생산관리 ERP와 Unity 디지털 트윈 진입 카드를 제공합니다. 저장소의 기본 포털은 ERP·Swagger 링크와 Unity 실행 안내를 제공합니다. [포털 시연과 실행 경로](docs/demo.md#siws-포털)
 
 ### Unity 디지털 트윈
 
-![SN2040 블록 탑재 진행 화면](docs/media/shipyard-twin.gif)
+![Unity에서 본 SN2040 블록 탑재 진행 시점](docs/media/shipyard-twin.gif)
 
-가상 호선 SN2040의 여러 재생 시점을 Unity 앱에서 캡처했습니다.
-
-<details>
-<summary>ERP 데모 보기</summary>
-
-![ERP 업무 화면과 블록 이동 데모](apps/erp/docs/demo.gif)
-
-가상 호선·블록 데이터로 만든 기존 데모입니다.
-
-</details>
+Unity에서 가상 호선 SN2040의 여러 탑재 시점을 캡처했습니다. 탑재 패널의 블록 수·중량 진척과 함께 도크에 선체가 조립되는 과정을 볼 수 있습니다.
 
 ## 구현 기능
 
-| 영역 | 기능 |
+| 화면 | 주요 기능 |
 | --- | --- |
-| Portal | ERP와 Swagger API 문서로 이동하는 로컬 진입 화면 |
-| ERP 생산 계획 | 호선 일정, 블록 구성과 선후행, 주간·일일 작업지시, 공정 진척도, MRP·APS |
-| ERP 야드 운영 | 블록 적치·이동 계획, 도크·선석 예약, 크레인 정격하중과 작업 배정, 안벽 의장 계획 |
-| ERP 현장 업무 | 구매요청부터 입고·검수·출고, 강재 로트 추적, 작업 실적, 검사·품질 기록, 로그인과 메뉴 권한 |
-| Unity 야드 | 생산·적치 계획과 야드 좌표를 사용해 초기 블록 상태를 표시. ERP가 연결되면 계획을 조회하고, 내장 스냅샷으로도 실행 가능 |
-| Unity 블록 탑재 | 왼쪽 아이콘으로 탑재 패널을 열고 호선을 선택한 뒤 수동 재생. 크레인이 블록을 들어 올려 선체에 배치하는 과정과 진행 이력 표시 |
-| Unity 화면 조작 | 오브젝트 이름 호버, 왼쪽 드래그 이동·오른쪽 드래그 회전, 수심도 토글, 오른쪽 상단 종료, 챗봇 패널 열기·닫기 |
-| 실행·성능 도구 | 공통 실행 명령, Unity 테스트·캡처·성능 측정 도구, 메시 지연 로딩과 렌더링 설정 |
+| Portal | ERP와 Swagger 진입 |
+| 업무 홈 | 자재 부족, 구매·작업·이동과 미결 품질 건 확인, 호선별 조회 |
+| 대일정 | 호선 주요 일정, 도크 점유, 선석 배정, 일정 변경 이력 |
+| 중일정 | 탑재 선후행, 블록 적치·준비, 크레인 부하, 의장 진척, 안벽 이동 |
+| 소일정 | 12주 계획·주간 발행, APS 일정 제안, 크레인 작업 배정 |
+| EBOM → MBOM → MRP | 도면·설계 BOM 리비전, 제조 공정·투입품, 발행 전 비교, 자재 소요와 부족 근거 |
+| 실행 | 구매·입고·출고, 강재 로트, 작업지시·실적, 조립·공수, 의장품, 블록 이동 |
+| 진척·품질 | 계획 대비 실적, 물량·공수, 검사 계획·입회 실적, NCR·펀치리스트 |
+| 관리·지도 | 기준정보, 시설·도크 배치, 조선소 지도, 그룹별 권한·감사 이력 |
+| Unity Twin | 3D 야드, 크레인 탑재 재생, 카메라 프리셋, 대상 툴팁, 수심도 |
 
-## 로컬 실행
+## 시스템 구조
 
-[최초 설정과 Claude Code 사용법](docs/development.md)을 따라 ERP 환경을 준비한 뒤 저장소 루트에서 실행합니다.
+~~~mermaid
+flowchart LR
+    Portal["Portal"] --> ERP["ERP 웹 · API"]
+    ERP --> DB["PostgreSQL"]
+    ERP --> Cache["Redis"]
+    ERP --> Twin["Unity Twin"]
+    ERP --> Export["Python 스냅샷 내보내기"]
+    Export --> Twin
+~~~
 
-| 서비스 | 주소 | 명령 |
+| 경로 | 구성 |
+| --- | --- |
+| apps/portal | 정적 HTML 진입 화면 |
+| apps/erp | Python HTTP API, JavaScript 업무 화면, 생산·BOM·야드 업무 모듈 |
+| apps/twin/unity | Unity 6 · C# · URP · UI Toolkit. 야드 렌더링, 탑재 재생과 패널 |
+| apps/twin/pipeline | 예시 시설·블록·운영계획 생성, OBJ 모델 생성, 스냅샷 내보내기 |
+| shared/contracts | ERP–Twin 데이터 연동 기준 |
+| shared/unity-packages | 공용 Unity 패키지 |
+| tools | 로컬 실행과 데이터 이관 |
+
+## 실행
+
+[로컬 개발 가이드](docs/development.md)에서 최초 설치와 환경변수 설정을 마친 뒤, 저장소 루트에서 실행합니다.
+
+| 서비스 | 명령 | 접속 |
 | --- | --- | --- |
-| Portal | `127.0.0.1:8080` | `tools/dev portal` |
-| ERP 웹·API | `127.0.0.1:8001` | `tools/dev erp` |
-| PostgreSQL | `127.0.0.1:55432` | `tools/dev db-up` |
-| Redis | `127.0.0.1:56379` | `tools/dev db-up` |
-| Unity Twin | macOS 앱 / Unity Play Mode | `tools/dev twin-build` 후 `tools/dev twin-run` |
+| PostgreSQL 17 · Redis | `tools/dev db-up` | 55432 · 56379 |
+| ERP | `tools/dev erp` | [ERP](http://127.0.0.1:8001/) · [Swagger](http://127.0.0.1:8001/docs) |
+| Portal | `tools/dev portal` | [Portal](http://127.0.0.1:8080/) |
+| Unity Twin | `tools/dev twin-build` 후 `tools/dev twin-run` | macOS 앱 · 에디터 6000.3.23f1 |
 
-- [ERP 상세 기능과 API](apps/erp/README.md)
-- [Unity 상세 기능과 데이터 갱신](apps/twin/README.md)
-- [ERP–Twin 연동 기준](shared/contracts/README.md)
-- [Unity 작업별 파일 위치](apps/twin/docs/project-map.md)
-
-실제 환경변수 파일, 로컬 DB, Unity 빌드, 위성 사진은 별도 로컬 설정으로 관리합니다.
+- [ERP 업무 흐름](apps/erp/docs/ERP_WORKFLOW.md) · [ERP 사용 가이드와 API](apps/erp/README.md)
+- [Unity 실행과 데이터 갱신](apps/twin/README.md) · [Unity 코드 구조](apps/twin/docs/project-map.md)
+- [ERP–Twin 연동 기준](shared/contracts/README.md) · [스냅샷 형식](apps/twin/docs/TWIN_FORMAT.md)
